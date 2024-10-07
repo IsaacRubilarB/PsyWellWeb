@@ -1,0 +1,89 @@
+
+.patients-list-container {
+  background-color: rgba(0, 0, 0, 0.7); /* Fondo semi-transparente */
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 40px auto;
+  border: 2px solid rgba(205, 170, 0, 0.8); 
+  animation: glow 2s infinite alternate; /* Efecto de luminosidad */
+}
+
+/* Borde luminoso */
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 10px rgba(205, 170, 0, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(205, 170, 0, 1);
+  }
+}
+
+.header-title {
+  color: #ffffff; 
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+
+.search-bar-container .search-bar {
+  width: 80%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-size: 16px;
+  transition: border 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.search-bar-container .search-bar:focus {
+  border-color: #CDAA00; 
+  outline: none;
+}
+
+.patients-list .patient-card {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  margin: 10px 0;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.patients-list .patient-card:hover {
+  background-color: #e6f2ff;
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+
+.patient-actions .btn-details {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  background-color: #CDAA00; 
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.patient-actions .btn-details:hover {
+  background-color: #b28e00; /* Color al pasar el cursor */
+}
+
+/* Estilos para el logo */
+.logo-container {
+  text-align: right;
+  margin-bottom: 20px;
+  margin-top: -100px; 
+  padding-right: 10px;
+}
+
+.logo-container img {
+  width: 110px; 
+  height: auto;
+}

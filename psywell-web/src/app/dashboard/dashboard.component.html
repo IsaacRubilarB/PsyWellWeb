@@ -1,0 +1,65 @@
+<div class="dashboard-container">
+  <div class="header">
+    <img src="assets/logo.png" alt="PsyWell Logo" class="logo">
+    <h1>Bienvenida, Dra. {{ psicologoName }}</h1>
+  </div>
+
+  <!--  Perfil -->
+  <div class="profile-summary">
+    <div class="profile-details">
+      <h2>{{ psicologoName }}</h2>
+      <p>{{ especialidad }}</p>
+      <p>Experiencia: {{ aniosExperiencia }} años</p>
+    </div>
+    <img src="assets/patient.png" alt="Foto de Usuario" class="profile-picture">
+  </div>
+
+  <!-- Navegación -->
+  <div class="navigation-panel">
+    <button routerLink="/patients" class="nav-card">
+      <i class="icon icon-patients"></i>
+      <span>Lista de Pacientes</span>
+    </button>
+    <button routerLink="/appointments" class="nav-card">
+      <i class="icon icon-calendar"></i>
+      <span>Citas de Hoy</span>
+    </button>
+    <button routerLink="/progress-reports" class="nav-card">
+      <i class="icon icon-reports"></i>
+      <span>Informes de Progreso</span>
+    </button>
+    <button routerLink="/resources" class="nav-card">
+      <i class="icon icon-resources"></i>
+      <span>Recursos y Materiales</span>
+    </button>
+  </div>
+
+  <!-- Tareas -->
+  <div class="reminder-section">
+    <h2>Recordatorios</h2>
+    <div class="reminder-list">
+      <div class="reminder-item">
+        <p>Revisar progreso de Cristopher Soto</p>
+        <span class="reminder-date">Fecha límite: 10/10/2024</span>
+      </div>
+      <div class="reminder-item">
+        <p>Enviar informe mensual de María González</p>
+        <span class="reminder-date">Fecha límite: 30/10/2024</span>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="session-stats">
+    <h2>Estadísticas de Sesiones</h2>
+    <div class="stat-card">
+      <p>Sesiones Hoy: <strong>3</strong></p>
+    </div>
+    <div class="stat-card">
+      <p>Sesiones de la Semana: <strong>15</strong></p>
+    </div>
+    <div class="stat-card">
+      <p>Pacientes Activos: <strong>10</strong></p>
+    </div>
+  </div>
+</div>
