@@ -1,14 +1,22 @@
-
 body, html {
   margin: 0;
   padding: 0;
   height: 100%;
   font-family: 'Roboto', sans-serif; 
   position: relative;
-  overflow: hidden; 
+  overflow-y: auto; /* Permite el scroll vertical */
 }
 
+/* Elimina visualmente el scrollbar en navegadores Webkit */
+body::-webkit-scrollbar {
+  width: 0; /* Oculta el scrollbar en navegadores basados en WebKit */
+}
 
+body {
+  scrollbar-width: none; /* Oculta el scrollbar en Firefox */
+}
+
+/* Fondo de la página */
 body::before {
   content: '';
   position: fixed;
@@ -23,7 +31,6 @@ body::before {
   z-index: -2; 
 }
 
-
 body::after {
   content: '';
   position: fixed;
@@ -35,14 +42,14 @@ body::after {
   z-index: -1; 
 }
 
-
-
+/* Contenedor centralizado */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
 }
 
+/* Botones */
 .btn {
   display: inline-block;
   background-color: #D4AF37;
@@ -58,6 +65,7 @@ body::after {
   }
 }
 
+/* Estilo de tarjeta */
 .card {
   background-color: #ffffff;
   padding: 20px;
@@ -72,6 +80,7 @@ body::after {
   }
 }
 
+/* Tarjeta de pacientes */
 .patient-card {
   display: flex;
   align-items: center;
