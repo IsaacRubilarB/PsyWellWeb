@@ -58,6 +58,9 @@
       box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.1);
       border-left: 5px solid #028cdb;
       overflow: hidden;
+      min-height: 150px; /* Ajusta la altura mínima para uniformidad */
+      justify-content: space-between; /* Alinea el contenido del informe */
+
 
       .animation-background {
         position: absolute;
@@ -80,6 +83,8 @@
           margin: 0;
           font-size: 24px;
           color: #f7f4ea;
+          flex: 1; /* Asegura que el título ocupe el espacio disponible */
+
           
           @media (max-width: 768px) {
             font-size: 20px; /* Reduce el tamaño en pantallas más pequeñas */
@@ -94,6 +99,8 @@
           margin: 10px 0;
           font-size: 18px;
           color: #ffc107;
+          flex: 2; /* Ajusta para que el texto del párrafo tenga un tamaño relativo */
+
 
           @media (max-width: 768px) {
             font-size: 16px;
@@ -116,6 +123,8 @@
           align-self: center; 
           margin-left: auto; 
           margin-top: 10px;
+          align-items: center; /* Alinea el ícono y el texto en el centro */
+
 
           &:hover {
             background-color: #ffca28;
