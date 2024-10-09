@@ -1,40 +1,46 @@
 <div class="dashboard-container">
   <div class="header">
-    <img src="assets/logo.png" alt="PsyWell Logo" class="logo">
+    <img src="assets/logo.png" alt="PsyWell Logo" class="logo" />
     <h1>Bienvenida, Dra. {{ psicologoName }}</h1>
   </div>
 
-  <!--  Perfil -->
-  <div class="profile-summary">
+  <!-- Perfil con la imagen de fondo -->
+  <div class="profile-summary" [style.background-image]="fondoPerfil">
     <div class="profile-details">
       <h2>{{ psicologoName }}</h2>
       <p>{{ especialidad }}</p>
       <p>Experiencia: {{ aniosExperiencia }} años</p>
     </div>
-    <img src="assets/patient.png" alt="Foto de Usuario" class="profile-picture">
+    <img src="assets/patient.png" alt="Foto de Usuario" class="profile-picture" />
+
+    <!-- Botón para subir nueva imagen de fondo -->
+    <button class="btn-change-background">
+      Cambiar Fondo
+      <input type="file" accept="image/*" (change)="onBackgroundUpload($event)" class="file-input" />
+    </button>
   </div>
 
-  <!-- Navegación -->
+  <!-- Panel de Navegación -->
   <div class="navigation-panel">
-    <button routerLink="/patients" class="nav-card">
+    <button (click)="navigateToPatients()" class="nav-card">
       <i class="icon icon-patients"></i>
       <span>Lista de Pacientes</span>
     </button>
-    <button routerLink="/appointments" class="nav-card">
+    <button (click)="navigateToAppointments()" class="nav-card">
       <i class="icon icon-calendar"></i>
-      <span>Citas de Hoy</span>
+      <span>Citas</span>
     </button>
-    <button routerLink="/progress-reports" class="nav-card">
+    <button (click)="navigateToReports()" class="nav-card">
       <i class="icon icon-reports"></i>
       <span>Informes de Progreso</span>
     </button>
-    <button routerLink="/resources" class="nav-card">
+    <button (click)="navigateToResources()" class="nav-card">
       <i class="icon icon-resources"></i>
       <span>Recursos y Materiales</span>
     </button>
   </div>
 
-  <!-- Tareas -->
+  <!-- Sección de Recordatorios -->
   <div class="reminder-section">
     <h2>Recordatorios</h2>
     <div class="reminder-list">
@@ -49,7 +55,7 @@
     </div>
   </div>
 
-  
+  <!-- Estadísticas de Sesiones -->
   <div class="session-stats">
     <h2>Estadísticas de Sesiones</h2>
     <div class="stat-card">

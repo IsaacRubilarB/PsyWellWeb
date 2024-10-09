@@ -1,0 +1,105 @@
+.citas-container {
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 15px;
+    max-width: 1100px;
+    margin: 40px auto;
+    color: #fff;
+    box-shadow: 0 0 15px 3px #ffc107;
+  
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 30px;
+      color: #ffc107;
+      text-shadow: 0px 0px 10px #ffc107;
+    }
+  
+    .cita-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+  
+    .cita-card {
+      position: relative;
+      background-color: rgba(50, 50, 50, 0.85);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      gap: 20px;
+      align-items: center;
+  
+      /* Aplicar la clase de estado para los bordes */
+      &.pendiente {
+        border-left: 4px solid #ffc107;
+      }
+  
+      &.finalizada {
+        border-left: 4px solid #429e0c;
+      }
+  
+      .cita-imagen {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+      }
+  
+      .cita-info {
+        flex: 1;
+        .cita-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+  
+          h3 {
+            font-size: 24px;
+            margin: 0;
+          }
+  
+          .cita-fecha {
+            font-size: 16px;
+            color: #ffc107;
+          }
+        }
+  
+        h4 {
+          font-size: 18px;
+          margin: 10px 0 5px;
+        }
+  
+        p {
+          margin: 0;
+          font-size: 16px;
+        }
+      }
+  
+      /* Esconder el estado inicialmente */
+      .estado-hover {
+        position: absolute;
+        bottom: 10px;
+        right: 20px;
+        padding: 5px 10px;
+        border-radius: 5px;
+        color: #fff;
+        font-weight: bold;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+  
+      /* Mostrar el estado solo al pasar el mouse por encima de la tarjeta */
+      &:hover .estado-hover {
+        opacity: 1;
+      }
+  
+      .estado-hover.pendiente {
+        background-color: #ffc107;
+      }
+  
+      .estado-hover.finalizada {
+        background-color: #429e0c;
+      }
+    }
+  }
+  
