@@ -1,76 +1,116 @@
-.container-recursos {
-    padding: 20px;
-    background-color: rgba(0, 0, 0, 0.7); /* Fondo translúcido */
+.carousel-container {
+    position: relative;
+    max-width: 95%;
+    margin: auto;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
     border-radius: 15px;
-    max-width: 1100px;
-    margin: 40px auto;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 10px;
+    box-shadow: 0px 0px 25px 3px #ffc107;
+  }
+  
+  .carousel {
+    display: flex;
+    transition: transform 0.5s ease;
+  }
+  
+  .carousel-card {
+    min-width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-direction: column;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .card-content {
+    text-align: center;
+    max-width: 80%;
+  }
+  
+  .card-image {
+    width: 90%;
+    height: auto;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+  }
+  
+  h2 {
+    color: #ffc107;
+    font-size: 28px;
+    text-shadow: 0px 0px 8px rgba(0, 0, 0, 0.5);
+  }
+  
+  p {
+    font-size: 18px;
     color: #fff;
-    box-shadow: 0 0 15px 3px #ffc107; /* Borde luminoso color mostaza */
+    margin-bottom: 20px;
+  }
   
-    h2 {
-      text-align: center;
-      font-size: 26px;
-      color: #ffc107; /* Color mostaza */
-      margin-bottom: 30px;
-    }
+  .card-buttons {
+    display: flex;
+    gap: 20px;
+  }
   
-    .resource-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-    }
+  .btn-ver,
+  .btn-subir {
+    padding: 12px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
   
-    .resource-card {
-      position: relative;
-      background-color: rgba(0, 0, 0, 0.6); /* Fondo translúcido */
-      border-radius: 10px;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+  .btn-ver {
+    background-color: #4CAF50;
+    color: white;
+  }
   
-      h3 {
-        color: #ffc107;
-        font-size: 20px;
-        margin-bottom: 10px;
-      }
+  .btn-ver:hover {
+    background-color: #45a049;
+  }
   
-      p {
-        color: #ccc;
-        margin-bottom: 15px;
-      }
+  .btn-subir {
+    background-color: #ffc107;
+    color: white;
+  }
   
-      .btn-action, .btn-upload {
-        background-color: #58aa16;
-        color: #fff;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        margin: 10px;
-        transition: background-color 0.3s ease;
+  .btn-subir:hover {
+    background-color: #ffb700;
+  }
   
-        &:hover {
-          background-color: #429e0c;
-        }
-      }
+  .control-prev,
+  .control-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: white;
+    padding: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+  }
   
-      .card-background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100px;
-        background-size: cover;
-        background-position: center;
-        border-radius: 10px 10px 0 0;
-        z-index: 0;
-      }
+  .control-prev {
+    left: 10px;
+  }
   
-      &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-      }
-    }
+  .control-next {
+    right: 10px;
+  }
+  
+  .control-prev:hover,
+  .control-next:hover {
+    background-color: rgba(0, 0, 0, 0.8);
   }
   

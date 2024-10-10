@@ -1,33 +1,20 @@
-<div class="container-recursos">
-    <h2>Gestión de Recursos y Materiales</h2>
-  
-    <div class="resource-grid">
-      <!-- Tarjeta 1: Imágenes -->
-      <div class="resource-card">
-        <div class="card-background" style="background-image: url('assets/imagenes-recursos.jpg');"></div>
-        <h3>Imágenes</h3>
-        <p>Sube y gestiona imágenes relacionadas con la salud mental.</p>
-        <button class="btn-action" (click)="verRecursos('imagenes')">Ver Imágenes</button>
-        <button class="btn-upload" (click)="subirRecurso('imagenes')">Subir Imagen</button>
-      </div>
-  
-      <!-- Tarjeta 2: Presentaciones -->
-      <div class="resource-card">
-        <div class="card-background" style="background-image: url('assets/ppts-recursos.jpg');"></div>
-        <h3>Presentaciones</h3>
-        <p>Sube y gestiona presentaciones para sesiones de terapia.</p>
-        <button class="btn-action" (click)="verRecursos('ppts')">Ver Presentaciones</button>
-        <button class="btn-upload" (click)="subirRecurso('ppts')">Subir Presentación</button>
-      </div>
-  
-      <!-- Tarjeta 3: Videos -->
-      <div class="resource-card">
-        <div class="card-background" style="background-image: url('assets/videos-recursos.jpg');"></div>
-        <h3>Videos</h3>
-        <p>Sube y gestiona videos educativos o de apoyo.</p>
-        <button class="btn-action" (click)="verRecursos('videos')">Ver Videos</button>
-        <button class="btn-upload" (click)="subirRecurso('videos')">Subir Video</button>
+<div class="carousel-container">
+    <div class="carousel">
+      <div class="carousel-card" *ngFor="let item of items">
+        <div class="card-content">
+          <img [src]="item.imagen" alt="{{ item.titulo }}" class="card-image">
+          <h2>{{ item.titulo }}</h2>
+          <p>{{ item.descripcion }}</p>
+          <div class="card-buttons">
+            <button class="btn-ver">{{ item.btnVerTexto }}</button>
+            <button class="btn-subir">{{ item.btnSubirTexto }}</button>
+          </div>
+        </div>
       </div>
     </div>
+  
+    <!-- Controles del carrusel -->
+    <button class="control-prev" (click)="prevSlide()">&#10094;</button>
+    <button class="control-next" (click)="nextSlide()">&#10095;</button>
   </div>
   

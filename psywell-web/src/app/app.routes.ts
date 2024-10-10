@@ -4,6 +4,7 @@ import { PatientsListComponent } from './patients-list/patients-list.component';
 import { PatientDetailsComponent } from './patient-details/patient-details.component';
 import { ReportsComponent } from './reports/reports.component';
 import { CalendarIntegrationComponent } from './calendar-integration/calendar-integration.component'; // Importación del componente de integración de calendario
+import { RecursosMaterialesComponent } from './recursos-materiales/recursos-materiales.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginRegistroComponent },
@@ -14,5 +15,5 @@ export const routes: Routes = [
   { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent) },
   { path: 'citas', loadComponent: () => import('./citas/citas.component').then(m => m.CitasComponent) },
   { path: 'recursos-materiales', loadComponent: () => import('./recursos-materiales/recursos-materiales.component').then(m => m.RecursosMaterialesComponent) },
-  { path: 'calendar-integration', loadComponent: () => import('./calendar-integration/calendar-integration.component').then(m => m.CalendarIntegrationComponent) }
+      { path: 'calendar-integration', loadComponent: () => import('./calendar-integration/calendar-integration.component').then(m => m.CalendarIntegrationComponent) },
 ];
