@@ -1,9 +1,13 @@
 import { Component } from '@angular/core';
+import { NgIf, NgFor, DatePipe } from '@angular/common';  // Importamos las directivas comunes y DatePipe
+import { FormsModule } from '@angular/forms'; // Para manejar los formularios
 
 @Component({
   selector: 'app-calendar-integration',
+  standalone: true, 
   templateUrl: './calendar-integration.component.html',
   styleUrls: ['./calendar-integration.component.scss'],
+  imports: [NgIf, NgFor, FormsModule, DatePipe] 
 })
 export class CalendarIntegrationComponent {
   eventSummary: string = '';
@@ -14,23 +18,46 @@ export class CalendarIntegrationComponent {
   eventAttendees: string = '';
   statusMessage: string = '';
   listaEventos: any[] = [];
+
+  
   isLogin: boolean = false;
 
-  createEvent() {
-    console.log('Evento creado con los siguientes datos:');
-    console.log(`Resumen: ${this.eventSummary}`);
-    console.log(`Descripción: ${this.eventDescription}`);
-    console.log(`Ubicación: ${this.eventLocation}`);
-    console.log(`Inicio: ${this.eventStart}`);
-    console.log(`Fin: ${this.eventEnd}`);
-    console.log(`Asistentes: ${this.eventAttendees}`);
-  }
-
   signIn() {
-    console.log('Iniciar sesión con Google');
+    this.statusMessage = "Iniciar sesión en Google (simulado)";
+    this.isLogin = true;
   }
 
   signOut() {
-    console.log('Cerrar sesión con Google');
+    this.statusMessage = "Cerrar sesión en Google (simulado)";
+    this.isLogin = false;
+  }
+
+  createEvent() {
+    const event = {
+      summary: this.eventSummary,
+      description: this.eventDescription,
+      location: this.eventLocation,
+      start: {
+        dateTime: new Date(this.eventStart).toISOString(),
+      },
+      end: {
+        dateTime: new Date(this.eventEnd).toISOString(),
+      },
+      attendees: this.eventAttendees.split(',').map(email => ({ email: email.trim() })),
+      htmlLink: 'https://calendar.google.com/', 
+    };
+
+    this.listaEventos.push(event);
+    this.statusMessage = 'Evento creado con éxito';
+    this.clearForm();
+  }
+
+  clearForm() {
+    this.eventSummary = '';
+    this.eventDescription = '';
+    this.eventLocation = '';
+    this.eventStart = '';
+    this.eventEnd = '';
+    this.eventAttendees = '';
   }
 }

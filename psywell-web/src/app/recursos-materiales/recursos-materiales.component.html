@@ -1,26 +1,32 @@
-<div class="resources-section">
-    <h2>Recursos y Materiales</h2>
+<div class="container-recursos">
+    <h2>Gestión de Recursos y Materiales</h2>
   
     <div class="resource-grid">
-      <!-- Tarjeta de Recurso 1 -->
+      <!-- Tarjeta 1: Imágenes -->
       <div class="resource-card">
-        <h3>Guía de Salud Mental</h3>
-        <p>Una guía completa para mantener una buena salud mental en tiempos de estrés.</p>
-        <a href="https://example.com/guia-salud-mental" target="_blank" class="btn-download">Descargar</a>
+        <div class="card-background" style="background-image: url('assets/imagenes-recursos.jpg');"></div>
+        <h3>Imágenes</h3>
+        <p>Sube y gestiona imágenes relacionadas con la salud mental.</p>
+        <button class="btn-action" (click)="verRecursos('imagenes')">Ver Imágenes</button>
+        <button class="btn-upload" (click)="subirRecurso('imagenes')">Subir Imagen</button>
       </div>
   
-      <!-- Tarjeta de Recurso 2 -->
+      <!-- Tarjeta 2: Presentaciones -->
       <div class="resource-card">
-        <h3>Materiales Terapéuticos</h3>
-        <p>Ejercicios y actividades recomendadas para mejorar el bienestar emocional de los pacientes.</p>
-        <a href="https://example.com/materiales-terapeuticos" target="_blank" class="btn-download">Descargar</a>
+        <div class="card-background" style="background-image: url('assets/ppts-recursos.jpg');"></div>
+        <h3>Presentaciones</h3>
+        <p>Sube y gestiona presentaciones para sesiones de terapia.</p>
+        <button class="btn-action" (click)="verRecursos('ppts')">Ver Presentaciones</button>
+        <button class="btn-upload" (click)="subirRecurso('ppts')">Subir Presentación</button>
       </div>
   
-      <!-- Tarjeta de Recurso 3 -->
+      <!-- Tarjeta 3: Videos -->
       <div class="resource-card">
-        <h3>Videos Educativos</h3>
-        <p>Videos de apoyo para entender mejor las técnicas de intervención terapéutica.</p>
-        <a href="https://example.com/videos-educativos" target="_blank" class="btn-download">Ver Videos</a>
+        <div class="card-background" style="background-image: url('assets/videos-recursos.jpg');"></div>
+        <h3>Videos</h3>
+        <p>Sube y gestiona videos educativos o de apoyo.</p>
+        <button class="btn-action" (click)="verRecursos('videos')">Ver Videos</button>
+        <button class="btn-upload" (click)="subirRecurso('videos')">Subir Video</button>
       </div>
     </div>
   </div>

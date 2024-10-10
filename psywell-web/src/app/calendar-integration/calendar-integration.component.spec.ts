@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CalendarIntegrationComponent } from './calendar-integration.component';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common'; 
 
 describe('CalendarIntegrationComponent', () => {
   let component: CalendarIntegrationComponent;
@@ -7,7 +9,8 @@ describe('CalendarIntegrationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CalendarIntegrationComponent] // Mover el componente a 'declarations'
+      imports: [FormsModule, CommonModule],
+      declarations: [CalendarIntegrationComponent]
     })
     .compileComponents();
 

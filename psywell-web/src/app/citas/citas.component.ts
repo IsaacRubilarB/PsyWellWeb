@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CalendarIntegrationComponent } from '../calendar-integration/calendar-integration.component'; // Importar CalendarIntegrationComponent
 
 @Component({
   selector: 'app-citas',
   standalone: true,
-  imports: [CommonModule], // Importar el CommonModule
+  imports: [CommonModule, CalendarIntegrationComponent], // Importar CalendarIntegrationComponent
   templateUrl: './citas.component.html',
   styleUrls: ['./citas.component.scss']
 })
@@ -75,6 +76,4 @@ export class CitasComponent {
       imagen: 'assets/perfiles/Manuel.png' 
     }
   ];
-  
-  
 }

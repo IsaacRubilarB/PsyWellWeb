@@ -1,89 +1,85 @@
 <div class="calendar-container">
   <!-- Formulario para Crear Evento -->
-  <h2>Crear un Nuevo Evento</h2>
-  <form (ngSubmit)="createEvent()">
-    <div class="form-group">
-      <label for="summary">Resumen:</label>
-      <input
-        type="text"
-        [(ngModel)]="eventSummary"
-        name="summary"
-        id="summary"
-        required
-        placeholder="Introduce el resumen del evento"
-        title="Introduce el resumen del evento"
-      />
-    </div>
+  <div class="form-wrapper">
+    <h2>Crear un Nuevo Evento</h2>
+    <form (ngSubmit)="createEvent()">
+      <div class="form-group">
+        <label for="summary">Resumen:</label>
+        <input
+          type="text"
+          [(ngModel)]="eventSummary"
+          name="summary"
+          id="summary"
+          required
+          placeholder="Introduce el resumen del evento"
+        />
+      </div>
 
-    <div class="form-group">
-      <label for="description">Descripción:</label>
-      <input
-        type="text"
-        [(ngModel)]="eventDescription"
-        name="description"
-        id="description"
-        placeholder="Introduce una descripción (opcional)"
-        title="Introduce una descripción del evento"
-      />
-    </div>
+      <div class="form-group">
+        <label for="description">Descripción:</label>
+        <input
+          type="text"
+          [(ngModel)]="eventDescription"
+          name="description"
+          id="description"
+          placeholder="Introduce una descripción (opcional)"
+        />
+      </div>
 
-    <div class="form-group">
-      <label for="location">Ubicación:</label>
-      <input
-        type="text"
-        [(ngModel)]="eventLocation"
-        name="location"
-        id="location"
-        placeholder="Introduce la ubicación (opcional)"
-        title="Introduce la ubicación del evento"
-      />
-    </div>
+      <div class="form-group">
+        <label for="location">Ubicación:</label>
+        <input
+          type="text"
+          [(ngModel)]="eventLocation"
+          name="location"
+          id="location"
+          placeholder="Introduce la ubicación (opcional)"
+        />
+      </div>
 
-    <div class="form-group">
-      <label for="start">Fecha y Hora de Inicio:</label>
-      <input
-        type="datetime-local"
-        [(ngModel)]="eventStart"
-        name="start"
-        id="start"
-        required
-        placeholder="Fecha y hora de inicio"
-        title="Selecciona la fecha y hora de inicio"
-      />
-    </div>
+      <div class="form-group">
+        <label for="start">Fecha y Hora de Inicio:</label>
+        <input
+          type="datetime-local"
+          [(ngModel)]="eventStart"
+          name="start"
+          id="start"
+          required
+          placeholder="Fecha y hora de inicio"
+        />
+      </div>
 
-    <div class="form-group">
-      <label for="end">Fecha y Hora de Finalización:</label>
-      <input
-        type="datetime-local"
-        [(ngModel)]="eventEnd"
-        name="end"
-        id="end"
-        required
-        placeholder="Fecha y hora de finalización"
-        title="Selecciona la fecha y hora de finalización"
-      />
-    </div>
+      <div class="form-group">
+        <label for="end">Fecha y Hora de Finalización:</label>
+        <input
+          type="datetime-local"
+          [(ngModel)]="eventEnd"
+          name="end"
+          id="end"
+          required
+          placeholder="Fecha y hora de finalización"
+        />
+      </div>
 
-    <div class="form-group">
-      <label for="attendees">Asistentes (Emails separados por coma):</label>
-      <input
-        type="text"
-        [(ngModel)]="eventAttendees"
-        name="attendees"
-        id="attendees"
-        placeholder="Introduce los emails separados por coma"
-        title="Introduce los correos de los asistentes, separados por coma"
-      />
-    </div>
+      <div class="form-group">
+        <label for="attendees">Asistentes (Emails separados por coma):</label>
+        <input
+          type="text"
+          [(ngModel)]="eventAttendees"
+          name="attendees"
+          id="attendees"
+          placeholder="Introduce los emails separados por coma"
+        />
+      </div>
 
-    <button type="submit" class="submit-button">Crear Evento</button>
-  </form>
+      <button type="submit" class="submit-button">Crear Evento</button>
+    </form>
+  </div>
 
   <!-- Botones de Autenticación -->
   <div class="auth-buttons">
-    <button (click)="signIn()" title="Iniciar sesión en Google">Iniciar Sesión</button>
-    <button (click)="signOut()" title="Cerrar sesión en Google">Cerrar Sesión</button>
+    <button (click)="signIn()" title="Iniciar sesión en Google" class="auth-button">Iniciar Sesión</button>
+    <button (click)="signOut()" title="Cerrar sesión en Google" class="auth-button">Cerrar Sesión</button>
   </div>
 
   <!-- Mensaje de Estado -->
@@ -99,7 +95,7 @@
       <br />
       <em>Ubicación:</em> {{ evento.location || 'No especificada' }}
       <br />
-      <a [href]="evento.htmlLink" target="_blank" title="Ver evento en Google Calendar">Ver en Google Calendar</a>
+      <a [href]="evento.htmlLink" target="_blank">Ver en Google Calendar</a>
     </li>
   </ul>
 </div>
