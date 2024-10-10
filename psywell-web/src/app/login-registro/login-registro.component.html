@@ -12,7 +12,8 @@
                 <label for="password">Contraseña</label>
                 <input type="password" id="password" placeholder="Ingresa tu contraseña">
             </div>
-            <button>Ingresar</button>
+            <!-- Llamamos a onLogin() al hacer clic en el botón -->
+            <button (click)="onLogin()">Ingresar</button>
             <p class="toggle-text">¿No tienes cuenta? <span (click)="flip()">Regístrate aquí</span></p>
             <p class="social-text">O inicia sesión con:</p>
             <div class="social-icons">

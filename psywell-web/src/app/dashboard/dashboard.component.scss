@@ -5,8 +5,128 @@
   max-width: 1100px;
   margin: 40px auto;
   color: #fff;
-  box-shadow: 0 0 15px 3px #ffc107;
+  position: relative;
 
+ /* Notificaciones con estilo rectangular, fondo translúcido negro y borde luminoso verde */
+.notifications-container {
+  position: absolute;
+  top: 20px;
+  left: -320px;
+  width: 300px;
+    padding: 15px;
+  border-radius: 12px; /* Forma rectangular con esquinas redondeadas */
+  box-shadow: 0 0 10px 2px #00ff00; 
+  transition: opacity 3s ease-out; 
+  opacity: 1;
+  color: white;
+
+  .notification {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    i {
+      font-size: 18px;
+    }
+
+    &.fade-out {
+      opacity: 0;
+      transition: opacity 1s ease-out; /* Añadir transición suave */
+    }
+  }
+
+  &:hover {
+    background-color: rgba(0, 200, 0, 0.6);
+  }
+}
+
+
+  /* Estilo mejorado para las Sticky Notes */
+  .sticky-notes-container {
+    position: absolute;
+    top: 20px;
+    right: -320px;
+    width: 300px;
+
+    .saved-notes {
+      background-color: rgba(0, 0, 255, 0.3); /* Fondo translúcido */
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px 2px #00aaff; /* Borde luminoso azul */
+      margin-bottom: 15px;
+    }
+
+    /* Estilo de las notas guardadas */
+    .sticky-note {
+      margin-bottom: 10px;
+      border-radius: 8px;
+      padding: 10px;
+      transition: background-color 0.3s ease;
+      background-color: rgba(0, 0, 0, 0.6); /* Fondo translúcido negro */
+      box-shadow: 0 0 10px 2px #d4c004; /* Borde luminoso distintivo */
+      position: relative; /* Posición relativa para el botón de eliminar */
+
+      h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: bold;
+        color: #ffffff;
+      }
+
+      p {
+        margin: 5px 0;
+        font-size: 14px;
+        color: #ffffff;
+      }
+
+      button {
+        background-color: transparent;
+        border: none;
+        color: rgb(247, 245, 245);
+        font-weight: bold;
+        cursor: pointer;
+        position: absolute;
+        top: 5px;
+        right: 5px; /* Posiciona la "X" en la esquina superior derecha */
+        font-size: 18px; /* Ajusta el tamaño de la "X" */
+        padding: 0;
+      }
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+      }
+    }
+
+    /* Área para agregar nuevas notas */
+    .add-note {
+      input,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: rgba(0, 0, 0, 0.6); /* Fondo translúcido negro */
+        color: #fff;
+        box-shadow: 0 0 10px 2px #d4c004; /* Borde luminoso */
+      }
+
+      button {
+        background-color: #58aa16;
+        color: #fff;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+
+        &:hover {
+          background-color: #d4c004;
+        }
+      }
+    }
+  }
+
+  /* Otros estilos */
   .header {
     display: flex;
     align-items: center;
@@ -41,10 +161,12 @@
 
     .profile-details {
       text-align: left;
+
       h2 {
         font-size: 24px;
         margin: 0;
       }
+
       p {
         font-size: 16px;
       }
@@ -85,7 +207,6 @@
     }
   }
 
-  /* Panel de Navegación */
   .navigation-panel {
     display: flex;
     justify-content: space-around;
@@ -96,16 +217,16 @@
     .nav-card {
       background-color: rgba(50, 50, 50, 0.85);
       color: #ffc107;
-      padding: 15px; /* Reducido el padding */
+      padding: 15px;
       border-radius: 12px;
-      width: 200px; /* Ajustado el ancho */
-      height: 100px; /* Ajustado la altura */
+      width: 200px;
+      height: 100px;
       display: flex;
-      align-items: center; /* Centrado verticalmente */
-      justify-content: center; /* Centrado horizontalmente */
+      align-items: center;
+      justify-content: center;
       text-align: center;
       cursor: pointer;
-      border: 2px solid #ffc107; /* Borde luminoso */
+      border: 2px solid #ffc107;
       transition: box-shadow 0.3s ease, transform 0.3s ease;
 
       i {
@@ -119,12 +240,11 @@
 
       &:hover {
         box-shadow: 0 0 15px 5px #ffc107;
-        transform: translateY(-5px); /* Efecto de elevación */
+        transform: translateY(-5px);
       }
     }
   }
 
-  /* Recordatorios */
   .reminder-section {
     margin-bottom: 30px;
 
@@ -141,18 +261,26 @@
       gap: 15px;
 
       .reminder-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         background-color: rgba(50, 50, 50, 0.85);
         padding: 15px;
         border-radius: 8px;
         box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        transition: transform 0.3s ease;
+        border-left: 5px solid #ffc107;
+
+        &:hover {
+          background-color: #333;
+          transform: translateY(-5px);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
 
         p {
           margin: 0;
-          color: #fff;
           font-weight: bold;
+          color: #fff;
         }
 
         .reminder-date {
@@ -163,30 +291,30 @@
     }
   }
 
-  /* Estadísticas de Sesiones */
   .session-stats {
     display: flex;
     justify-content: space-around;
-    flex-wrap: wrap;
     gap: 20px;
 
     .stat-card {
       background-color: rgba(50, 50, 50, 0.85);
       color: #ffffff;
       border-radius: 12px;
-      width: 200px;
       text-align: center;
       padding: 15px;
       box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-      transition: box-shadow 0.3s ease;
+      transition: transform 0.3s ease;
 
       &:hover {
-        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
       }
+
+
 
       p {
         font-size: 18px;
-        margin: 5px 0;
+        margin: 0;
 
         strong {
           font-size: 20px;

@@ -1,4 +1,34 @@
 <div class="dashboard-container">
+ <!-- Notificaciones (lado izquierdo) -->
+<div class="notifications-container" *ngIf="!allNotificationsDismissed()">
+  <div *ngFor="let notification of notificaciones; let i = index" [ngClass]="{ 'fade-out': notification.dismissed }" class="notification">
+    <i [class]="notification.icono"></i>
+    <p>{{ notification.mensaje }}</p>
+  </div>
+</div>
+  
+
+ <!-- Sticky Notes (lado derecho) -->
+<div class="sticky-notes-container">
+  <!-- Área donde se guardan las notas -->
+  <div class="saved-notes">
+    <div *ngFor="let note of stickyNotes; let i = index" class="sticky-note">
+      <h3>{{ note.titulo }}</h3>
+      <p>{{ note.contenido }}</p>
+      <button (click)="removeStickyNote(i)">X</button>
+    </div>
+  </div>
+
+  <!-- Área para agregar nuevas notas -->
+  <div class="add-note">
+    <input [(ngModel)]="newNoteTitle" placeholder="Título de la nota" />
+    <textarea [(ngModel)]="newNoteContent" placeholder="Escribe tu nota..."></textarea>
+    <button (click)="addStickyNote()">Guardar Nota</button>
+  </div>
+</div>
+
+
+  <!-- Contenedor principal del dashboard -->
   <div class="header">
     <img src="assets/logo.png" alt="PsyWell Logo" class="logo" />
     <h1>Bienvenida, Dra. {{ psicologoName }}</h1>
@@ -45,10 +75,12 @@
     <h2>Recordatorios</h2>
     <div class="reminder-list">
       <div class="reminder-item">
+        <i class="icon-clock"></i>
         <p>Revisar progreso de Cristopher Soto</p>
         <span class="reminder-date">Fecha límite: 10/10/2024</span>
       </div>
       <div class="reminder-item">
+        <i class="icon-report"></i>
         <p>Enviar informe mensual de María González</p>
         <span class="reminder-date">Fecha límite: 30/10/2024</span>
       </div>
@@ -59,12 +91,15 @@
   <div class="session-stats">
     <h2>Estadísticas de Sesiones</h2>
     <div class="stat-card">
+      <i class="icon-session"></i>
       <p>Sesiones Hoy: <strong>3</strong></p>
     </div>
     <div class="stat-card">
+      <i class="icon-week"></i>
       <p>Sesiones de la Semana: <strong>15</strong></p>
     </div>
     <div class="stat-card">
+      <i class="icon-active"></i>
       <p>Pacientes Activos: <strong>10</strong></p>
     </div>
   </div>
