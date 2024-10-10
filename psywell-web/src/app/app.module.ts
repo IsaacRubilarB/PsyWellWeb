@@ -4,9 +4,10 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
-
+import { AppComponent } from './app.component';
+import { CalendarIntegrationComponent } from './calendar-integration/calendar-integration.component';
 @NgModule({
-  declarations: [ ],
+  declarations: [ AppComponent, CalendarIntegrationComponent ],
   imports: [
     BrowserModule,
     FormsModule,
