@@ -7,39 +7,38 @@
   color: #fff;
   position: relative;
 
- /* Notificaciones con estilo rectangular, fondo translúcido negro y borde luminoso verde */
-.notifications-container {
-  position: absolute;
-  top: 20px;
-  left: -320px;
-  width: 300px;
+  /* Notificaciones con estilo rectangular, fondo translúcido negro y borde luminoso verde */
+  .notifications-container {
+    position: absolute;
+    top: 20px;
+    left: -320px;
+    width: 300px;
     padding: 15px;
-  border-radius: 12px; /* Forma rectangular con esquinas redondeadas */
-  box-shadow: 0 0 10px 2px #00ff00; 
-  transition: opacity 3s ease-out; 
-  opacity: 1;
-  color: white;
+    border-radius: 12px; /* Forma rectangular con esquinas redondeadas */
+    box-shadow: 0 0 10px 2px #00ff00;
+    transition: opacity 3s ease-out;
+    opacity: 1;
+    color: white;
 
-  .notification {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    .notification {
+      display: flex;
+      align-items: center;
+      gap: 10px;
 
-    i {
-      font-size: 18px;
+      i {
+        font-size: 18px;
+      }
+
+      &.fade-out {
+        opacity: 0;
+        transition: opacity 1s ease-out; /* Añadir transición suave */
+      }
     }
 
-    &.fade-out {
-      opacity: 0;
-      transition: opacity 1s ease-out; /* Añadir transición suave */
+    &:hover {
+      background-color: rgba(0, 200, 0, 0.6);
     }
   }
-
-  &:hover {
-    background-color: rgba(0, 200, 0, 0.6);
-  }
-}
-
 
   /* Estilo mejorado para las Sticky Notes */
   .sticky-notes-container {
@@ -305,22 +304,126 @@
       box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
       transition: transform 0.3s ease;
 
-      &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+
+        &:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+  
+        p {
+          font-size: 18px;
+          margin: 0;
+  
+          strong {
+            font-size: 20px;
+            color: #429e0c;
+          }
+        }
       }
-
-
-
-      p {
-        font-size: 18px;
-        margin: 0;
-
-        strong {
-          font-size: 20px;
-          color: #429e0c;
+    }
+  
+    /* Estilos responsivos */
+    @media (max-width: 768px) {
+      .dashboard-container {
+        max-width: 90%;
+        padding: 15px;
+        margin: 20px auto;
+  
+        .sticky-notes-container,
+        .notifications-container {
+          position: relative;
+          top: auto;
+          left: auto;
+          right: auto;
+          width: 100%;
+          margin-bottom: 20px;
+        }
+  
+        .sticky-notes-container .saved-notes,
+        .notifications-container {
+          box-shadow: 0 0 10px 2px #00ff00; /* Mantiene borde luminoso en dispositivos móviles */
+          padding: 10px;
+        }
+  
+        .navigation-panel {
+          flex-direction: column;
+          gap: 10px;
+  
+          .nav-card {
+            width: 100%;
+            height: auto;
+            padding: 10px;
+          }
+        }
+  
+        .session-stats {
+          flex-direction: column;
+          gap: 15px;
+  
+          .stat-card {
+            width: 100%;
+            padding: 15px;
+          }
+        }
+  
+        .profile-summary {
+          flex-direction: column;
+  
+          .profile-details {
+            text-align: center;
+            margin-bottom: 10px;
+          }
+  
+          .profile-picture {
+            margin: 0 auto;
+          }
+        }
+      }
+    }
+  
+    /* Estilos adicionales para pantallas aún más pequeñas */
+    @media (max-width: 480px) {
+      .dashboard-container {
+        padding: 10px;
+        margin: 10px auto;
+  
+        .header h1 {
+          font-size: 24px;
+        }
+  
+        .sticky-notes-container,
+        .notifications-container {
+          padding: 10px;
+        }
+  
+        .sticky-note h3 {
+          font-size: 16px;
+        }
+  
+        .sticky-note p {
+          font-size: 12px;
+        }
+  
+        .add-note input,
+        .add-note textarea {
+          padding: 8px;
+        }
+  
+        .add-note button {
+          padding: 8px 12px;
+        }
+      }
+  
+      .navigation-panel {
+        .nav-card {
+          padding: 8px;
+          font-size: 14px;
+  
+          i {
+            font-size: 24px;
+          }
         }
       }
     }
   }
-}
+  

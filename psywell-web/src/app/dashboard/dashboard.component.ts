@@ -55,7 +55,7 @@ export class DashboardComponent {
 
   // Método para navegar a los recursos y materiales
   navigateToResources() {
-    this.router.navigate(['/resources']);
+    this.router.navigate(['/recursos-materiales']);
   }
 
   // Método para cambiar el fondo del perfil según la imagen seleccionada
