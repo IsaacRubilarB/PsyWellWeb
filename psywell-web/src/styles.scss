@@ -31,15 +31,15 @@ body::before {
   z-index: -2; 
 }
 
+/* Eliminar el oscurecimiento sobre la imagen de fondo */
 body::after {
-  content: '';
+  content: ''; /* Se elimina el background-color y la transparencia */
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); 
-  z-index: -1; 
+  z-index: -1; /* Asegurar que el fondo esté detrás de todo el contenido */
 }
 
 /* Contenedor centralizado */

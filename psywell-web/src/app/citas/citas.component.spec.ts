@@ -1,10 +1,12 @@
 import { Component } from '@angular/core';
+import { NavbarComponent } from "../navbar/navbar.component";
 
 @Component({
   selector: 'app-citas',
   templateUrl: './citas.component.html',
   styleUrls: ['./citas.component.scss'],
-  standalone: true
+  standalone: true,
+  imports: [NavbarComponent]
 })
 export class CitasComponent {
   citas = [

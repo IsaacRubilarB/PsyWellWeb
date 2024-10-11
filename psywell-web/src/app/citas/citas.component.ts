@@ -1,13 +1,16 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CalendarIntegrationComponent } from '../calendar-integration/calendar-integration.component'; // Importar CalendarIntegrationComponent
+import { CalendarIntegrationComponent } from '../calendar-integration/calendar-integration.component'; 
+import { Component } from '@angular/core';
+import { NavbarComponent } from '../navbar/navbar.component'; // Importar el componente Navbar
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 @Component({
   selector: 'app-citas',
   standalone: true,
-  imports: [CommonModule, CalendarIntegrationComponent], // Importar CalendarIntegrationComponent
+  imports: [CommonModule, CalendarIntegrationComponent, NavbarComponent], // Importar el NavbarComponent
   templateUrl: './citas.component.html',
-  styleUrls: ['./citas.component.scss']
+  styleUrls: ['./citas.component.scss'],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA] // Añadir esto para que Angular reconozca 'app-navbar'
 })
 export class CitasComponent {
   citas = [

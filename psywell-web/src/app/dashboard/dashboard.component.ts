@@ -31,8 +31,12 @@ export class DashboardComponent {
     { titulo: 'Nota Rápida 2', contenido: 'Preparar informe de progreso para Sofía Martínez.' }
   ];
 
+  // Lista de notas filtradas (para la búsqueda)
+  filteredStickyNotes: { titulo: string; contenido: string }[] = [...this.stickyNotes];
+
   newNoteTitle: string = ''; // Título de la nueva nota
   newNoteContent: string = ''; // Contenido de la nueva nota
+  searchQuery: string = ''; // Término de búsqueda para las notas
 
   constructor(private router: Router, private sanitizer: DomSanitizer) {
     this.initNotificationTimeout(); // Iniciar temporizador de notificaciones
@@ -90,11 +94,29 @@ export class DashboardComponent {
       this.stickyNotes.push({ titulo: this.newNoteTitle, contenido: this.newNoteContent });
       this.newNoteTitle = ''; // Limpiar el título después de añadir
       this.newNoteContent = ''; // Limpiar el contenido después de añadir
+      this.filteredStickyNotes = [...this.stickyNotes]; // Actualizar las notas filtradas
     }
   }
 
   // Eliminar una nota rápida (sticky note)
   removeStickyNote(index: number) {
     this.stickyNotes.splice(index, 1);
+    this.filteredStickyNotes = [...this.stickyNotes]; // Actualizar las notas filtradas después de eliminar
+  }
+
+  // Método para buscar notas rápidas por título
+  onSearch(event: any) {
+    const query = event.target.value.toLowerCase();
+    this.filteredStickyNotes = this.stickyNotes.filter(note => 
+      note.titulo.toLowerCase().includes(query)
+    );
+  }
+
+  // Método para disparar el evento de seleccionar archivo
+  triggerFileInput(): void {
+    const fileInput = document.querySelector('.file-input') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click(); // Simular clic en el input de archivo
+    }
   }
 }

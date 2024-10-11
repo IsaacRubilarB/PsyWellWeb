@@ -4,6 +4,7 @@ body {
   overflow-y: auto; 
   min-height: 100vh; 
 }
+
 html, body {
   height: 100%;
   overflow-x: hidden; /* Para evitar el desplazamiento horizontal */
@@ -15,9 +16,9 @@ html, body {
   border-radius: 20px;
   color: #f5f5f5;
   max-width: 1100px;
-  margin: 40px auto;
+  margin: 100px auto; /* Aumentar el margen superior para separar el contenedor del navbar */
   text-align: left;
-    box-shadow: 0 0 20px 4px #ffc107;
+  box-shadow: 0 0 20px 4px #ffc107;
   overflow: auto;
 
   @media (max-width: 768px) {
@@ -220,7 +221,6 @@ button {
     margin-top: 15px;
   }
 }
-
 
 @media (max-width: 480px) {
   h1 {

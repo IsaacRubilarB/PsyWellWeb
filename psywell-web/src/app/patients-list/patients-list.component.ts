@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { NavbarComponent } from '../navbar/navbar.component';
 
 interface Patient {
   id: string;
@@ -13,9 +14,10 @@ interface Patient {
 @Component({
   selector: 'app-patients-list',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NavbarComponent], // Incluye NavbarComponent
   templateUrl: './patients-list.component.html',
-  styleUrls: ['./patients-list.component.scss']
+  styleUrls: ['./patients-list.component.scss'],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA] // Añadir CUSTOM_ELEMENTS_SCHEMA para manejar elementos personalizados
 })
 export class PatientsListComponent {
   filteredPatients: Patient[] = [
