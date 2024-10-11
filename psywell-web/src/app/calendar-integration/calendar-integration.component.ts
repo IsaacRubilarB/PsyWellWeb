@@ -1,15 +1,17 @@
-import { Component } from '@angular/core';
-import { NgIf, NgFor, DatePipe } from '@angular/common';  // Importamos las directivas comunes y DatePipe
-import { FormsModule } from '@angular/forms'; // Para manejar los formularios
+import { Component, OnInit } from '@angular/core';
+import { NgIf, NgFor, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { GoogleCalendarService } from '../services/google-calendar.service'; // Ajusta la ruta según tu estructura de proyecto
 
 @Component({
   selector: 'app-calendar-integration',
-  standalone: true, 
+  standalone: true,
   templateUrl: './calendar-integration.component.html',
   styleUrls: ['./calendar-integration.component.scss'],
-  imports: [NgIf, NgFor, FormsModule, DatePipe] 
+  providers: [GoogleCalendarService],
+  imports: [NgIf, NgFor, FormsModule, DatePipe],
 })
-export class CalendarIntegrationComponent {
+export class CalendarIntegrationComponent implements OnInit {
   eventSummary: string = '';
   eventDescription: string = '';
   eventLocation: string = '';
@@ -18,21 +20,89 @@ export class CalendarIntegrationComponent {
   eventAttendees: string = '';
   statusMessage: string = '';
   listaEventos: any[] = [];
-
-  
+  listaCalendarios: any[] = [];
+  selectedCalendarId: string = 'primary'; // Definimos el ID del calendario seleccionado
   isLogin: boolean = false;
 
-  signIn() {
-    this.statusMessage = "Iniciar sesión en Google (simulado)";
-    this.isLogin = true;
+  constructor(private googleCalendarService: GoogleCalendarService) {}
+
+  ngOnInit(): void {
+    this.googleCalendarService
+      .initClient()
+      .then(() => {
+        this.statusMessage = 'Cliente de Google Calendar inicializado correctamente.';
+      })
+      .catch((error: any) => {
+        this.statusMessage = `Error al inicializar Google Calendar: ${error}`;
+      });
   }
 
-  signOut() {
-    this.statusMessage = "Cerrar sesión en Google (simulado)";
+  signIn(): void {
+    this.statusMessage = 'Iniciando sesión en Google...';
+
+    // Verificar que `tokenClient` esté inicializado antes de solicitar el acceso
+    if (!this.googleCalendarService.isUserAuthenticated()) {
+      this.googleCalendarService.signIn().subscribe(
+        () => {
+          this.isLogin = true;
+          this.statusMessage = 'Sesión iniciada correctamente.';
+          this.getCalendars(); // Cargar calendarios después de iniciar sesión
+        },
+        (error: any) => {
+          this.statusMessage = `Error al iniciar sesión: ${error}`;
+        }
+      );
+    } else {
+      this.statusMessage = 'Ya estás autenticado.';
+    }
+  }
+
+  signOut(): void {
+    this.googleCalendarService.signOut();
     this.isLogin = false;
+    this.statusMessage = 'Sesión cerrada correctamente.';
+    this.listaEventos = [];
+    this.listaCalendarios = [];
   }
 
-  createEvent() {
+  getCalendars(): void {
+    this.googleCalendarService.getCalendars().subscribe(
+      (calendars: any) => {
+        this.listaCalendarios = calendars;
+        this.selectedCalendarId = calendars.length > 0 ? calendars[0].id : 'primary';
+        if (this.selectedCalendarId) {
+          this.getEvents();
+        }
+      },
+      (error: any) => {
+        this.statusMessage = `Error al obtener calendarios: ${error}`;
+      }
+    );
+  }
+
+  getEvents(): void {
+    if (!this.isLogin || !this.selectedCalendarId) {
+      this.statusMessage = 'Debes iniciar sesión y seleccionar un calendario primero.';
+      return;
+    }
+
+    this.googleCalendarService.getEvents(this.selectedCalendarId).subscribe(
+      (events: any) => {
+        this.listaEventos = events;
+        this.statusMessage = `Eventos obtenidos del calendario: ${this.selectedCalendarId}`;
+      },
+      (error: any) => {
+        this.statusMessage = `Error al obtener eventos: ${error}`;
+      }
+    );
+  }
+
+  createEvent(): void {
+    if (!this.isLogin || !this.selectedCalendarId) {
+      this.statusMessage = 'Debes iniciar sesión y seleccionar un calendario primero.';
+      return;
+    }
+
     const event = {
       summary: this.eventSummary,
       description: this.eventDescription,
@@ -43,16 +113,24 @@ export class CalendarIntegrationComponent {
       end: {
         dateTime: new Date(this.eventEnd).toISOString(),
       },
-      attendees: this.eventAttendees.split(',').map(email => ({ email: email.trim() })),
-      htmlLink: 'https://calendar.google.com/', 
+      attendees: this.eventAttendees
+        ? this.eventAttendees.split(',').map((email: string) => ({ email: email.trim() }))
+        : [],
     };
 
-    this.listaEventos.push(event);
-    this.statusMessage = 'Evento creado con éxito';
-    this.clearForm();
+    this.googleCalendarService.createEvent(this.selectedCalendarId, event).subscribe(
+      () => {
+        this.statusMessage = 'Evento creado con éxito';
+        this.getEvents(); // Recargamos la lista de eventos
+        this.clearForm(); // Limpiamos el formulario
+      },
+      (error: any) => {
+        this.statusMessage = `Error al crear el evento: ${error}`;
+      }
+    );
   }
 
-  clearForm() {
+  clearForm(): void {
     this.eventSummary = '';
     this.eventDescription = '';
     this.eventLocation = '';
