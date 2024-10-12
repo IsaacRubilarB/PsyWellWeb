@@ -1,12 +1,13 @@
 body {
   margin: 0;
   padding: 0;
-  overflow-y: auto; 
-  min-height: 100vh; 
+  overflow-y: auto;
+  min-height: 100vh;
 }
+
 html, body {
   height: 100%;
-  overflow-x: hidden; /* Para evitar el desplazamiento horizontal */
+  overflow-x: hidden;
 }
 
 .patient-details {
@@ -15,9 +16,9 @@ html, body {
   border-radius: 20px;
   color: #f5f5f5;
   max-width: 1100px;
-  margin: 40px auto;
+  margin: 100px auto;
   text-align: left;
-    box-shadow: 0 0 20px 4px #ffc107;
+  box-shadow: 0 0 20px 4px #ffc107;
   overflow: auto;
 
   @media (max-width: 768px) {
@@ -213,14 +214,13 @@ button {
 
   .card-container {
     padding: 15px;
-    width: 100%; 
+    width: 100%;
   }
 
   .clearfix {
     margin-top: 15px;
   }
 }
-
 
 @media (max-width: 480px) {
   h1 {

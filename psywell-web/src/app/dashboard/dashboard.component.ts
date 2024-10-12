@@ -1,23 +1,24 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common'; // Importar módulos comunes necesarios
-import { FormsModule } from '@angular/forms';  // Importar FormsModule para usar [(ngModel)]
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { NavbarComponent } from '../navbar/navbar.component';
 
 @Component({
   selector: 'app-dashboard',
-  standalone: true,  // Marcar como componente standalone
-  imports: [CommonModule, FormsModule], // Importar CommonModule y FormsModule para usar directivas comunes como *ngIf, *ngFor y [(ngModel)]
+  standalone: true,
+  imports: [CommonModule, FormsModule, NavbarComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   psicologoName: string = 'Cristina Zapata'; // Nombre del psicólogo
   especialidad: string = 'Psicóloga Especialista en Salud Mental';
   aniosExperiencia: number = 10; // Años de experiencia
 
-  // Imagen de fondo personalizada
-  fondoPerfil: SafeStyle = 'url(assets/fondo-elegido.png)'; // Fondo por defecto
+  // Inicializar fondoPerfil con un valor por defecto
+  fondoPerfil: SafeStyle = ''; 
 
   // Lista de notificaciones dinámicas
   notificaciones: { mensaje: string; icono: string; dismissed: boolean }[] = [
@@ -31,31 +32,18 @@ export class DashboardComponent {
     { titulo: 'Nota Rápida 2', contenido: 'Preparar informe de progreso para Sofía Martínez.' }
   ];
 
+  // Lista de notas filtradas (para la búsqueda)
+  filteredStickyNotes: { titulo: string; contenido: string }[] = [...this.stickyNotes];
+
   newNoteTitle: string = ''; // Título de la nueva nota
   newNoteContent: string = ''; // Contenido de la nueva nota
+  searchQuery: string = ''; // Término de búsqueda para las notas
 
-  constructor(private router: Router, private sanitizer: DomSanitizer) {
-    this.initNotificationTimeout(); // Iniciar temporizador de notificaciones
-  }
+  constructor(private router: Router, private sanitizer: DomSanitizer) {}
 
-  // Método para navegar a la lista de pacientes
-  navigateToPatients() {
-    this.router.navigate(['/patients']);
-  }
-
-  // Método para navegar a las citas
-  navigateToAppointments() {
-    this.router.navigate(['/citas']);
-  }
-
-  // Método para navegar a los informes de progreso
-  navigateToReports() {
-    this.router.navigate(['/reports']);
-  }
-
-  // Método para navegar a los recursos y materiales
-  navigateToResources() {
-    this.router.navigate(['/recursos-materiales']);
+  ngOnInit() {
+    // Inicialización de la imagen de fondo por defecto después de que el sanitizer ha sido creado
+    this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle('url(assets/portada.png)');
   }
 
   // Método para cambiar el fondo del perfil según la imagen seleccionada
@@ -90,11 +78,29 @@ export class DashboardComponent {
       this.stickyNotes.push({ titulo: this.newNoteTitle, contenido: this.newNoteContent });
       this.newNoteTitle = ''; // Limpiar el título después de añadir
       this.newNoteContent = ''; // Limpiar el contenido después de añadir
+      this.filteredStickyNotes = [...this.stickyNotes]; // Actualizar las notas filtradas
     }
   }
 
   // Eliminar una nota rápida (sticky note)
   removeStickyNote(index: number) {
     this.stickyNotes.splice(index, 1);
+    this.filteredStickyNotes = [...this.stickyNotes]; // Actualizar las notas filtradas después de eliminar
+  }
+
+  // Método para buscar notas rápidas por título
+  onSearch(event: any) {
+    const query = event.target.value.toLowerCase();
+    this.filteredStickyNotes = this.stickyNotes.filter(note => 
+      note.titulo.toLowerCase().includes(query)
+    );
+  }
+
+  // Método para disparar el evento de seleccionar archivo
+  triggerFileInput(): void {
+    const fileInput = document.querySelector('.file-input') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click(); // Simular clic en el input de archivo
+    }
   }
 }

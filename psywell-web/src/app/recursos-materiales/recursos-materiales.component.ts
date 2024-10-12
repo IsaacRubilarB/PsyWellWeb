@@ -1,12 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CommonModule } from '@angular/common'; // Corregir el import de CommonModule
+import { NavbarComponent } from '../navbar/navbar.component'; // Asegurarse de importar NavbarComponent
 
 @Component({
   selector: 'app-recursos-carousel',
+  standalone: true, // Componente standalone
+  imports: [CommonModule, NavbarComponent], // Asegurarse de que CommonModule y NavbarComponent estén incluidos correctamente
   templateUrl: './recursos-materiales.component.html',
   styleUrls: ['./recursos-materiales.component.scss'],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA] // Añadir CUSTOM_ELEMENTS_SCHEMA para manejar elementos personalizados como app-navbar
 })
+
+
 export class RecursosMaterialesComponent {
-  currentSlide = 0; 
+  currentSlide = 0;
   items = [
     {
       titulo: 'Recursos Terapéuticos',
@@ -24,7 +31,7 @@ export class RecursosMaterialesComponent {
     },
     {
       titulo: 'Foros y Comunidades de Apoyo',
-      imagen: 'assets/cards/comunidad.png',
+      imagen: 'assets/cards/foro.png',
       descripcion: 'Sube y gestiona acceso a foros y comunidades de apoyo para tus pacientes.',
       btnVerTexto: 'Ver Foros',
       btnSubirTexto: 'Subir Foro',

@@ -1,15 +1,17 @@
-import { Component, AfterViewInit, ChangeDetectorRef, ElementRef, ViewChild, ViewChildren, QueryList } from '@angular/core';
+import { Component, AfterViewInit, ChangeDetectorRef, ElementRef, ViewChild, ViewChildren, QueryList, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
 import lottie from 'lottie-web';
 import { CommonModule } from '@angular/common';
+import { NavbarComponent } from '../navbar/navbar.component';
 
 @Component({
   selector: 'app-patient-details',
   templateUrl: './patient-details.component.html',
   styleUrls: ['./patient-details.component.scss'],
   standalone: true,  
-  imports: [CommonModule]  
+  imports: [CommonModule, NavbarComponent],  
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]  // Importar schemas para evitar errores de componentes personalizados
 })
 export class PatientDetailsComponent implements AfterViewInit {
   patientId: string | null = null;

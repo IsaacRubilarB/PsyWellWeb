@@ -1,23 +1,19 @@
 .citas-container {
   padding: 20px;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(136, 178, 184, 0.7); /* Fondo celeste */
   border-radius: 15px;
   max-width: 1100px;
-  margin: 40px auto;
-  color: #fff;
-  box-shadow: 0 0 15px 3px #ffc107;
+  margin: 100px auto;
+  color: #080808; /* Texto oscuro */
+  box-shadow: 0 0 15px 3px #ffc107; /* Sombra luminosa dorada */
+  position: relative;
 
   h1 {
     text-align: center;
     margin-bottom: 30px;
     font-size: 30px;
-    color: #ffc107;
-    text-shadow: 0px 0px 10px #ffc107;
-  }
-
-  /* Contenedor para las primeras 4 citas */
-  .cita-list-wrapper {
-    max-height: 400px; /* Ajustar la altura máxima visible para mostrar 4 citas */
+    color: #ffffff; /* Título blanco */
+    text-shadow: 0px 0px 10px #050505; /* Sombra luminosa dorada */
   }
 
   .cita-list {
@@ -27,60 +23,73 @@
   }
 
   .cita-card {
-    position: relative;
-    background-color: rgba(50, 50, 50, 0.85);
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     display: flex;
-    gap: 20px;
+    justify-content: flex-start;
     align-items: center;
+    padding: 20px;
+    background-color: rgba(147, 207, 150, 0); /* Fondo transparente */
+    border-radius: 10px;
+    border-left: 5px solid #ffc107; /* Borde dorado */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    gap: 15px;
+    position: relative;
 
-    /* Aplicar la clase de estado para los bordes */
-    &.pendiente {
-      border-left: 4px solid #ffc107;
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('/assets/ondas.png') no-repeat center;
+      background-size: cover;
+      opacity: 0.2;
+      z-index: 0;
     }
 
-    &.finalizada {
-      border-left: 4px solid #429e0c;
+    &:hover {
+      background-color: rgba(70, 70, 70, 0.9); /* Cambio de color en hover */
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Sombra en hover */
     }
 
     .cita-imagen {
       width: 80px;
       height: 80px;
       border-radius: 50%;
+      overflow: hidden;
+      z-index: 1;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
     }
 
     .cita-info {
+      color: #ffffff;
+      z-index: 1;
       flex: 1;
-      .cita-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
 
-        h3 {
-          font-size: 24px;
-          margin: 0;
-        }
-
-        .cita-fecha {
-          font-size: 16px;
-          color: #ffc107;
-        }
+      h3 {
+        font-size: 22px;
+        color: #ffc107; /* Título en dorado */
+        margin: 0;
       }
 
       h4 {
         font-size: 18px;
-        margin: 10px 0 5px;
+        margin: 5px 0;
+        color: #d4d4d4; /* Subtítulo gris claro */
       }
 
       p {
-        margin: 0;
         font-size: 16px;
+        color: #ffffff; /* Texto blanco */
       }
     }
 
-    /* Esconder el estado inicialmente */
     .estado-hover {
       position: absolute;
       bottom: 10px;
@@ -93,24 +102,27 @@
       transition: opacity 0.3s ease;
     }
 
-    /* Mostrar el estado solo al pasar el mouse por encima de la tarjeta */
     &:hover .estado-hover {
       opacity: 1;
     }
 
     .estado-hover.pendiente {
-      background-color: #ffc107;
+      background-color: #ffc107; /* Fondo dorado para pendientes */
     }
 
     .estado-hover.finalizada {
-      background-color: #429e0c;
+      background-color: #429e0c; /* Fondo verde para finalizadas */
     }
   }
+}
 
-  /* Scroll para ver más citas si existen más de 4 */
-  .ver-mas-citas {
-    margin-top: 20px;
-    max-height: 300px;
-    overflow-y: auto; /* Habilitar scroll para ver más citas */
+@media (max-width: 768px) {
+  .citas-container {
+    padding: 15px;
+  }
+
+  .cita-card {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

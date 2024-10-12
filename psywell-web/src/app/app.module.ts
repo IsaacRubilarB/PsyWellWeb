@@ -3,11 +3,10 @@ import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { CalendarIntegrationComponent } from './calendar-integration/calendar-integration.component';
+import { AppRoutingModule } from './app-routing.module'; 
+
 @NgModule({
-  declarations: [ AppComponent, CalendarIntegrationComponent ],
+  // No declaramos componentes standalone
   imports: [
     BrowserModule,
     FormsModule,
@@ -15,6 +14,5 @@ import { CalendarIntegrationComponent } from './calendar-integration/calendar-in
     AppRoutingModule,
     RouterModule,
   ],
-  bootstrap: []
 })
 export class AppModule {}
