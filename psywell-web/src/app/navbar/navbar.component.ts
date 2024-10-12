@@ -9,4 +9,18 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterModule] // Importamos RouterModule para que funcionen los routerLink
 })
-export class NavbarComponent {}
+
+export class NavbarComponent {
+  isMenuOpen = false;
+
+  toggleMenu() {
+    this.isMenuOpen = !this.isMenuOpen;
+    const menu = document.querySelector('.navbar-menu');
+    const hamburger = document.querySelector('.hamburger');
+    
+    if (menu && hamburger) {
+      menu.classList.toggle('open', this.isMenuOpen);
+      hamburger.classList.toggle('open', this.isMenuOpen);
+    }
+  }
+}

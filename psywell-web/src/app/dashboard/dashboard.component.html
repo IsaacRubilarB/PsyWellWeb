@@ -1,3 +1,5 @@
+<app-navbar></app-navbar>
+
 <div class="dashboard-container">
   <!-- Contenedor principal del dashboard -->
   <div class="header">
@@ -15,28 +17,8 @@
     <img src="assets/patient.png" alt="Foto de Usuario" class="profile-picture" />
 
     <!-- Botón para cambiar fondo -->
-    <button class="btn-change-background" (click)="triggerFileInput()">Cambiar</button>
+    <button class="btn-change-background" (click)="fileInputRef.click()">Cambiar</button>
     <input type="file" accept="image/*" (change)="onBackgroundUpload($event)" #fileInputRef style="display: none" />
-  </div>
-
-  <!-- Panel de Navegación -->
-  <div class="navigation-panel">
-    <button (click)="navigateToPatients()" class="nav-card">
-      <i class="fas fa-user"></i>
-      <span>Lista de Pacientes</span>
-    </button>
-    <button (click)="navigateToAppointments()" class="nav-card">
-      <i class="fas fa-calendar-alt"></i>
-      <span>Citas</span>
-    </button>
-    <button (click)="navigateToReports()" class="nav-card">
-      <i class="fas fa-file-alt"></i>
-      <span>Informes de Progreso</span>
-    </button>
-    <button (click)="navigateToResources()" class="nav-card">
-      <i class="fas fa-folder"></i>
-      <span>Recursos y Materiales</span>
-    </button>
   </div>
 
   <!-- Sección de Recordatorios y Estadísticas -->
