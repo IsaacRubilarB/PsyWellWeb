@@ -1,21 +1,84 @@
-<app-navbar></app-navbar> <!-- El navbar debe ir aquí, al inicio -->
+<app-navbar></app-navbar>
 
-<div class="carousel-container">
-    <div class="carousel">
-      <div class="carousel-card" *ngFor="let item of items">
-        <div class="card-content">
-          <img [src]="item.imagen" alt="{{ item.titulo }}" class="card-image">
-          <h2>{{ item.titulo }}</h2>
-          <p>{{ item.descripcion }}</p>
-          <div class="card-buttons">
-            <button class="btn-ver">{{ item.btnVerTexto }}</button>
-            <button class="btn-subir">{{ item.btnSubirTexto }}</button>
-          </div>
+<div class="container">
+  <div class="cards-container">
+    <div 
+      class="card" 
+      *ngFor="let item of items" 
+      (mouseenter)="setHoveredItem(item)"
+    >
+      <img [src]="item.imagen" [alt]="item.titulo" class="card-image">
+    </div>
+  </div>
+
+  <div class="hover-info" *ngIf="hoveredItem">
+    <h2>{{ hoveredItem.titulo }}</h2>
+    <p>{{ hoveredItem.descripcion }}</p>
+    <div class="buttons">
+      <button class="btn-ver" *ngIf="hoveredItem.tipo === 'videos'" (click)="toggleVideoSection()">Ver {{ hoveredItem.titulo }}</button>
+      <button class="btn-ver" *ngIf="hoveredItem.tipo === 'presentaciones'" (click)="togglePresentationSection()">Ver {{ hoveredItem.titulo }}</button>
+      <button class="btn-ver" *ngIf="hoveredItem.tipo === 'audios'" (click)="toggleAudioSection()">Ver {{ hoveredItem.titulo }}</button>
+      <button class="btn-ver" *ngIf="hoveredItem.tipo === 'foros'" (click)="toggleForoSection()">Ver {{ hoveredItem.titulo }}</button>
+      <button class="btn-subir" (click)="uploadResource()">Subir {{ hoveredItem.titulo }}</button>
+    </div>
+  </div>
+
+  <!-- Carrusel de videos -->
+  <div *ngIf="showVideos && hoveredItem.tipo === 'videos'" class="video-carousel">
+    <div class="video-carousel-item" *ngFor="let video of hoveredItem.archivos">
+      <iframe [src]="video.url | safe" frameborder="0" allowfullscreen class="video-frame"></iframe>
+      <p>{{ video.nombre }}</p>
+    </div>
+  </div>
+
+  <!-- Sección de presentaciones y libros -->
+  <div *ngIf="showPresentations && hoveredItem.tipo === 'presentaciones'" class="resources-section">
+    <div class="resources-container">
+      <h3 class="section-title">Presentaciones Disponibles</h3>
+      <div class="carousel">
+        <div class="carousel-item" *ngFor="let presentacion of hoveredItem.archivos">
+          <a [href]="presentacion.url" target="_blank">
+            <img [src]="presentacion.portada" alt="{{ presentacion.nombre }}" class="file-image">
+          </a>
+          <p class="item-name">{{ presentacion.nombre }}</p>
         </div>
       </div>
     </div>
-  
-    <!-- Controles del carrusel -->
-    <button class="control-prev" (click)="prevSlide()">&#10094;</button>
-    <button class="control-next" (click)="nextSlide()">&#10095;</button>
+
+    <div class="resources-container">
+      <h3 class="section-title">Libros Recomendados</h3>
+      <div class="carousel">
+        <div class="carousel-item" *ngFor="let libro of hoveredItem.libros">
+          <a [href]="libro.url" target="_blank">
+            <img [src]="libro.portada" alt="{{ libro.nombre }}" class="file-image">
+          </a>
+          <p class="item-name">{{ libro.nombre }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección de audios -->
+  <div *ngIf="showAudios && hoveredItem.tipo === 'audios'" class="audio-section">
+    <h3 class="section-title">Audios Disponibles</h3>
+    <div class="audio-list">
+      <div class="audio-item" *ngFor="let audio of hoveredItem.archivos">
+        <audio controls>
+          <source [src]="audio.url" type="audio/mp3">
+          Tu navegador no soporta la reproducción de audios.
+        </audio>
+        <p class="item-name">{{ audio.nombre }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección de foros -->
+  <div *ngIf="showForos && hoveredItem.tipo === 'foros'" class="foro-section">
+    <h3 class="section-title">Foros y Comunidades de Apoyo</h3>
+    <div class="foro-list">
+      <div class="foro-item" *ngFor="let foro of hoveredItem.archivos">
+        <a [href]="foro.url" target="_blank">{{ foro.nombre }}</a>
+      </div>
+    </div>
+  </div>
 </div>
