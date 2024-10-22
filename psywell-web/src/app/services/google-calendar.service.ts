@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environments';
 
 declare var gapi: any;
 declare var google: any;
@@ -8,10 +9,10 @@ declare var google: any;
   providedIn: 'root',
 })
 export class GoogleCalendarService {
-  private CLIENT_ID = '546817145485-9gut154rg11ernn0qnd116c7nob1rpna.apps.googleusercontent.com';
-  private API_KEY = 'AIzaSyB1hBpjUs98RCOi9ErZZfz0Ra8WEwyAGes';
-  private DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'];
-  private SCOPES = 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.events';
+  private CLIENT_ID = environment.googleClientId;
+  private API_KEY = environment.googleApiKey;
+  private DISCOVERY_DOCS = environment.googleDiscoveryDocs;
+  private SCOPES = environment.googleScopes;
   private tokenClient: any;
   private accessToken: string | null = null;
   private isAuthenticated = false;
