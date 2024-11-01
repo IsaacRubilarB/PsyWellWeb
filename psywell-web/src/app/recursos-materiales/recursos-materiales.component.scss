@@ -1,22 +1,26 @@
+/* Estructura general */
 .container {
   max-width: 100%;
-  margin: 100px auto;
+  margin: 70px auto; /* Ajuste de margen superior para separar de la navbar */
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
+/* Contenedor de las tarjetas de recursos */
 .cards-container {
   display: flex;
   justify-content: center;
   gap: 1.25rem;
+  flex-wrap: wrap;
 }
 
+/* Estilos para cada tarjeta */
 .card {
   flex: 1;
   height: 450px;
   width: 300px;
-  transition: all 400ms ease;
+  transition: all 0.4s ease;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -26,25 +30,25 @@
   border-radius: 20px;
   background-color: rgba(136, 178, 184, 0.7);
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 20px;
+    transition: transform 0.4s ease, width 0.4s ease;
+  }
+
+  &:hover {
+    flex: 3;
+    img {
+      width: 120%;
+      transform: scale(1.2);
+    }
+  }
 }
 
-.card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 20px;
-  transition: transform 0.4s ease, width 0.4s ease;
-}
-
-.card:hover {
-  flex: 3;
-}
-
-.card:hover img {
-  width: 120%;
-  transform: scale(1.2);
-}
-
+/* Información sobre la tarjeta cuando está en hover */
 .hover-info {
   margin-top: 30px;
   text-align: center;
@@ -53,88 +57,138 @@
   border-radius: 15px;
   max-width: 80%;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.5);
+
+  h2 {
+    color: #ffc107;
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: #ffffff;
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+
+    .btn-ver,
+    .btn-subir {
+      padding: 15px 25px;
+      font-size: 18px;
+      font-weight: 500;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+
+    .btn-ver {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    .btn-subir {
+      background-color: #ffc107;
+      color: white;
+    }
+  }
 }
 
-.hover-info h2 {
-  color: #ffc107;
-  font-size: 28px;
-  margin-bottom: 10px;
-}
-
-.hover-info p {
-  color: #ffffff;
-  font-size: 18px;
-  margin-bottom: 20px;
-}
-
-.buttons {
-  display: flex;
-  justify-content: center;
+/* Estilos para la cuadrícula de videos */
+.video-carousel {
+  width: 100%; /* Ocupa todo el ancho de la pantalla */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Ajuste de mínimo para columnas más amplias */
   gap: 20px;
+  justify-items: center;
+  padding: 20px;
+  margin-top: 20px;
+
+  .video-carousel-item {
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    max-width: 100%; /* Asegura que cada ítem ocupa el 100% de su columna */
+
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    iframe {
+      width: 100%; /* Asegura que el iframe ocupe el ancho completo del contenedor */
+      height: 250px; /* Aumenta la altura para mejorar la visualización */
+      border-radius: 10px;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    p {
+      color: white;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    .btn-delete {
+      margin-top: 10px;
+      padding: 5px 10px;
+      font-size: 14px;
+      background-color: #ff5252;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        background-color: #e04848;
+      }
+    }
+  }
 }
 
-.buttons .btn-ver,
-.buttons .btn-subir {
-  padding: 15px 25px;
-  font-size: 18px;
-  font-weight: 500;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-}
 
-.buttons .btn-ver {
-  background-color: #4caf50;
-  color: white;
-}
-
-.buttons .btn-ver:hover {
-  background-color: #45a049;
-}
-
-.buttons .btn-subir {
-  background-color: #ffc107;
-  color: white;
-}
-
-.buttons .btn-subir:hover {
-  background-color: #ffb700;
-}
-
-.resources-section {
+/* Estilos para las secciones de recursos */
+.resources-section, .audio-section, .foro-section {
   margin-top: 40px;
   text-align: center;
+
+  .section-title {
+    color: #000;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .carousel, .audio-list, .foro-list {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
 }
 
-.section-title {
-  color: #000000;
-  font-size: 24px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.carousel {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.carousel-item {
+.carousel-item, .audio-item, .foro-item {
   background-color: rgba(0, 0, 0, 0.7);
   border-radius: 10px;
   padding: 10px;
   text-align: center;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  width: 250px;
   transition: transform 0.3s ease;
-}
 
-.carousel-item:hover {
-  transform: scale(1.05);
+  &:hover {
+    transform: scale(1.05);
+  }
 }
 
 .file-image {
@@ -143,37 +197,94 @@
   object-fit: cover;
   border-radius: 10px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  margin-bottom: 10px;
 }
 
 .item-name {
   color: white;
   font-size: 18px;
-}
-
-.video-carousel {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.video-carousel-item {
-  background-color: rgba(0, 0, 0, 0.7);
-  border-radius: 10px;
-  padding: 10px;
-  text-align: center;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.video-frame {
-  width: 400px;
-  height: 225px;
-  border-radius: 10px;
-}
-
-.video-carousel-item p {
-  color: white;
   margin-top: 10px;
-  font-size: 16px;
+}
+
+/* Estilos específicos del modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+
+  .modal-content {
+    background-color: #1c1c1e;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 500px;
+    width: 100%;
+    color: #ffffff;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.5);
+    position: relative;
+
+    h2 {
+      font-size: 24px;
+      color: #ffc107;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-size: 16px;
+      color: #ffffff;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: none;
+      border-radius: 5px;
+      background-color: #333;
+      color: #ffffff;
+      font-size: 14px;
+    }
+
+    button.close-modal {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: #ffffff;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    button.submit-btn {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 5px;
+      background-color: #4caf50;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #45a049;
+      }
+    }
+  }
+}
+
+/* Mensaje cuando no hay datos */
+.no-data-message {
+  font-size: 18px;
+  color: #ffffff;
+  text-align: center;
+  margin-top: 20px;
 }

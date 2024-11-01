@@ -5,17 +5,25 @@ import { ReportsComponent } from './reports/reports.component';
 import { PatientsListComponent } from './patients-list/patients-list.component';
 import { PatientDetailsComponent } from './patient-details/patient-details.component';
 import { CalendarIntegrationComponent } from './calendar-integration/calendar-integration.component';
-import { LoginRegistroComponent } from './login-registro/login-registro.component'; // Faltaba agregar el componente de login
+import { LoginRegistroComponent } from './login-registro/login-registro.component';
+import { RecursosMaterialesComponent } from './recursos-materiales/recursos-materiales.component'; 
+import { CitasComponent } from './citas/citas.component'; 
+import { FormularioRecursosComponent } from './formulario-recursos/formulario-recursos.component';
+
+
 
 export const routes: Routes = [
-  { path: 'login', component: LoginRegistroComponent },  // Agregamos la ruta de login
+  { path: 'login', component: LoginRegistroComponent }, 
   { path: 'calendar', component: CalendarIntegrationComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'reports', component: ReportsComponent },
   { path: 'patients', component: PatientsListComponent },
   { path: 'patient/:id', component: PatientDetailsComponent },
-  { path: '', redirectTo: 'login', pathMatch: 'full' },  // Redirecciona a login
-  { path: '**', redirectTo: 'login' } // Redirecciona a login cualquier otra ruta
+  { path: 'recursos-materiales', component: RecursosMaterialesComponent }, 
+  { path: 'citas', component: CitasComponent }, 
+  { path: 'formulario', component: FormularioRecursosComponent }, 
+  { path: '', redirectTo: 'login', pathMatch: 'full' },  
+  { path: '**', redirectTo: 'login' } 
 ];
 
 @NgModule({

@@ -1,52 +1,43 @@
 import { Component, OnInit } from '@angular/core';
 import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
-import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NavbarComponent } from '../navbar/navbar.component';
+import { CommonModule } from '@angular/common';
+import { NavbarComponent } from '../navbar/navbar.component'; // Importa app-navbar
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent], // Asegúrate de importar NavbarComponent aquí
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'],
+  styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
-  psicologoName: string = 'Cristina Zapata'; // Nombre del psicólogo
+  psicologoName: string = 'Cristina Zapata';
   especialidad: string = 'Psicóloga Especialista en Salud Mental';
-  aniosExperiencia: number = 10; // Años de experiencia
+  aniosExperiencia: number = 10;
+  fondoPerfil: SafeStyle = '';
 
-  // Inicializar fondoPerfil con un valor por defecto
-  fondoPerfil: SafeStyle = ''; 
-
-  // Lista de notificaciones dinámicas
-  notificaciones: { mensaje: string; icono: string; dismissed: boolean }[] = [
-    { mensaje: 'Nuevo mensaje de Juan Pérez', icono: 'icon-bell', dismissed: false },
-    { mensaje: 'Cita con María González en 30 minutos', icono: 'icon-alert', dismissed: false },
+  // Notas
+  stickyNotes: { title: string; content: string; showAnimation?: boolean }[] = [
+    { title: 'Nota Rápida 1', content: 'Recordar preguntar sobre sueño a Manuel Fernández.' },
+    { title: 'Nota Rápida 2', content: 'Preparar informe de progreso para Sofía Martínez.' }
   ];
+  filteredNotes: { title: string; content: string; showAnimation?: boolean }[] = [...this.stickyNotes];
+  newNoteTitle: string = '';
+  newNoteContent: string = '';
+  searchQuery: string = '';
 
-  // Lista de notas rápidas (sticky notes)
-  stickyNotes: { titulo: string; contenido: string }[] = [
-    { titulo: 'Nota Rápida 1', contenido: 'Recordar preguntar sobre sueño a Manuel Fernández.' },
-    { titulo: 'Nota Rápida 2', contenido: 'Preparar informe de progreso para Sofía Martínez.' }
-  ];
+  // Carrusel de notas
+  currentNoteIndex: number = 0;
 
-  // Lista de notas filtradas (para la búsqueda)
-  filteredStickyNotes: { titulo: string; contenido: string }[] = [...this.stickyNotes];
-
-  newNoteTitle: string = ''; // Título de la nueva nota
-  newNoteContent: string = ''; // Contenido de la nueva nota
-  searchQuery: string = ''; // Término de búsqueda para las notas
-
-  constructor(private router: Router, private sanitizer: DomSanitizer) {}
+  constructor(private sanitizer: DomSanitizer) {}
 
   ngOnInit() {
-    // Inicialización de la imagen de fondo por defecto después de que el sanitizer ha sido creado
     this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle('url(assets/portada.png)');
+    this.filteredNotes = [...this.stickyNotes];
   }
 
-  // Método para cambiar el fondo del perfil según la imagen seleccionada
+  // Cambiar el fondo del perfil
   onBackgroundUpload(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
@@ -54,53 +45,84 @@ export class DashboardComponent implements OnInit {
       reader.onload = () => {
         this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle(`url(${reader.result})`);
       };
-      reader.readAsDataURL(input.files[0]); // Convertir la imagen en base64
+      reader.readAsDataURL(input.files[0]);
     }
   }
 
-  // Método para desaparecer las notificaciones después de 10 segundos
-  initNotificationTimeout() {
-    this.notificaciones.forEach((notification, index) => {
-      setTimeout(() => {
-        this.notificaciones[index].dismissed = true; // Desaparece después de 10 segundos
-      }, 10000); // 10 segundos = 10000ms
-    });
-  }
-
-  // Verificar si todas las notificaciones han sido descartadas
-  allNotificationsDismissed(): boolean {
-    return this.notificaciones.every(notification => notification.dismissed);
-  }
-
-  // Añadir una nueva nota rápida (sticky note)
+  // Añadir nueva nota con animación
   addStickyNote() {
     if (this.newNoteTitle && this.newNoteContent) {
-      this.stickyNotes.push({ titulo: this.newNoteTitle, contenido: this.newNoteContent });
-      this.newNoteTitle = ''; // Limpiar el título después de añadir
-      this.newNoteContent = ''; // Limpiar el contenido después de añadir
-      this.filteredStickyNotes = [...this.stickyNotes]; // Actualizar las notas filtradas
+      const newNote = {
+        title: this.newNoteTitle,
+        content: this.newNoteContent,
+        showAnimation: true
+      };
+      this.stickyNotes.push(newNote);
+      this.filteredNotes = [...this.stickyNotes];
+      this.newNoteTitle = '';
+      this.newNoteContent = '';
+      
+      // Remover la animación después de 2 segundos
+      setTimeout(() => {
+        newNote.showAnimation = false;
+      }, 2000);
     }
   }
 
-  // Eliminar una nota rápida (sticky note)
+  // Remover una nota
   removeStickyNote(index: number) {
     this.stickyNotes.splice(index, 1);
-    this.filteredStickyNotes = [...this.stickyNotes]; // Actualizar las notas filtradas después de eliminar
+    this.filterNotes(); // Refrescar la lista filtrada
   }
 
-  // Método para buscar notas rápidas por título
-  onSearch(event: any) {
-    const query = event.target.value.toLowerCase();
-    this.filteredStickyNotes = this.stickyNotes.filter(note => 
-      note.titulo.toLowerCase().includes(query)
+  // Filtrar notas por búsqueda
+  filterNotes() {
+    const query = this.searchQuery.toLowerCase();
+    this.filteredNotes = this.stickyNotes.filter(note =>
+      note.title.toLowerCase().includes(query)
     );
+    this.resetCarousel();
   }
 
-  // Método para disparar el evento de seleccionar archivo
+  // Ordenar notas alfabéticamente
+  sortNotes() {
+    this.filteredNotes.sort((a, b) => a.title.localeCompare(b.title));
+    this.resetCarousel();
+  }
+
+  // Carrusel - mostrar la nota anterior
+  prevNote() {
+    if (this.currentNoteIndex > 0) {
+      this.currentNoteIndex--;
+    } else {
+      this.currentNoteIndex = this.filteredNotes.length - 1;
+    }
+  }
+
+  // Carrusel - mostrar la siguiente nota
+  nextNote() {
+    if (this.currentNoteIndex < this.filteredNotes.length - 1) {
+      this.currentNoteIndex++;
+    } else {
+      this.currentNoteIndex = 0;
+    }
+  }
+
+  // Restablecer el índice del carrusel al agregar/ordenar
+  resetCarousel() {
+    this.currentNoteIndex = 0;
+  }
+
+  // Obtener la nota actual del carrusel
+  get currentNote() {
+    return this.filteredNotes[this.currentNoteIndex];
+  }
+
+  // Activar el input de archivo para cambiar el fondo
   triggerFileInput(): void {
     const fileInput = document.querySelector('.file-input') as HTMLInputElement;
     if (fileInput) {
-      fileInput.click(); // Simular clic en el input de archivo
+      fileInput.click();
     }
   }
 }

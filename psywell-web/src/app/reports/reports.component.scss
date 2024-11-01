@@ -1,24 +1,24 @@
 .reports-container {
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: #1E2A38; // Fondo azul oscuro de la paleta
   padding: 30px;
   border-radius: 15px;
   max-width: 1100px;
-  margin: 100px auto; /* Aumentar el margen superior para separar el contenedor del navbar */
-  color: #fff;
-  box-shadow: 0 0 15px 3px #ffc107;
+  margin: 100px auto; // Aumenta el margen superior para separar del navbar
+  color: #FFFFFF;
+  box-shadow: 0 0 15px 3px rgba(0, 0, 0, 0.2);
 
   h1 {
     text-align: center;
     font-size: 38px;
-    color: #f7f7f7;
+    color: #FFD966; // Color de texto en dorado claro
     margin-bottom: 30px;
 
     @media (max-width: 768px) {
-      font-size: 30px; /* Reduce el tamaño en pantallas más pequeñas */
+      font-size: 30px;
     }
 
     @media (max-width: 480px) {
-      font-size: 24px; /* Reduce aún más en pantallas de móvil */
+      font-size: 24px;
     }
   }
 
@@ -27,7 +27,7 @@
     margin-bottom: 20px;
 
     label {
-      color: #ffc107;
+      color: #FFD966;
       font-weight: bold;
       font-size: 16px;
     }
@@ -36,12 +36,12 @@
       padding: 5px;
       border-radius: 5px;
       background-color: #f7f7f7;
-      color: #000;
-      border: 2px solid #ffc107;
+      color: #1E2A38;
+      border: 2px solid #FFD966;
     }
 
     @media (max-width: 768px) {
-      text-align: center; /* Centra el filtro en pantallas más pequeñas */
+      text-align: center;
     }
   }
 
@@ -52,14 +52,15 @@
 
     .report-item {
       position: relative;
-      background-color: rgba(50, 50, 50, 0.85);
+      background-color: rgba(30, 42, 56, 0.85); // Fondo oscuro para cada informe
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.1);
-      border-left: 5px solid #028cdb;
+      box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.1);
+      border-left: 5px solid #429e0c; // Borde verde para resaltar
       overflow: hidden;
-      min-height: 150px; /* Ajusta la altura mínima para uniformidad */
-      justify-content: space-between; /* Alinea el contenido del informe */
+      min-height: 150px;
+      display: flex;
+      justify-content: space-between;
 
       .animation-background {
         position: absolute;
@@ -67,39 +68,36 @@
         right: 0;
         width: 100%;
         height: 100%;
-        opacity: 0.1;
+        opacity: 0.05;
         z-index: 0;
       }
 
       .report-content {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
+        align-items: center;
         width: 100%;
         position: relative;
 
         h2 {
-          margin: 0;
           font-size: 24px;
-          color: #f7f4ea;
-          flex: 1; /* Asegura que el título ocupe el espacio disponible */
+          color: #FFFFFF;
+          flex: 1;
 
-          
           @media (max-width: 768px) {
-            font-size: 20px; /* Reduce el tamaño en pantallas más pequeñas */
+            font-size: 20px;
           }
 
           @media (max-width: 480px) {
-            font-size: 18px; /* Ajusta para pantallas móviles */
+            font-size: 18px;
           }
         }
 
         p {
           margin: 10px 0;
           font-size: 18px;
-          color: #ffc107;
-          flex: 2; /* Ajusta para que el texto del párrafo tenga un tamaño relativo */
-
+          color: #FFD966;
+          flex: 2;
 
           @media (max-width: 768px) {
             font-size: 16px;
@@ -111,23 +109,23 @@
         }
 
         .btn-view-report {
-          background-color: #429e0c;
+          background-color: #2979FF;
           border: none;
           padding: 12px 20px;
           border-radius: 6px;
-          color: #fff;
+          color: #FFFFFF;
           font-weight: bold;
           cursor: pointer;
-          transition: background-color 0.3s ease;
-          align-self: center; 
-          margin-left: auto; 
-          margin-top: 10px;
-          align-items: center; /* Alinea el ícono y el texto en el centro */
-
+          transition: background-color 0.3s ease, transform 0.2s;
+          margin-left: auto;
+          display: flex;
+          align-items: center;
 
           &:hover {
-            background-color: #ffca28;
-            box-shadow: 0 0 12px 4px #ffc107;
+            background-color: #FFD966;
+            color: #1E2A38;
+            transform: translateY(-2px);
+            box-shadow: 0 0 10px #FFD966;
           }
 
           img {
@@ -137,7 +135,7 @@
           }
 
           @media (max-width: 768px) {
-            padding: 10px 15px; /* Ajusta el tamaño del botón */
+            padding: 10px 15px;
           }
 
           @media (max-width: 480px) {
@@ -149,10 +147,10 @@
   }
 
   @media (max-width: 768px) {
-    padding: 20px; /* Reduce el padding en pantallas más pequeñas */
+    padding: 20px;
   }
 
   @media (max-width: 480px) {
-    padding: 15px; /* Aún más pequeño en móviles */
+    padding: 15px;
   }
 }

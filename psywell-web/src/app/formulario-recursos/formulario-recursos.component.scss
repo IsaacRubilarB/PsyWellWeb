@@ -1,0 +1,91 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); // Fondo oscuro
+}
+
+form {
+  background-color: #1c1c1e; // Fondo del formulario
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  color: #ffffff;
+}
+
+form h2 {
+  color: #00aaff;
+  font-size: 24px;
+  margin-bottom: 1.5rem;
+}
+
+form label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #e0e0e0;
+  font-size: 14px;
+  text-align: left;
+}
+
+form input[type="text"],
+form input[type="url"],
+form textarea,
+form select {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background-color: #2c2c2e;
+  color: #ffffff;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+form input[type="file"] {
+  width: 100%;
+  padding: 0.5rem;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  border: none;
+  box-sizing: border-box;
+}
+
+form input[type="text"]:focus,
+form input[type="url"]:focus,
+form textarea:focus,
+form select:focus {
+  border-color: #00aaff;
+  outline: none;
+}
+
+form button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #00cc66;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+form button:hover {
+  background-color: #00994d;
+}
+
+form .preview-image {
+  width: 100%;
+  height: auto;
+  max-height: 200px;
+  border-radius: 8px;
+  margin-top: 1rem;
+  object-fit: cover;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}

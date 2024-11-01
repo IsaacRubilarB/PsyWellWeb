@@ -1,0 +1,46 @@
+<form (ngSubmit)="submitForm()">
+  <h2>Subir Nuevo Recurso</h2>
+
+  <!-- Campo para el título -->
+  <label for="titulo">Título</label>
+  <input type="text" id="titulo" [(ngModel)]="titulo" name="titulo" required />
+
+  <!-- Campo para la descripción -->
+  <label for="descripcion">Descripción</label>
+  <textarea id="descripcion" [(ngModel)]="descripcion" name="descripcion" required></textarea>
+
+  <!-- Campo para seleccionar el tipo de recurso -->
+  <label for="tipo">Tipo de Recurso</label>
+  <select id="tipo" [(ngModel)]="tipoRecurso" name="tipo" (change)="onTipoRecursoChange()" required>
+    <option value="videos">Videos</option>
+    <option value="presentaciones">Presentaciones</option>
+    <option value="audios">Audios</option>
+    <option value="libros">Libros</option>
+  </select>
+
+  <!-- Campo condicional para el enlace de YouTube si se selecciona 'videos' -->
+  <div *ngIf="tipoRecurso === 'videos'">
+    <label for="videoUrl">Enlace de YouTube</label>
+    <input
+      type="url"
+      id="videoUrl"
+      [(ngModel)]="videoUrl"
+      name="videoUrl"
+      placeholder="https://www.youtube.com/watch?v=..."
+      required
+    />
+  </div>
+
+  <!-- Selector de archivo para otros tipos de recursos -->
+  <div *ngIf="tipoRecurso !== 'videos'">
+    <label for="archivo">Archivo</label>
+    <input type="file" id="archivo" (change)="onFileSelected($event)" required />
+  </div>
+
+  <!-- Campo para el autor del recurso -->
+  <label for="autor">Autor</label>
+  <input type="text" id="autor" [(ngModel)]="autor" name="autor" required />
+
+  <!-- Botón para enviar el formulario -->
+  <button type="submit">Subir Recurso</button>
+</form>
