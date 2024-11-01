@@ -40,13 +40,13 @@
     <div class="carousel">
       <div class="carousel-item" *ngFor="let presentacion of resources['presentaciones']">
         <a [href]="presentacion.url" target="_blank">
-          <img [src]="presentacion.portada" alt="{{ presentacion.nombre }}" class="file-image">
+          <img *ngIf="presentacion.portada" [src]="presentacion.portada" alt="{{ presentacion.titulo }}" class="file-image" />
+          <img *ngIf="!presentacion.portada" src="assets/default-pdf-thumbnail.png" alt="{{ presentacion.titulo }}" class="file-image" />
         </a>
-        <p class="item-name">{{ presentacion.nombre }}</p>
+        <p class="item-name">{{ presentacion.titulo }}</p>
         <button class="btn-delete" (click)="deleteResource(presentacion.id, 'presentaciones')">Eliminar</button>
       </div>
     </div>
-    <p *ngIf="resources['presentaciones'].length === 0" class="no-data-message">Aquí no hay nada, agreguemos el primero</p>
   </div>
 
   <!-- Sección de audios -->
