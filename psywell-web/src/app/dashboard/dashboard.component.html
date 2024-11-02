@@ -65,32 +65,30 @@
   <!-- Notas Rápidas -->
   <div class="sticky-notes-container">
     <h2>Notas Rápidas</h2>
-    
-    <!-- Formulario para añadir nueva nota -->
+  
     <div class="add-note-form">
       <input type="text" [(ngModel)]="newNoteTitle" placeholder="Título de la nota" />
       <textarea [(ngModel)]="newNoteContent" placeholder="Contenido de la nota"></textarea>
       <button (click)="addStickyNote()">Añadir Nota</button>
     </div>
-    
-    <!-- Búsqueda y Ordenación -->
+  
     <div class="note-controls">
       <input type="text" placeholder="Buscar nota..." [(ngModel)]="searchQuery" (input)="filterNotes()" />
       <button (click)="sortNotes()">Ordenar Alfabéticamente</button>
     </div>
-
+  
     <!-- Carrusel de Notas -->
-    <div class="note-carousel" *ngIf="filteredNotes.length > 0">
-      <button (click)="prevNote()">‹</button>
-      <div class="sticky-note-carousel">
-        <h3>{{ currentNote.title }}</h3>
-        <p>{{ currentNote.content }}</p>
+    <div *ngIf="isCarouselActive" class="note-carousel">
+      <button class="prev" (click)="prevNote()">‹</button>
+      <div *ngFor="let note of filteredNotes; let i = index" class="sticky-note-carousel" [ngClass]="getCurrentNoteClass(i)">
+        <h3>{{ note.title }}</h3>
+        <p>{{ note.content }}</p>
       </div>
-      <button (click)="nextNote()">›</button>
+      <button class="next" (click)="nextNote()">›</button>
     </div>
-
+  
     <!-- Lista de Notas Filtradas -->
-    <div class="sticky-notes-list">
+    <div *ngIf="!isCarouselActive" class="sticky-notes-list">
       <div *ngFor="let note of filteredNotes; let i = index" class="sticky-note-item">
         <h3>{{ note.title }}</h3>
         <p>{{ note.content }}</p>

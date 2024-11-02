@@ -9,21 +9,21 @@ import { LoginRegistroComponent } from './login-registro/login-registro.componen
 import { RecursosMaterialesComponent } from './recursos-materiales/recursos-materiales.component'; 
 import { CitasComponent } from './citas/citas.component'; 
 import { FormularioRecursosComponent } from './formulario-recursos/formulario-recursos.component';
-
-
+import { NotasComponent } from './notas/notas.component'; 
 
 export const routes: Routes = [
-  { path: 'login', component: LoginRegistroComponent }, 
+  { path: 'login', component: LoginRegistroComponent },
   { path: 'calendar', component: CalendarIntegrationComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'reports', component: ReportsComponent },
   { path: 'patients', component: PatientsListComponent },
   { path: 'patient/:id', component: PatientDetailsComponent },
-  { path: 'recursos-materiales', component: RecursosMaterialesComponent }, 
-  { path: 'citas', component: CitasComponent }, 
-  { path: 'formulario', component: FormularioRecursosComponent }, 
-  { path: '', redirectTo: 'login', pathMatch: 'full' },  
-  { path: '**', redirectTo: 'login' } 
+  { path: 'recursos-materiales', component: RecursosMaterialesComponent },
+  { path: 'citas', component: CitasComponent },
+  { path: 'formulario', component: FormularioRecursosComponent },
+  { path: 'notas', component: NotasComponent }, 
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '**', redirectTo: 'login' }
 ];
 
 @NgModule({
