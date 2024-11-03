@@ -13,24 +13,22 @@
   </div>
 
   <div class="charts-container">
-    <!-- Animación del Corazón y BPM dinámico -->
     <div class="chart-wrapper">
       <div #heartAnimation class="lottie-animation"></div>
-      <p class="bpm-display">{{ bpm }} BPM</p> <!-- BPM -->
+      <p class="bpm-display">{{ bpm }} BPM</p> 
       <p>Frecuencia Cardíaca</p>
     </div>
   
-    <!-- Animación de horas de sueño -->
     <div class="chart-wrapper">
       <div #sleepAnimation class="lottie-animation-sleep"></div>
-      <p class="sleep-display">{{ sleepHours }} hrs</p> <!-- Sleep hours -->
+      <p class="sleep-display">{{ sleepHours }} hrs</p> 
       <p>Horas de Sueño</p>
     </div>
   
     <!-- Velocímetro para el estrés -->
     <div class="chart-wrapper">
       <div #stressAnimation class="lottie-animation-stress"></div>
-      <p class="stress-display">{{ stressLevel }}%</p> <!-- Stress level -->
+      <p class="stress-display">{{ stressLevel }}%</p> 
       <p>Nivel de Estrés</p>
     </div>
   </div>
@@ -42,7 +40,7 @@
       <h3>Medicamentos</h3>
       <div class="card-container">
         <div class="medication-card" *ngFor="let med of medications">
-          <div #pillBackground class="pill-background"></div> <!-- Animación de fondo -->
+          <div #pillBackground class="pill-background"></div> 
           <div class="medication-info">
             <h4>{{ med.name }}</h4>
             <p>{{ med.description }}</p>
@@ -55,7 +53,7 @@
       <h3>Citas</h3>
       <div class="card-container">
         <div class="appointment-card" *ngFor="let appointment of appointments">
-          <div #calendarBackground class="calendar-background"></div> <!-- Animación de fondo -->
+          <div #calendarBackground class="calendar-background"></div> 
           <div class="appointment-info">
             <h4>{{ appointment.date }} - {{ appointment.time }}</h4>
             <p>{{ appointment.description }}</p>

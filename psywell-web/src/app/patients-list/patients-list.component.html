@@ -2,12 +2,37 @@
 
 <div class="container">
   <div class="patients-list-container">
+    <!-- Título de la lista centrado -->
+    <h1 class="header-title">Lista de Pacientes</h1>
+
+    <!-- Barra de búsqueda y logo alineados -->
     <div class="search-bar-container">
-      <h1 class="header-title">Lista de Pacientes</h1>
+      <input type="text" placeholder="Buscar paciente..." (input)="onSearch($event)" class="search-bar" />
       <div class="logo-container">
         <img src="assets/logo.png" alt="Logo de PsyWell" />
       </div>
-      <input type="text" placeholder="Buscar paciente..." (input)="onSearch($event)" class="search-bar" />
+    </div>
+
+    <!-- Panel de filtros avanzados -->
+    <div class="filters-panel">
+      <label>
+        Nivel de Riesgo:
+        <select (change)="filterByRisk($event)">
+          <option value="todos">Todos</option>
+          <option value="bajo">Bajo</option>
+          <option value="moderado">Moderado</option>
+          <option value="alto">Alto</option>
+        </select>
+      </label>
+      <label>
+        Diagnóstico:
+        <select (change)="filterByDiagnosis($event)">
+          <option value="todos">Todos</option>
+          <option value="Depresión">Depresión</option>
+          <option value="Ansiedad">Ansiedad</option>
+          <option value="Depresión Severa">Depresión Severa</option>
+        </select>
+      </label>
     </div>
 
     <div class="patients-list">
@@ -17,12 +42,27 @@
         </div>
         <div class="patient-info">
           <h3 class="patient-name">{{ patient.name }}</h3>
-          <p><strong>Edad:</strong> {{ patient.age }} Años</p>
-          <p><strong>Diagnóstico:</strong> {{ patient.diagnosis }}</p>
-          <p><strong>Estado:</strong> {{ patient.emotionalStatus }}</p>
+          <div class="patient-details">
+            <p><i class="fas fa-user"></i> {{ patient.age }} Años</p>
+            <p><i class="fas fa-notes-medical"></i> {{ patient.diagnosis }}</p>
+            <p><i class="fas fa-calendar-check"></i> Última Sesión: {{ patient.lastSession }}</p>
+            <p><i class="fas fa-calendar-alt"></i> Próxima Cita: {{ patient.nextAppointment }}</p>
+            <p class="status" [ngClass]="getStatusClass(patient.riskLevel)">
+              <i class="fas fa-circle"></i> Riesgo: {{ patient.riskLevel }}
+            </p>
+            <!-- Barra de progreso de tratamiento -->
+            <div class="progress-container">
+              <label>Progreso del Tratamiento</label>
+              <div class="progress-bar">
+                <div class="progress" [style.width]="patient.progress + '%'"></div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="patient-actions">
-          <button class="btn-details" [routerLink]="['/patients', patient.id]">Ver Detalles</button>
+          <button class="btn-details" [routerLink]="['/patient', patient.id]">Ver Historial</button>
+          <button class="btn-message" (click)="sendMessage(patient)">Enviar Mensaje</button>
+          <button class="btn-appointment" [routerLink]="['/citas']">Programar Cita</button>
         </div>
       </div>
     </div>

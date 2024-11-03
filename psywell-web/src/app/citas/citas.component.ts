@@ -13,6 +13,8 @@ export interface Cita {
   comentarios: string;
 }
 
+
+
 export interface ListaCitasResponse {
   status: string;
   data: Cita[];
