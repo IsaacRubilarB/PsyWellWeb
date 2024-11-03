@@ -1,82 +1,97 @@
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CitasService } from '../services/citasService';
+import { NavbarComponent } from 'app/navbar/navbar.component';
 import { CommonModule } from '@angular/common';
-import { CalendarIntegrationComponent } from '../calendar-integration/calendar-integration.component'; 
-import { Component } from '@angular/core';
-import { NavbarComponent } from '../navbar/navbar.component'; // Importar el componente Navbar
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+
+export interface Cita {
+  idCita: number;       
+  idUsuario: number;     
+  fechaHora: Date;       
+  estado: string;
+  ubicacion: string;
+  comentarios: string;
+}
+
+export interface ListaCitasResponse {
+  status: string;
+  data: Cita[];
+}
 
 @Component({
   selector: 'app-citas',
   standalone: true,
-  imports: [CommonModule, CalendarIntegrationComponent, NavbarComponent], // Importar el NavbarComponent
   templateUrl: './citas.component.html',
   styleUrls: ['./citas.component.scss'],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA] // Añadir esto para que Angular reconozca 'app-navbar'
+  imports: [NavbarComponent, CommonModule, ReactiveFormsModule]
 })
-export class CitasComponent {
-  citas = [
-    { 
-      nombre: 'María González', 
-      fecha: '08/10/2024', 
-      hora: '10:00', 
-      estado: 'finalizada', 
-      resumen: 'La paciente ha mantenido una mejoría en sus niveles de estrés. Los últimos registros emocionales muestran estabilidad, aunque con episodios esporádicos de tristeza.',
-      imagen: 'assets/perfiles/Maria.png' 
-    },
-    { 
-      nombre: 'Ana Torres', 
-      fecha: '07/10/2024', 
-      hora: '11:00', 
-      estado: 'finalizada', 
-      resumen: 'Sus registros fisiológicos indican un sueño reparador y una frecuencia cardíaca estable, lo que coincide con una disminución en sus niveles de ansiedad.',
-      imagen: 'assets/perfiles/Ana.png' 
-    },
-    { 
-      nombre: 'Laura Castillo', 
-      fecha: '05/10/2024', 
-      hora: '12:00', 
-      estado: 'finalizada', 
-      resumen: 'Ha mejorado en la reducción de episodios de estrés severo, pero los niveles emocionales muestran un ligero aumento de irritabilidad en situaciones sociales.',
-      imagen: 'assets/perfiles/Laura.png' 
-    },
-    { 
-      nombre: 'Sofía Martínez', 
-      fecha: '09/10/2024', 
-      hora: '16:00', 
-      estado: 'finalizada', 
-      resumen: 'Los datos indican un buen manejo del estrés en el trabajo, con registros emocionales que reflejan sentimientos positivos en un 75% de las entradas diarias.',
-      imagen: 'assets/perfiles/Sofia.png' 
-    },
-    { 
-      nombre: 'Juan Pérez', 
-      fecha: '10/10/2024', 
-      hora: '14:00', 
-      estado: 'pendiente', 
-      resumen: 'Ha experimentado un aumento en los niveles de ansiedad en los últimos días, con un aumento en la frecuencia cardíaca por encima de lo habitual.',
-      imagen: 'assets/perfiles/Juan.png' 
-    },
-    { 
-      nombre: 'Carlos Sánchez', 
-      fecha: '12/10/2024', 
-      hora: '09:30', 
-      estado: 'pendiente', 
-      resumen: 'Continúa presentando dificultades para dormir y niveles altos de cortisol. Emocionalmente ha reportado una mezcla de frustración y agotamiento.',
-      imagen: 'assets/perfiles/Carlos.png' 
-    },
-    { 
-      nombre: 'Jorge Ramírez', 
-      fecha: '13/10/2024', 
-      hora: '15:00', 
-      estado: 'pendiente', 
-      resumen: 'Su variabilidad emocional ha aumentado considerablemente. Los registros fisiológicos indican un patrón de sueño irregular y aumento de la frecuencia cardíaca.',
-      imagen: 'assets/perfiles/Jorge.png' 
-    },
-    { 
-      nombre: 'Manuel Fernández', 
-      fecha: '11/10/2024', 
-      hora: '13:00', 
-      estado: 'pendiente', 
-      resumen: 'El paciente ha registrado episodios de estrés significativo, con altos niveles de cortisol. Su frecuencia cardíaca también ha mostrado picos elevados durante la semana.',
-      imagen: 'assets/perfiles/Manuel.png' 
+export class CitasComponent implements OnInit {
+  citas: Cita[] = []; 
+  mostrarModal = false; 
+  citaForm: FormGroup;
+  errorMessage: string | null = null;
+
+  constructor(private citasService: CitasService, private fb: FormBuilder) {
+    this.citaForm = this.fb.group({
+      idUsuario: [1, Validators.required],
+      fechaHora: ['', Validators.required],
+      ubicacion: ['', Validators.required],
+      comentarios: ['']
+    });
+  }
+
+  ngOnInit() {
+    console.log('CitasComponent inicializado');
+    this.obtenerCitas(); 
+  }
+  
+  abrirModal() {
+    this.mostrarModal = true;
+  }
+
+  cerrarModal() {
+    this.mostrarModal = false;
+    this.resetNuevaCita();
+  }
+
+  obtenerCitas() {
+    this.citasService.listarCitas().subscribe({
+      next: (response) => {
+        // Asegúrate de que la respuesta tiene el formato esperado
+        if (response && response.status === 'success' && Array.isArray(response.data)) {
+          console.log('Citas obtenidas:', response.data);
+          this.citas = response.data; // Aquí asignamos el array de citas
+        } else {
+          console.error('La respuesta no es válida:', response);
+        }
+      },
+      error: (error) => {
+        console.error('Error al listar citas', error);
+        this.errorMessage = 'No se pudo cargar las citas. Intenta de nuevo más tarde.';
+      }
+    });
+  }
+  
+  
+
+  guardarCita() {
+    if (this.citaForm.valid) {
+      const nuevaCita: Cita = this.citaForm.value;
+      this.citasService.registrarCita(nuevaCita).subscribe({
+        next: (response: Cita) => {
+          console.log('Cita registrada con éxito', response);
+          this.cerrarModal();
+          this.obtenerCitas(); // Actualiza la lista de citas
+        },
+        error: (error: any) => {
+          console.error('Error al registrar la cita', error);
+          this.errorMessage = 'Ocurrió un error al intentar registrar la cita. Por favor, inténtalo de nuevo.';
+        }
+      });
     }
-  ];
+  }
+
+  private resetNuevaCita() {
+    this.citaForm.reset();
+  }
 }
