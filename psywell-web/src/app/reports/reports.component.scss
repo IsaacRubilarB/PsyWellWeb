@@ -1,47 +1,69 @@
 .reports-container {
-  background-color: #1E2A38; // Fondo azul oscuro de la paleta
+  background-color: #1E2A38;
   padding: 30px;
   border-radius: 15px;
   max-width: 1100px;
-  margin: 100px auto; // Aumenta el margen superior para separar del navbar
+  margin: 100px auto !important;
   color: #FFFFFF;
   box-shadow: 0 0 15px 3px rgba(0, 0, 0, 0.2);
 
   h1 {
     text-align: center;
     font-size: 38px;
-    color: #FFD966; // Color de texto en dorado claro
+    color: #FFD966;
     margin-bottom: 30px;
+  }
 
-    @media (max-width: 768px) {
-      font-size: 30px;
-    }
+  .chart-section {
+    margin: 30px 0;
+    display: flex;
+    justify-content: center;
 
-    @media (max-width: 480px) {
-      font-size: 24px;
+    canvas {
+      max-width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     }
   }
 
-  .filter-section {
-    text-align: right;
-    margin-bottom: 20px;
+  .patient-details {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -20%);
+    background-color: rgba(30, 42, 56, 0.9);
+    color: #FFD966;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    width: 300px;
+    text-align: center;
+    z-index: 1000;
 
-    label {
+    h3 {
+      margin-top: 0;
+      font-size: 24px;
+    }
+
+    p {
+      font-size: 18px;
+      margin: 10px 0;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
       color: #FFD966;
-      font-weight: bold;
-      font-size: 16px;
-    }
+      font-size: 24px;
+      cursor: pointer;
+      outline: none;
 
-    select {
-      padding: 5px;
-      border-radius: 5px;
-      background-color: #f7f7f7;
-      color: #1E2A38;
-      border: 2px solid #FFD966;
-    }
-
-    @media (max-width: 768px) {
-      text-align: center;
+      &:hover {
+        color: #ffc857;
+      }
     }
   }
 
@@ -51,61 +73,27 @@
     gap: 20px;
 
     .report-item {
-      position: relative;
-      background-color: rgba(30, 42, 56, 0.85); // Fondo oscuro para cada informe
+      background-color: rgba(30, 42, 56, 0.85);
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.1);
-      border-left: 5px solid #429e0c; // Borde verde para resaltar
-      overflow: hidden;
-      min-height: 150px;
       display: flex;
       justify-content: space-between;
 
-      .animation-background {
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0.05;
-        z-index: 0;
-      }
-
       .report-content {
         display: flex;
-        justify-content: space-between;
         align-items: center;
         width: 100%;
-        position: relative;
 
         h2 {
           font-size: 24px;
           color: #FFFFFF;
-          flex: 1;
-
-          @media (max-width: 768px) {
-            font-size: 20px;
-          }
-
-          @media (max-width: 480px) {
-            font-size: 18px;
-          }
         }
 
         p {
           margin: 10px 0;
           font-size: 18px;
           color: #FFD966;
-          flex: 2;
-
-          @media (max-width: 768px) {
-            font-size: 16px;
-          }
-
-          @media (max-width: 480px) {
-            font-size: 14px;
-          }
         }
 
         .btn-view-report {
@@ -133,24 +121,8 @@
             height: 20px;
             margin-left: 10px;
           }
-
-          @media (max-width: 768px) {
-            padding: 10px 15px;
-          }
-
-          @media (max-width: 480px) {
-            padding: 8px 12px;
-          }
         }
       }
     }
-  }
-
-  @media (max-width: 768px) {
-    padding: 20px;
-  }
-
-  @media (max-width: 480px) {
-    padding: 15px;
   }
 }

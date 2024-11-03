@@ -1,22 +1,39 @@
-<app-navbar></app-navbar> 
+<app-navbar></app-navbar>
 
 <div class="reports-container">
-  <h1>Informes Disponibles</h1>
+  <h1>Estado Anímico de los Pacientes</h1>
   
-  <!-- Rango de tiempo -->
-  <div class="filter-section">
+  <!-- Selector de rango de días -->
+  <div class="time-range">
     <label for="timeRange">Rango de Tiempo:</label>
-    <select id="timeRange">
-      <option value="1">Última Semana</option>
-      <option value="2">Último Mes</option>
-      <option value="3">Último Año</option>
+    <select id="timeRange" [(ngModel)]="timeRange" (change)="updateTimeRange()">
+      <option value="7">Última Semana</option>
+      <option value="15">Últimos 15 Días</option>
+      <option value="30">Último Mes</option>
     </select>
   </div>
-  
+
+  <!-- Gráfico -->
+  <div class="chart-section">
+    <canvas #chartCanvas></canvas>
+  </div>
+
+  <!-- Información del paciente seleccionado -->
+  <div *ngIf="selectedPatient" class="patient-details">
+    <button class="close-btn" (click)="closeDetails()">×</button>
+    <h3>{{ selectedPatient.name }}</h3>
+    <div class="mood-days">
+      <div *ngFor="let mood of selectedPatient.moodHistory" class="mood-day">
+        <span [class]="'mood-icon ' + mood.mood.toLowerCase()"></span> Sesión {{ mood.session }}
+      </div>
+      
+      
+    </div>
+  </div>
+
   <!-- Listado de informes -->
   <div class="report-list">
     <div class="report-item">
-      <div #informeAnimation class="animation-background"></div> 
       <div class="report-content">
         <h2>Informe de Salud Mental</h2>
         <p>Este informe cubre el seguimiento de los aspectos emocionales y psicológicos del paciente.</p>
@@ -25,7 +42,6 @@
     </div>
 
     <div class="report-item">
-      <div #informeAnimation class="animation-background"></div>
       <div class="report-content">
         <h2>Informe de Salud Fisiológica</h2>
         <p>Este informe detalla las métricas fisiológicas, incluyendo frecuencia cardíaca, horas de sueño y niveles de estrés.</p>
