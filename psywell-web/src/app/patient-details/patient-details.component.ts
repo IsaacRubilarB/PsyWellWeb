@@ -11,7 +11,7 @@ import { NavbarComponent } from '../navbar/navbar.component';
   styleUrls: ['./patient-details.component.scss'],
   standalone: true,  
   imports: [CommonModule, NavbarComponent],  
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]  // Importar schemas para evitar errores de componentes personalizados
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]  
 })
 export class PatientDetailsComponent implements AfterViewInit {
   patientId: string | null = null;

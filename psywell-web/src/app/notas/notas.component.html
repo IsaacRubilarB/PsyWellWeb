@@ -1,75 +1,78 @@
 <app-navbar></app-navbar>
 
-<div class="notas-container">
-  <h2><i class="fas fa-notes-medical"></i> Centro de Notas y Herramientas Profesionales</h2>
+<div class="notas-header">
+  <img src="assets/logo.png" alt="Logo PsyWell" class="logo" />
+  <h1>Centro de Notas y Seguimiento</h1>
+</div>
 
-  <!-- Notas Rápidas Section -->
-  <div class="section-card">
-    <h3><i class="fas fa-sticky-note"></i> Notas Rápidas</h3>
-    <div class="form-inputs">
-      <input type="text" [(ngModel)]="newNoteTitle" placeholder="Título de la nota..." />
-      <textarea [(ngModel)]="newNoteContent" placeholder="Escribe una nota rápida..."></textarea>
-      <button (click)="addNote()"><i class="fas fa-plus-circle"></i> Añadir Nota</button>
-    </div>
-    <ul class="note-grid">
-      <li *ngFor="let note of notes; let i = index" class="note-item">
-        <h4>{{ note.title }}</h4>
-        <p>{{ note.content }}</p>
-        <button (click)="deleteNote(i)" class="delete-btn"><i class="fas fa-trash"></i></button>
-      </li>
-    </ul>
+<div class="notas-container">
+  <!-- Barra de búsqueda -->
+  <div class="search-bar">
+    <input type="text" placeholder="Buscar nota o recordatorio..." [(ngModel)]="searchQuery" (input)="filterNotes()" />
   </div>
 
-  <!-- Diario de Pacientes Section -->
-  <div class="section-card">
-    <h3><i class="fas fa-book"></i> Diario de Pacientes</h3>
+  <!-- Categorías de Notas -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Notas Categorizadas</h2>
+      <button (click)="toggleFavoritesOnly()">
+        <i class="fas fa-star" [class.favorited]="showFavoritesOnly"></i> Ver Favoritos
+      </button>
+    </div>
+    <div class="form-inputs">
+      <input type="text" [(ngModel)]="newNoteTitle" placeholder="Título de la nota..." />
+      <textarea [(ngModel)]="newNoteContent" placeholder="Escribe tu nota..."></textarea>
+      <select [(ngModel)]="newNoteCategory">
+        <option value="observacion">Observación</option>
+        <option value="seguimiento">Seguimiento</option>
+        <option value="tarea">Tarea</option>
+      </select>
+      <button (click)="addNote()">Añadir Nota</button>
+    </div>
+    <div class="note-grid">
+      <div *ngFor="let note of filteredNotes" class="note-card" [ngClass]="note.category">
+        <h3>{{ note.title }}</h3>
+        <p>{{ note.content }}</p>
+        <div class="note-actions">
+          <button (click)="toggleFavorite(note)">
+            <i class="fas fa-star" [class.favorited]="note.favorite"></i> Favorito
+          </button>
+          <button (click)="deleteNote(note)">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Seguimiento de Pacientes -->
+  <div class="section">
+    <h2>Seguimiento de Pacientes</h2>
     <div class="form-inputs">
       <select [(ngModel)]="selectedPatient" (change)="loadPatientSessions()">
         <option *ngFor="let patient of patients" [ngValue]="patient">{{ patient.name }}</option>
       </select>
       <textarea [(ngModel)]="newSessionNote" placeholder="Escribe una nota para esta sesión..."></textarea>
-      <button (click)="addSessionNote()"><i class="fas fa-plus-circle"></i> Añadir a Diario</button>
+      <button (click)="addSessionNote()">Añadir Nota de Sesión</button>
     </div>
-    <ul class="session-list">
-      <li *ngFor="let session of selectedPatientSessions; let j = index" class="session-item">
-        <h5>Sesión {{ j + 1 }} - {{ session.date | date }}</h5>
-        <p>{{ session.notes }}</p>
-      </li>
-    </ul>
+    <div class="session-list" *ngIf="selectedPatientSessions.length > 0">
+      <div *ngFor="let session of selectedPatientSessions" class="session-card">
+        <h4>{{ session.date | date:'shortDate' }} - {{ session.notes }}</h4>
+      </div>
+    </div>
   </div>
 
-  <!-- Lista de Tareas Section -->
-  <div class="section-card">
-    <h3><i class="fas fa-tasks"></i> Lista de Tareas</h3>
+  <!-- Recordatorios -->
+  <div class="section">
+    <h2>Recordatorios</h2>
     <div class="form-inputs">
-      <select [(ngModel)]="selectedPatientForTasks" (change)="loadPatientTasks()">
-        <option *ngFor="let patient of patients" [ngValue]="patient">{{ patient.name }}</option>
-      </select>
-      <input type="text" [(ngModel)]="newTask" placeholder="Nueva tarea para el paciente" />
-      <button (click)="addPatientTask()"><i class="fas fa-tasks"></i> Añadir Tarea</button>
+      <input type="text" [(ngModel)]="newReminder" placeholder="Descripción del recordatorio" />
+      <input type="date" [(ngModel)]="newReminderDate" />
+      <button (click)="addReminder()">Añadir Recordatorio</button>
     </div>
-    <ul class="task-list">
-      <li *ngFor="let task of selectedPatientTasks" class="task-item">
-        <input type="checkbox" [(ngModel)]="task.completed" />
-        <span>{{ task.text }}</span>
-        <button (click)="deletePatientTask(task)" class="delete-btn"><i class="fas fa-trash"></i></button>
-      </li>
-    </ul>
-  </div>
-
-  <!-- Herramientas de Referencia Rápida Section -->
-  <div class="section-card">
-    <h3><i class="fas fa-link"></i> Herramientas de Referencia Rápida</h3>
-    <div class="form-inputs">
-      <input type="text" [(ngModel)]="newReferenceTitle" placeholder="Título del recurso" />
-      <input type="url" [(ngModel)]="newReferenceUrl" placeholder="URL del recurso" />
-      <button (click)="addReference()"><i class="fas fa-plus-circle"></i> Añadir Referencia</button>
+    <div class="reminder-list">
+      <div *ngFor="let reminder of reminders" class="reminder-card">
+        <h4>{{ reminder.text }} - {{ reminder.date | date:'shortDate' }}</h4>
+        <button (click)="deleteReminder(reminder)">Eliminar</button>
+      </div>
     </div>
-    <ul class="reference-list">
-      <li *ngFor="let reference of references" class="reference-item">
-        <a [href]="reference.url" target="_blank">{{ reference.title }}</a>
-        <button (click)="deleteReference(reference)" class="delete-btn"><i class="fas fa-trash"></i></button>
-      </li>
-    </ul>
   </div>
 </div>

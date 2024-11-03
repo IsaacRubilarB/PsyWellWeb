@@ -1,11 +1,13 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { FormsModule } from '@angular/forms'; // Import FormsModule para usar ngModel
-import { CommonModule } from '@angular/common';
-import { NavbarComponent } from '../navbar/navbar.component'; // Asegúrate de importar el NavbarComponent aquí
+import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms'; 
+import { NavbarComponent } from '../navbar/navbar.component';
 
 interface Note {
   title: string;
   content: string;
+  favorite: boolean;
+  category: string;
 }
 
 interface Patient {
@@ -18,31 +20,35 @@ interface Session {
   notes: string;
 }
 
-interface Task {
+interface Reminder {
   text: string;
-  completed: boolean;
-}
-
-interface Reference {
-  title: string;
-  url: string;
+  date: Date;
 }
 
 @Component({
   selector: 'app-notas',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent], // Incluye NavbarComponent y FormsModule
+  imports: [CommonModule, FormsModule, NavbarComponent], // Incluye FormsModule y NavbarComponent
   templateUrl: './notas.component.html',
   styleUrls: ['./notas.component.scss'],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA] // Agrega CUSTOM_ELEMENTS_SCHEMA para reconocer elementos personalizados
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class NotasComponent {
-  // Notas Rápidas
+  // Variables para Notas
   notes: Note[] = [];
+  filteredNotes: Note[] = [];
+  searchQuery = '';
+  showFavoritesOnly = false;
   newNoteTitle = '';
   newNoteContent = '';
+  newNoteCategory = 'observacion';
 
-  // Diario de Pacientes
+  // Variables para Recordatorios
+  reminders: Reminder[] = [];
+  newReminder = '';
+  newReminderDate: Date | null = null;
+
+  // Variables para Seguimiento de Pacientes
   patients: Patient[] = [
     { id: 1, name: 'Cristina Zapata' },
     { id: 2, name: 'Juan Pérez' },
@@ -52,40 +58,60 @@ export class NotasComponent {
   selectedPatientSessions: Session[] = [];
   newSessionNote = '';
 
-  // Tareas por Paciente
-  selectedPatientForTasks: Patient | null = null;
-  selectedPatientTasks: Task[] = [];
-  newTask = '';
+  // Filtra notas según favoritos y búsqueda
+  filterNotes() {
+    this.filteredNotes = this.notes.filter(note =>
+      (this.showFavoritesOnly ? note.favorite : true) &&
+      (note.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        note.content.toLowerCase().includes(this.searchQuery.toLowerCase()))
+    );
+  }
 
-  // Biblioteca de Recursos
-  references: Reference[] = [];
-  newReferenceTitle = '';
-  newReferenceUrl = '';
-
-  // Métodos para Notas Rápidas
+  // Añadir una nueva nota
   addNote() {
     if (this.newNoteTitle.trim() && this.newNoteContent.trim()) {
-      this.notes.push({ title: this.newNoteTitle, content: this.newNoteContent });
+      const newNote: Note = {
+        title: this.newNoteTitle,
+        content: this.newNoteContent,
+        favorite: false,
+        category: this.newNoteCategory
+      };
+      this.notes.push(newNote);
       this.newNoteTitle = '';
       this.newNoteContent = '';
+      this.filterNotes();
     }
   }
 
-  deleteNote(index: number) {
-    this.notes.splice(index, 1);
+  // Eliminar una nota
+  deleteNote(note: Note) {
+    this.notes = this.notes.filter(n => n !== note);
+    this.filterNotes();
   }
 
-  // Métodos para Diario de Pacientes
+  // Alternar favoritos
+  toggleFavorite(note: Note) {
+    note.favorite = !note.favorite;
+  }
+
+  // Alternar sección de favoritos
+  toggleFavoritesOnly() {
+    this.showFavoritesOnly = !this.showFavoritesOnly;
+    this.filterNotes();
+  }
+
+  // Cargar sesiones de paciente
   loadPatientSessions() {
     if (this.selectedPatient) {
-      // Simulación de carga de sesiones del paciente seleccionado
+      // Datos de prueba para sesiones
       this.selectedPatientSessions = [
-        { date: new Date('2024-01-01'), notes: 'Primera sesión: Evaluación inicial' },
-        { date: new Date('2024-01-15'), notes: 'Segunda sesión: Mejoras en el estado de ánimo' },
+        { date: new Date('2024-01-01'), notes: 'Evaluación inicial del paciente' },
+        { date: new Date('2024-01-15'), notes: 'Seguimiento y mejoras observadas' },
       ];
     }
   }
 
+  // Añadir una nota de sesión para el paciente
   addSessionNote() {
     if (this.newSessionNote.trim() && this.selectedPatient) {
       const newSession: Session = {
@@ -97,44 +123,21 @@ export class NotasComponent {
     }
   }
 
-  // Métodos para Tareas por Paciente
-  loadPatientTasks() {
-    if (this.selectedPatientForTasks) {
-      // Simulación de carga de tareas del paciente seleccionado
-      this.selectedPatientTasks = [
-        { text: 'Completar cuestionario de ansiedad', completed: false },
-        { text: 'Practicar ejercicios de respiración diariamente', completed: true },
-      ];
+  // Añadir un nuevo recordatorio
+  addReminder() {
+    if (this.newReminder.trim() && this.newReminderDate) {
+      const newReminder: Reminder = {
+        text: this.newReminder,
+        date: this.newReminderDate
+      };
+      this.reminders.push(newReminder);
+      this.newReminder = '';
+      this.newReminderDate = null;
     }
   }
 
-  addPatientTask() {
-    if (this.newTask.trim() && this.selectedPatientForTasks) {
-      this.selectedPatientTasks.push({ text: this.newTask, completed: false });
-      this.newTask = '';
-    }
-  }
-
-  deletePatientTask(task: Task) {
-    const index = this.selectedPatientTasks.indexOf(task);
-    if (index > -1) {
-      this.selectedPatientTasks.splice(index, 1);
-    }
-  }
-
-  // Métodos para Biblioteca de Recursos
-  addReference() {
-    if (this.newReferenceTitle.trim() && this.newReferenceUrl.trim()) {
-      this.references.push({ title: this.newReferenceTitle, url: this.newReferenceUrl });
-      this.newReferenceTitle = '';
-      this.newReferenceUrl = '';
-    }
-  }
-
-  deleteReference(reference: Reference) {
-    const index = this.references.indexOf(reference);
-    if (index > -1) {
-      this.references.splice(index, 1);
-    }
+  // Eliminar un recordatorio
+  deleteReminder(reminder: Reminder) {
+    this.reminders = this.reminders.filter(r => r !== reminder);
   }
 }
