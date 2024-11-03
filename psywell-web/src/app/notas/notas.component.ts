@@ -1,7 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { FormsModule } from '@angular/forms'; // Import FormsModule para usar ngModel
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NavbarComponent } from '../navbar/navbar.component'; // Asegúrate de importar el NavbarComponent aquí
 
 interface Note {
@@ -9,14 +8,14 @@ interface Note {
   content: string;
 }
 
-interface Idea {
-  title: string;
-  description: string;
+interface Patient {
+  id: number;
+  name: string;
 }
 
-interface Reminder {
-  text: string;
+interface Session {
   date: Date;
+  notes: string;
 }
 
 interface Task {
@@ -32,30 +31,38 @@ interface Reference {
 @Component({
   selector: 'app-notas',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule, NavbarComponent], // Asegúrate de agregar NavbarComponent en los imports
+  imports: [CommonModule, FormsModule, NavbarComponent], // Incluye NavbarComponent y FormsModule
   templateUrl: './notas.component.html',
   styleUrls: ['./notas.component.scss'],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA] // Agrega CUSTOM_ELEMENTS_SCHEMA para reconocer elementos personalizados
 })
 export class NotasComponent {
+  // Notas Rápidas
   notes: Note[] = [];
   newNoteTitle = '';
   newNoteContent = '';
 
-  ideas: Idea[] = [];
-  newIdeaTitle = '';
-  newIdeaDescription = '';
+  // Diario de Pacientes
+  patients: Patient[] = [
+    { id: 1, name: 'Cristina Zapata' },
+    { id: 2, name: 'Juan Pérez' },
+    { id: 3, name: 'Cristopher Soto' },
+  ];
+  selectedPatient: Patient | null = null;
+  selectedPatientSessions: Session[] = [];
+  newSessionNote = '';
 
-  reminders: Reminder[] = [];
-  newReminder = '';
-  newReminderDate: Date | null = null;
-
-  tasks: Task[] = [];
+  // Tareas por Paciente
+  selectedPatientForTasks: Patient | null = null;
+  selectedPatientTasks: Task[] = [];
   newTask = '';
 
+  // Biblioteca de Recursos
   references: Reference[] = [];
   newReferenceTitle = '';
   newReferenceUrl = '';
 
+  // Métodos para Notas Rápidas
   addNote() {
     if (this.newNoteTitle.trim() && this.newNoteContent.trim()) {
       this.notes.push({ title: this.newNoteTitle, content: this.newNoteContent });
@@ -68,41 +75,54 @@ export class NotasComponent {
     this.notes.splice(index, 1);
   }
 
-  addIdea() {
-    if (this.newIdeaTitle.trim() && this.newIdeaDescription.trim()) {
-      this.ideas.push({ title: this.newIdeaTitle, description: this.newIdeaDescription });
-      this.newIdeaTitle = '';
-      this.newIdeaDescription = '';
+  // Métodos para Diario de Pacientes
+  loadPatientSessions() {
+    if (this.selectedPatient) {
+      // Simulación de carga de sesiones del paciente seleccionado
+      this.selectedPatientSessions = [
+        { date: new Date('2024-01-01'), notes: 'Primera sesión: Evaluación inicial' },
+        { date: new Date('2024-01-15'), notes: 'Segunda sesión: Mejoras en el estado de ánimo' },
+      ];
     }
   }
 
-  deleteIdea(index: number) {
-    this.ideas.splice(index, 1);
-  }
-
-  addReminder() {
-    if (this.newReminder.trim() && this.newReminderDate) {
-      this.reminders.push({ text: this.newReminder, date: this.newReminderDate });
-      this.newReminder = '';
-      this.newReminderDate = null;
+  addSessionNote() {
+    if (this.newSessionNote.trim() && this.selectedPatient) {
+      const newSession: Session = {
+        date: new Date(),
+        notes: this.newSessionNote,
+      };
+      this.selectedPatientSessions.push(newSession);
+      this.newSessionNote = '';
     }
   }
 
-  deleteReminder(index: number) {
-    this.reminders.splice(index, 1);
+  // Métodos para Tareas por Paciente
+  loadPatientTasks() {
+    if (this.selectedPatientForTasks) {
+      // Simulación de carga de tareas del paciente seleccionado
+      this.selectedPatientTasks = [
+        { text: 'Completar cuestionario de ansiedad', completed: false },
+        { text: 'Practicar ejercicios de respiración diariamente', completed: true },
+      ];
+    }
   }
 
-  addTask() {
-    if (this.newTask.trim()) {
-      this.tasks.push({ text: this.newTask, completed: false });
+  addPatientTask() {
+    if (this.newTask.trim() && this.selectedPatientForTasks) {
+      this.selectedPatientTasks.push({ text: this.newTask, completed: false });
       this.newTask = '';
     }
   }
 
-  deleteTask(index: number) {
-    this.tasks.splice(index, 1);
+  deletePatientTask(task: Task) {
+    const index = this.selectedPatientTasks.indexOf(task);
+    if (index > -1) {
+      this.selectedPatientTasks.splice(index, 1);
+    }
   }
 
+  // Métodos para Biblioteca de Recursos
   addReference() {
     if (this.newReferenceTitle.trim() && this.newReferenceUrl.trim()) {
       this.references.push({ title: this.newReferenceTitle, url: this.newReferenceUrl });
@@ -111,7 +131,10 @@ export class NotasComponent {
     }
   }
 
-  deleteReference(index: number) {
-    this.references.splice(index, 1);
+  deleteReference(reference: Reference) {
+    const index = this.references.indexOf(reference);
+    if (index > -1) {
+      this.references.splice(index, 1);
+    }
   }
 }

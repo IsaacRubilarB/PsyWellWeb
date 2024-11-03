@@ -1,117 +1,75 @@
 <app-navbar></app-navbar>
 
-
 <div class="notas-container">
-    <h2>Centro de Notas y Herramientas Profesionales</h2>
-  
-    <!-- Notas Rápidas Section -->
-    <div class="form-section">
-      <h3>Notas Rápidas</h3>
-      <div class="form-inputs">
-        <input type="text" [(ngModel)]="newNoteTitle" placeholder="Título de la nota" />
-        <textarea [(ngModel)]="newNoteContent" placeholder="Contenido de la nota"></textarea>
-        <button (click)="addNote()">
-          <i class="fas fa-plus-circle"></i>Añadir Nota
-        </button>
-      </div>
-      <ul class="note-grid">
-        <li *ngFor="let note of notes; let i = index" class="item">
-          <div>
-            <h4>{{ note.title }}</h4>
-            <p>{{ note.content }}</p>
-          </div>
-          <button (click)="deleteNote(i)" class="delete-btn">
-            <i class="fas fa-trash"></i>
-          </button>
-        </li>
-      </ul>
+  <h2><i class="fas fa-notes-medical"></i> Centro de Notas y Herramientas Profesionales</h2>
+
+  <!-- Notas Rápidas Section -->
+  <div class="section-card">
+    <h3><i class="fas fa-sticky-note"></i> Notas Rápidas</h3>
+    <div class="form-inputs">
+      <input type="text" [(ngModel)]="newNoteTitle" placeholder="Título de la nota..." />
+      <textarea [(ngModel)]="newNoteContent" placeholder="Escribe una nota rápida..."></textarea>
+      <button (click)="addNote()"><i class="fas fa-plus-circle"></i> Añadir Nota</button>
     </div>
-  
-    <!-- Ideas de Tratamiento Section -->
-    <div class="form-section">
-      <h3>Ideas de Tratamiento</h3>
-      <div class="form-inputs">
-        <input type="text" [(ngModel)]="newIdeaTitle" placeholder="Título de la idea" />
-        <textarea [(ngModel)]="newIdeaDescription" placeholder="Descripción de la idea"></textarea>
-        <button (click)="addIdea()">
-          <i class="fas fa-lightbulb"></i>Añadir Idea
-        </button>
-      </div>
-      <ul class="idea-list">
-        <li *ngFor="let idea of ideas; let i = index" class="item">
-          <div>
-            <h4>{{ idea.title }}</h4>
-            <p>{{ idea.description }}</p>
-          </div>
-          <button (click)="deleteIdea(i)" class="delete-btn">
-            <i class="fas fa-trash"></i>
-          </button>
-        </li>
-      </ul>
-    </div>
-  
-    <!-- Recordatorios de Citas Section -->
-    <div class="form-section">
-      <h3>Recordatorios de Citas</h3>
-      <div class="form-inputs">
-        <input type="text" [(ngModel)]="newReminder" placeholder="Descripción del recordatorio" />
-        <input type="date" [(ngModel)]="newReminderDate" />
-        <button (click)="addReminder()">
-          <i class="fas fa-calendar-plus"></i>Añadir Recordatorio
-        </button>
-      </div>
-      <ul class="reminder-list">
-        <li *ngFor="let reminder of reminders; let i = index" class="item">
-          <div>
-            <strong>{{ reminder.text }}</strong> - <em>{{ reminder.date | date }}</em>
-          </div>
-          <button (click)="deleteReminder(i)" class="delete-btn">
-            <i class="fas fa-trash"></i>
-          </button>
-        </li>
-      </ul>
-    </div>
-  
-    <!-- Lista de Tareas Section -->
-    <div class="form-section">
-      <h3>Lista de Tareas</h3>
-      <div class="form-inputs">
-        <input type="text" [(ngModel)]="newTask" placeholder="Nueva tarea" />
-        <button (click)="addTask()">
-          <i class="fas fa-tasks"></i>Añadir Tarea
-        </button>
-      </div>
-      <ul class="task-list">
-        <li *ngFor="let task of tasks; let i = index" class="item">
-          <div class="checkbox">
-            <input type="checkbox" [(ngModel)]="task.completed" />
-            <label>{{ task.text }}</label>
-          </div>
-          <button (click)="deleteTask(i)" class="delete-btn">
-            <i class="fas fa-trash"></i>
-          </button>
-        </li>
-      </ul>
-    </div>
-  
-    <!-- Herramientas de Referencia Rápida Section -->
-    <div class="form-section">
-      <h3>Herramientas de Referencia Rápida</h3>
-      <div class="form-inputs">
-        <input type="text" [(ngModel)]="newReferenceTitle" placeholder="Título del recurso" />
-        <input type="url" [(ngModel)]="newReferenceUrl" placeholder="URL del recurso" />
-        <button (click)="addReference()">
-          <i class="fas fa-link"></i>Añadir Referencia
-        </button>
-      </div>
-      <ul class="reference-list">
-        <li *ngFor="let reference of references; let i = index" class="item">
-          <a [href]="reference.url" target="_blank">{{ reference.title }}</a>
-          <button (click)="deleteReference(i)" class="delete-btn">
-            <i class="fas fa-trash"></i>
-          </button>
-        </li>
-      </ul>
-    </div>
+    <ul class="note-grid">
+      <li *ngFor="let note of notes; let i = index" class="note-item">
+        <h4>{{ note.title }}</h4>
+        <p>{{ note.content }}</p>
+        <button (click)="deleteNote(i)" class="delete-btn"><i class="fas fa-trash"></i></button>
+      </li>
+    </ul>
   </div>
-  
+
+  <!-- Diario de Pacientes Section -->
+  <div class="section-card">
+    <h3><i class="fas fa-book"></i> Diario de Pacientes</h3>
+    <div class="form-inputs">
+      <select [(ngModel)]="selectedPatient" (change)="loadPatientSessions()">
+        <option *ngFor="let patient of patients" [ngValue]="patient">{{ patient.name }}</option>
+      </select>
+      <textarea [(ngModel)]="newSessionNote" placeholder="Escribe una nota para esta sesión..."></textarea>
+      <button (click)="addSessionNote()"><i class="fas fa-plus-circle"></i> Añadir a Diario</button>
+    </div>
+    <ul class="session-list">
+      <li *ngFor="let session of selectedPatientSessions; let j = index" class="session-item">
+        <h5>Sesión {{ j + 1 }} - {{ session.date | date }}</h5>
+        <p>{{ session.notes }}</p>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Lista de Tareas Section -->
+  <div class="section-card">
+    <h3><i class="fas fa-tasks"></i> Lista de Tareas</h3>
+    <div class="form-inputs">
+      <select [(ngModel)]="selectedPatientForTasks" (change)="loadPatientTasks()">
+        <option *ngFor="let patient of patients" [ngValue]="patient">{{ patient.name }}</option>
+      </select>
+      <input type="text" [(ngModel)]="newTask" placeholder="Nueva tarea para el paciente" />
+      <button (click)="addPatientTask()"><i class="fas fa-tasks"></i> Añadir Tarea</button>
+    </div>
+    <ul class="task-list">
+      <li *ngFor="let task of selectedPatientTasks" class="task-item">
+        <input type="checkbox" [(ngModel)]="task.completed" />
+        <span>{{ task.text }}</span>
+        <button (click)="deletePatientTask(task)" class="delete-btn"><i class="fas fa-trash"></i></button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Herramientas de Referencia Rápida Section -->
+  <div class="section-card">
+    <h3><i class="fas fa-link"></i> Herramientas de Referencia Rápida</h3>
+    <div class="form-inputs">
+      <input type="text" [(ngModel)]="newReferenceTitle" placeholder="Título del recurso" />
+      <input type="url" [(ngModel)]="newReferenceUrl" placeholder="URL del recurso" />
+      <button (click)="addReference()"><i class="fas fa-plus-circle"></i> Añadir Referencia</button>
+    </div>
+    <ul class="reference-list">
+      <li *ngFor="let reference of references" class="reference-item">
+        <a [href]="reference.url" target="_blank">{{ reference.title }}</a>
+        <button (click)="deleteReference(reference)" class="delete-btn"><i class="fas fa-trash"></i></button>
+      </li>
+    </ul>
+  </div>
+</div>
