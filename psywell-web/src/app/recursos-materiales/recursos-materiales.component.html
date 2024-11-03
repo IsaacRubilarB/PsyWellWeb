@@ -1,87 +1,62 @@
 <app-navbar></app-navbar>
 
-<div class="container">
-  <div class="cards-container">
-    <div 
-      class="card" 
-      *ngFor="let item of items" 
-      (mouseenter)="setHoveredItem(item)"
+<div class="resources-container">
+  <h1>Recursos y Materiales</h1>
+
+  <div class="categories">
+    <div
+      *ngFor="let item of sidebarItems"
+      class="category-card"
+      [ngClass]="{ 'active': selectedCategory === item.tipo }"
+      (click)="selectCategory(item.tipo)"
     >
-      <img [src]="item.imagen" [alt]="item.titulo" class="card-image">
+      <i class="material-icons">{{ item.icono }}</i>
+      <h3>{{ item.titulo }}</h3>
     </div>
   </div>
 
-  <div class="hover-info" *ngIf="hoveredItem">
-    <h2>{{ hoveredItem.titulo }}</h2>
-    <p>{{ hoveredItem.descripcion }}</p>
-    <div class="buttons">
-      <button class="btn-ver" *ngIf="hoveredItem.tipo === 'videos'" (click)="toggleSection('videos')">Ver {{ hoveredItem.titulo }}</button>
-      <button class="btn-ver" *ngIf="hoveredItem.tipo === 'presentaciones'" (click)="toggleSection('presentaciones')">Ver {{ hoveredItem.titulo }}</button>
-      <button class="btn-ver" *ngIf="hoveredItem.tipo === 'audios'" (click)="toggleSection('audios')">Ver {{ hoveredItem.titulo }}</button>
-      <button class="btn-ver" *ngIf="hoveredItem.tipo === 'foros'" (click)="toggleSection('foros')">Ver {{ hoveredItem.titulo }}</button>
-      <button class="btn-subir" (click)="openModal()">Subir {{ hoveredItem.titulo }}</button>
-    </div>
-  </div>
+  <div class="files-section">
+    <h2>{{ getTitleForCategory(selectedCategory) }}</h2>
+    <input
+      type="text"
+      placeholder="Buscar recurso..."
+      [(ngModel)]="searchQuery"
+      (input)="filterResources()"
+    />
+    <div *ngIf="filteredResources.length > 0" class="file-grid">
+      <div *ngFor="let resource of filteredResources" class="file-card">
+        <h4>{{ resource.titulo }}</h4>
+        <p>{{ resource.descripcion }}</p>
 
-  <!-- Carrusel de videos -->
-  <div *ngIf="showVideos && hoveredItem.tipo === 'videos'" class="video-carousel">
-    <h3 class="section-title">Videos Disponibles</h3>
-    <div class="video-carousel-item" *ngFor="let video of resources['videos']">
-      <iframe [src]="video.url | safe" frameborder="0" allowfullscreen class="video-frame"></iframe>
-      <p>{{ video.nombre }}</p>
-      <button class="btn-delete" (click)="deleteResource(video.id, 'videos')">Eliminar</button>
-    </div>
-    <p *ngIf="resources['videos'].length === 0" class="no-data-message">Aquí no hay nada, agreguemos el primero</p>
-  </div>
+        <!-- Video player -->
+        <div *ngIf="resource.url" class="video-container">
+          <iframe
+            width="100%"
+            height="200"
+            [src]="resource.url | safe"
+            frameborder="0"
+            allowfullscreen
+          ></iframe>
+        </div>
 
-  <!-- Sección de presentaciones y libros -->
-  <div *ngIf="showPresentations && hoveredItem.tipo === 'presentaciones'" class="resources-section">
-    <h3 class="section-title">Presentaciones Disponibles</h3>
-    <div class="carousel">
-      <div class="carousel-item" *ngFor="let presentacion of resources['presentaciones']">
-        <a [href]="presentacion.url" target="_blank">
-          <img *ngIf="presentacion.portada" [src]="presentacion.portada" alt="{{ presentacion.titulo }}" class="file-image" />
-          <img *ngIf="!presentacion.portada" src="assets/default-pdf-thumbnail.png" alt="{{ presentacion.titulo }}" class="file-image" />
-        </a>
-        <p class="item-name">{{ presentacion.titulo }}</p>
-        <button class="btn-delete" (click)="deleteResource(presentacion.id, 'presentaciones')">Eliminar</button>
+        <button (click)="deleteResource(resource.id, selectedCategory)" class="delete-button">
+          Eliminar
+        </button>
       </div>
     </div>
-  </div>
-
-  <!-- Sección de audios -->
-  <div *ngIf="showAudios && hoveredItem.tipo === 'audios'" class="audio-section">
-    <h3 class="section-title">Audios Disponibles</h3>
-    <div class="audio-list">
-      <div class="audio-item" *ngFor="let audio of resources['audios']">
-        <audio controls>
-          <source [src]="audio.url" type="audio/mp3">
-          Tu navegador no soporta la reproducción de audios.
-        </audio>
-        <p class="item-name">{{ audio.nombre }}</p>
-        <button class="btn-delete" (click)="deleteResource(audio.id, 'audios')">Eliminar</button>
-      </div>
-    </div>
-    <p *ngIf="resources['audios'].length === 0" class="no-data-message">Aquí no hay nada, agreguemos el primero</p>
-  </div>
-
-  <!-- Sección de foros -->
-  <div *ngIf="showForos && hoveredItem.tipo === 'foros'" class="foro-section">
-    <h3 class="section-title">Foros y Comunidades de Apoyo</h3>
-    <div class="foro-list">
-      <div class="foro-item" *ngFor="let foro of resources['foros']">
-        <a [href]="foro.url" target="_blank">{{ foro.nombre }}</a>
-        <button class="btn-delete" (click)="deleteResource(foro.id, 'foros')">Eliminar</button>
-      </div>
-    </div>
-    <p *ngIf="resources['foros'].length === 0" class="no-data-message">Aquí no hay nada, agreguemos el primero</p>
+    <p *ngIf="filteredResources.length === 0" class="no-data-message">
+      No se encontraron recursos para esta categoría.
+    </p>
+    <button class="add-button" (click)="openModal()">
+      Añadir Nuevo {{ getTitleForCategory(selectedCategory) }}
+    </button>
   </div>
 </div>
 
-<!-- Modal con el formulario de subida de recursos -->
+<!-- Modal para el formulario de agregar recurso -->
 <div class="modal" *ngIf="isModalOpen">
   <div class="modal-content">
     <button class="close-modal" (click)="closeModal()">Cerrar</button>
-    <app-formulario-recursos (resourceAdded)="fetchResources(hoveredItem.tipo)"></app-formulario-recursos> <!-- Aquí se inserta el formulario -->
+    <app-formulario-recursos (resourceAdded)="fetchResources(selectedCategory)"></app-formulario-recursos>
   </div>
 </div>

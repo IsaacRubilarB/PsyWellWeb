@@ -41,6 +41,20 @@
   <label for="autor">Autor</label>
   <input type="text" id="autor" [(ngModel)]="autor" name="autor" required />
 
+  <!-- Lista de pacientes para asignación de recursos -->
+  <h3>Asignar a Paciente</h3>
+  <div class="pacientes-listado">
+    <div
+      *ngFor="let paciente of pacientes"
+      class="paciente-card"
+      [class.selected]="pacienteSeleccionado === paciente"
+      (click)="seleccionarPaciente(paciente)"
+    >
+      <img [src]="paciente.imagen" alt="Imagen de {{ paciente.nombre }}" class="paciente-imagen" />
+      <span>{{ paciente.nombre }}</span>
+    </div>
+  </div>
+
   <!-- Botón para enviar el formulario -->
   <button type="submit">Subir Recurso</button>
 </form>

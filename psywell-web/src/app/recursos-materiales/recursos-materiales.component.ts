@@ -1,93 +1,116 @@
-// src/app/recursos-materiales/recursos-materiales.component.ts
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { SafePipe } from './safe.pipe';
 import { FormularioRecursosComponent } from '../formulario-recursos/formulario-recursos.component';
 import { RecursosService } from 'app/services/recursos.service';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 
 @Component({
   selector: 'app-recursos-materiales',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, SafePipe, FormularioRecursosComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, SafePipe, FormularioRecursosComponent],
   templateUrl: './recursos-materiales.component.html',
   styleUrls: ['./recursos-materiales.component.scss'],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class RecursosMaterialesComponent {
-  showVideos = false;
-  showPresentations = false;
-  showAudios = false;
-  showForos = false;
-  isModalOpen = false;
+  isModalOpen = false; // Controla si el modal está abierto
+  searchQuery = ''; // Texto de búsqueda
+  filteredResources: any[] = []; // Recursos filtrados
+  selectedCategory: string = ''; // Categoría seleccionada
+  selectedPacienteId: string = ''; // Paciente seleccionado para ver recursos asignados
   resources: { [key: string]: any[] } = {
     videos: [],
     presentaciones: [],
     audios: [],
     foros: []
-  };
+  }; // Estructura para almacenar los recursos por tipo
+  pacientes: any[] = []; // Lista de pacientes para selección
+  sidebarItems = [
+    { titulo: 'Videos Terapéuticos', icono: 'video_library', tipo: 'videos' },
+    { titulo: 'Presentaciones Terapéuticas', icono: 'slideshow', tipo: 'presentaciones' },
+    { titulo: 'Audios Terapéuticos', icono: 'audiotrack', tipo: 'audios' },
+    { titulo: 'Foros y Comunidades de Apoyo', icono: 'forum', tipo: 'foros' }
+  ]; // Elementos de la barra lateral
 
-  items = [
-    {
-      titulo: 'Videos Terapéuticos',
-      imagen: 'assets/cards/videos.png',
-      descripcion: 'Explora y sube videos que pueden ayudar a los pacientes en su tratamiento.',
-      tipo: 'videos'
-    },
-    {
-      titulo: 'Presentaciones Terapéuticas',
-      imagen: 'assets/cards/presentacion.png',
-      descripcion: 'Sube y gestiona presentaciones que pueden ser útiles para los pacientes.',
-      tipo: 'presentaciones'
-    },
-    {
-      titulo: 'Audios Terapéuticos',
-      imagen: 'assets/cards/audios.png',
-      descripcion: 'Comparte audios que faciliten la relajación y la concentración de los pacientes.',
-      tipo: 'audios'
-    },
-    {
-      titulo: 'Foros y Comunidades de Apoyo',
-      imagen: 'assets/cards/foro.png',
-      descripcion: 'Accede a foros y comunidades de apoyo donde los pacientes pueden interactuar.',
-      tipo: 'foros'
-    }
-  ];
+  hoveredItem: any; // Elemento sobre el que se hace hover
 
-  hoveredItem: any = this.items[0];
+  constructor(
+    private router: Router,
+    private recursosService: RecursosService,
+    private firestore: AngularFirestore
+  ) {
+    // Obtener la lista de pacientes
+    this.firestore.collection('pacientes').valueChanges({ idField: 'id' }).subscribe((pacientes: any[]) => {
+      this.pacientes = pacientes;
+    });
+  }
 
-  constructor(private router: Router, private recursosService: RecursosService) {}
-
+  // Función para manejar el hover en la barra lateral
   setHoveredItem(item: any) {
     this.hoveredItem = item;
   }
 
-  toggleSection(type: string) {
-    this.showVideos = type === 'videos';
-    this.showPresentations = type === 'presentaciones';
-    this.showAudios = type === 'audios';
-    this.showForos = type === 'foros';
+  // Selecciona la categoría y obtiene los recursos correspondientes
+  selectCategory(type: string) {
+    this.selectedCategory = type;
+    console.log("Categoría seleccionada:", type);
     this.fetchResources(type);
   }
 
+  // Selecciona un paciente para ver los recursos asignados
+  selectPaciente(pacienteId: string) {
+    this.selectedPacienteId = pacienteId;
+    this.filterResources();
+  }
+
+  // Abre el modal para añadir nuevo recurso
   openModal() {
     this.isModalOpen = true;
   }
 
+  // Cierra el modal
   closeModal() {
     this.isModalOpen = false;
   }
 
+  // Obtiene los recursos desde Firebase filtrados por tipo
   fetchResources(type: string) {
     this.recursosService.getRecursosPorTipo(type).subscribe((resources: any[]) => {
+      console.log("Recursos obtenidos desde Firebase:", resources);
       this.resources[type] = resources;
+      this.filterResources();
     });
   }
 
+  // Filtra los recursos en base a la búsqueda, categoría seleccionada y paciente asignado
+  filterResources() {
+    this.filteredResources = this.resources[this.selectedCategory]?.filter(resource => {
+      const matchesQuery = resource.titulo ? resource.titulo.toLowerCase().includes(this.searchQuery.toLowerCase()) : false;
+      const matchesPaciente = this.selectedPacienteId ? resource.pacientesAsignados.includes(this.selectedPacienteId) : true;
+      return matchesQuery && matchesPaciente;
+    });
+    console.log("Recursos filtrados:", this.filteredResources);
+  }
+
+  // Elimina un recurso específico por ID
   deleteResource(id: string, type: string) {
     this.recursosService.deleteRecursoPorId(id).then(() => {
       this.resources[type] = this.resources[type].filter(resource => resource.id !== id);
+      this.filterResources();
     });
+  }
+
+  // Obtiene el título para la categoría seleccionada
+  getTitleForCategory(type: string): string {
+    return this.sidebarItems.find(item => item.tipo === type)?.titulo || '';
+  }
+
+  // Visualiza un recurso específico (implementación adicional)
+  viewResource(resource: any) {
+    console.log('Viendo recurso:', resource);
   }
 }

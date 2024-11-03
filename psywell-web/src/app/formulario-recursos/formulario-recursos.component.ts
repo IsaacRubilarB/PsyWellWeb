@@ -7,8 +7,11 @@ import * as pdfjsLib from 'pdfjs-dist';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/assets/pdfjs/pdf.worker.min.mjs';
 
-
-
+interface Paciente {
+  id: string;
+  nombre: string;
+  imagen: string;
+}
 
 @Component({
   selector: 'app-formulario-recursos',
@@ -25,6 +28,14 @@ export class FormularioRecursosComponent {
   videoUrl = '';
   archivo: File | null = null;
   portadaUrl: string | null = null;
+  pacienteSeleccionado: Paciente | null = null;
+
+  pacientes: Paciente[] = [
+    { id: '1', nombre: 'Juan Pérez', imagen: 'assets/profiles/juan.png' },
+    { id: '2', nombre: 'Ana López', imagen: 'assets/profiles/ana.png' },
+    { id: '3', nombre: 'Carlos García', imagen: 'assets/profiles/carlos.png' },
+    { id: '4', nombre: 'María Fernández', imagen: 'assets/profiles/maria.png' }
+  ];
 
   constructor(private firestore: AngularFirestore, private storage: AngularFireStorage) {}
 
@@ -46,6 +57,10 @@ export class FormularioRecursosComponent {
     if (this.tipoRecurso === 'presentaciones' && this.archivo) {
       this.generatePdfPreview(this.archivo);
     }
+  }
+
+  seleccionarPaciente(paciente: Paciente) {
+    this.pacienteSeleccionado = paciente;
   }
 
   async generatePdfPreview(file: File) {
@@ -95,6 +110,7 @@ export class FormularioRecursosComponent {
       autor: this.autor,
       fecha_subida: new Date(),
       visibilidad: true,
+      pacienteAsignado: this.pacienteSeleccionado ? this.pacienteSeleccionado.id : null
     };
 
     if (this.tipoRecurso === 'videos' && this.videoUrl) {
@@ -103,12 +119,10 @@ export class FormularioRecursosComponent {
       nuevoRecurso.url = 'URL del archivo subido'; // Placeholder para el archivo principal
     }
 
-    // Asignar la URL de la portada si está disponible
     if (this.portadaUrl) {
       nuevoRecurso.portada = this.portadaUrl;
     }
 
-    // Guardar el recurso solo si se ha generado la portada correctamente
     if (this.tipoRecurso !== 'presentaciones' || this.portadaUrl) {
       this.firestore.collection('recursos-materiales').add(nuevoRecurso).then(() => {
         alert('Recurso subido exitosamente');
@@ -127,5 +141,6 @@ export class FormularioRecursosComponent {
     this.videoUrl = '';
     this.archivo = null;
     this.portadaUrl = null;
+    this.pacienteSeleccionado = null;
   }
 }

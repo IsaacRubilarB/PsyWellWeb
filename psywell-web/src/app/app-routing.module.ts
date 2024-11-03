@@ -8,7 +8,6 @@ import { LoginRegistroComponent } from './login-registro/login-registro.componen
 import { RecursosMaterialesComponent } from './recursos-materiales/recursos-materiales.component'; 
 import { CitasComponent } from './citas/citas.component'; 
 import { FormularioRecursosComponent } from './formulario-recursos/formulario-recursos.component';
-import { NotasComponent } from './notas/notas.component'; 
 
 export const routes: Routes = [
   { path: 'login', component: LoginRegistroComponent },
@@ -19,7 +18,6 @@ export const routes: Routes = [
   { path: 'recursos-materiales', component: RecursosMaterialesComponent },
   { path: 'citas', component: CitasComponent },
   { path: 'formulario', component: FormularioRecursosComponent },
-  { path: 'notas', component: NotasComponent }, 
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' }
 ];

@@ -3,7 +3,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Pipe({
   name: 'safe',
-  standalone: true // Marcamos el pipe como standalone
+  standalone: true
 })
 export class SafePipe implements PipeTransform {
 
