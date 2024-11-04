@@ -1,7 +1,7 @@
 <app-navbar></app-navbar>
 
 <div class="resources-container">
-  <h1>Recursos y Materiales</h1>
+  <h1>Recursos y materiales</h1>
 
   <div class="categories">
     <div
@@ -26,10 +26,9 @@
     <div *ngIf="filteredResources.length > 0" class="file-grid">
       <div *ngFor="let resource of filteredResources" class="file-card">
         <h4>{{ resource.titulo }}</h4>
-        <p>{{ resource.descripcion }}</p>
 
-        <!-- Video player -->
-        <div *ngIf="resource.url" class="video-container">
+        <!-- Mostrar contenido dependiendo del tipo de recurso -->
+        <div *ngIf="selectedCategory === 'videos'" class="video-container">
           <iframe
             width="100%"
             height="200"
@@ -39,9 +38,23 @@
           ></iframe>
         </div>
 
-        <button (click)="deleteResource(resource.id, selectedCategory)" class="delete-button">
-          Eliminar
-        </button>
+        <img *ngIf="resource.portada" [src]="resource.portada" alt="Portada" class="portada-preview" />
+
+        <p>{{ resource.descripcion }}</p>
+
+        <!-- Botones de acción -->
+        <div class="button-group">
+          <button
+            *ngIf="selectedCategory === 'presentaciones'"
+            class="view-button"
+            (click)="viewResource(resource)"
+          >
+            <i class="material-icons">search</i>
+          </button>
+          <button class="delete-button" (click)="deleteResource(resource.id, selectedCategory)">
+            <i class="material-icons">delete</i>
+          </button>
+        </div>
       </div>
     </div>
     <p *ngIf="filteredResources.length === 0" class="no-data-message">

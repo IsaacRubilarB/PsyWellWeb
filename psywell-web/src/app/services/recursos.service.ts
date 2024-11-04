@@ -1,4 +1,3 @@
-// src/app/services/recursos.service.ts
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/compat/firestore';
 import { Observable } from 'rxjs';
@@ -10,29 +9,35 @@ interface Recurso {
   tipo: string;
   url?: string;
   portada?: string;
-  autor: string;
+  autor?: string;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class RecursosService {
-  private recursosCollection: AngularFirestoreCollection<Recurso>;
 
-  constructor(private firestore: AngularFirestore) {
-    this.recursosCollection = firestore.collection<Recurso>('recursos-materiales');
+  constructor(private firestore: AngularFirestore) {}
+
+  // Obtener colección según el tipo de recurso
+  private getCollectionByType(tipo: string): AngularFirestoreCollection<Recurso> {
+    return this.firestore.collection<Recurso>(tipo);
   }
 
+  // Obtener recursos por tipo de recurso desde la colección específica
   getRecursosPorTipo(tipo: string): Observable<Recurso[]> {
-    return this.firestore.collection<Recurso>('recursos-materiales', ref => ref.where('tipo', '==', tipo)).valueChanges({ idField: 'id' });
+    return this.getCollectionByType(tipo).valueChanges({ idField: 'id' });
   }
 
-  deleteRecursoPorId(id: string): Promise<void> {
-    return this.firestore.collection('recursos-materiales').doc(id).delete();
+  // Eliminar un recurso por ID en la colección específica
+  deleteRecursoPorId(id: string, tipo: string): Promise<void> {
+    return this.getCollectionByType(tipo).doc(id).delete();
   }
 
+  // Agregar un recurso a la colección específica
   agregarRecurso(recurso: Recurso): Promise<void> {
     const id = this.firestore.createId();
-    return this.recursosCollection.doc(id).set({ ...recurso, id });
+    const collection = this.getCollectionByType(recurso.tipo);
+    return collection.doc(id).set({ ...recurso, id });
   }
 }

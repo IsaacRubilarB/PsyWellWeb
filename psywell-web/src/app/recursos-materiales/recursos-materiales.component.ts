@@ -17,26 +17,26 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class RecursosMaterialesComponent {
-  isModalOpen = false; // Controla si el modal está abierto
-  searchQuery = ''; // Texto de búsqueda
-  filteredResources: any[] = []; // Recursos filtrados
-  selectedCategory: string = ''; // Categoría seleccionada
-  selectedPacienteId: string = ''; // Paciente seleccionado para ver recursos asignados
+  isModalOpen = false;
+  searchQuery = '';
+  filteredResources: any[] = [];
+  selectedCategory: string = '';
+  selectedPacienteId: string = '';
+  hoveredItem: any = null;
   resources: { [key: string]: any[] } = {
     videos: [],
-    presentaciones: [],
+    libros: [],
     audios: [],
     foros: []
-  }; // Estructura para almacenar los recursos por tipo
-  pacientes: any[] = []; // Lista de pacientes para selección
-  sidebarItems = [
-    { titulo: 'Videos Terapéuticos', icono: 'video_library', tipo: 'videos' },
-    { titulo: 'Presentaciones Terapéuticas', icono: 'slideshow', tipo: 'presentaciones' },
-    { titulo: 'Audios Terapéuticos', icono: 'audiotrack', tipo: 'audios' },
-    { titulo: 'Foros y Comunidades de Apoyo', icono: 'forum', tipo: 'foros' }
-  ]; // Elementos de la barra lateral
+  };
+  pacientes: any[] = [];
 
-  hoveredItem: any; // Elemento sobre el que se hace hover
+  sidebarItems = [
+    { titulo: 'Videos terapéuticos', icono: 'video_library', tipo: 'videos' },
+    { titulo: 'Libros terapéuticos', icono: 'menu_book', tipo: 'libros' },
+    { titulo: 'Audios terapéuticos', icono: 'audiotrack', tipo: 'audios' },
+    { titulo: 'Foros y comunidades de apoyo', icono: 'forum', tipo: 'foros' }
+  ];
 
   constructor(
     private router: Router,
@@ -49,68 +49,59 @@ export class RecursosMaterialesComponent {
     });
   }
 
-  // Función para manejar el hover en la barra lateral
   setHoveredItem(item: any) {
     this.hoveredItem = item;
   }
 
-  // Selecciona la categoría y obtiene los recursos correspondientes
   selectCategory(type: string) {
     this.selectedCategory = type;
-    console.log("Categoría seleccionada:", type);
     this.fetchResources(type);
   }
 
-  // Selecciona un paciente para ver los recursos asignados
   selectPaciente(pacienteId: string) {
     this.selectedPacienteId = pacienteId;
     this.filterResources();
   }
 
-  // Abre el modal para añadir nuevo recurso
   openModal() {
     this.isModalOpen = true;
   }
 
-  // Cierra el modal
   closeModal() {
     this.isModalOpen = false;
   }
 
-  // Obtiene los recursos desde Firebase filtrados por tipo
   fetchResources(type: string) {
     this.recursosService.getRecursosPorTipo(type).subscribe((resources: any[]) => {
-      console.log("Recursos obtenidos desde Firebase:", resources);
       this.resources[type] = resources;
       this.filterResources();
     });
   }
 
-  // Filtra los recursos en base a la búsqueda, categoría seleccionada y paciente asignado
   filterResources() {
     this.filteredResources = this.resources[this.selectedCategory]?.filter(resource => {
       const matchesQuery = resource.titulo ? resource.titulo.toLowerCase().includes(this.searchQuery.toLowerCase()) : false;
       const matchesPaciente = this.selectedPacienteId ? resource.pacientesAsignados.includes(this.selectedPacienteId) : true;
       return matchesQuery && matchesPaciente;
     });
-    console.log("Recursos filtrados:", this.filteredResources);
   }
 
-  // Elimina un recurso específico por ID
   deleteResource(id: string, type: string) {
-    this.recursosService.deleteRecursoPorId(id).then(() => {
+    this.recursosService.deleteRecursoPorId(id, type).then(() => {
       this.resources[type] = this.resources[type].filter(resource => resource.id !== id);
       this.filterResources();
     });
   }
 
-  // Obtiene el título para la categoría seleccionada
   getTitleForCategory(type: string): string {
     return this.sidebarItems.find(item => item.tipo === type)?.titulo || '';
   }
 
-  // Visualiza un recurso específico (implementación adicional)
   viewResource(resource: any) {
-    console.log('Viendo recurso:', resource);
+    if (resource.tipo === 'libros' && resource.url) {
+      window.open(resource.url, '_blank'); // Abre el PDF en una nueva pestaña
+    } else {
+      console.error('No se pudo abrir el recurso. URL no encontrada o no válida.');
+    }
   }
 }
