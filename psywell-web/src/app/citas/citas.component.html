@@ -8,42 +8,16 @@
     <button class="btn-agregar-cita" (click)="abrirModal()">Agregar Cita</button>
   </div>
 
-  <div class="cita-list-wrapper">
-    <div class="cita-list" *ngIf="citas.length > 0">
-      <div class="cita-card" *ngFor="let cita of citas.slice(0, 4)">
-        <div class="cita-info">
-          <div class="cita-header">
-            <h3>Paciente ID: {{ cita.idUsuario }}</h3>
-            <p class="cita-fecha">{{ cita.fechaHora | date:'short' }}</p>
-          </div>
-          <h4>Ubicación:</h4>
-          <p>{{ cita.ubicacion }}</p>
-          <h4>Comentarios:</h4>
-          <p>{{ cita.comentarios }}</p>
-        </div>
-        <div class="estado-hover">{{ cita.estado | titlecase }}</div>
-      </div>
-    </div>
-
-    <!-- Mostrar citas adicionales si existen más de 4 citas -->
-    <div class="ver-mas-citas" *ngIf="citas.length > 4">
-      <div class="cita-card" *ngFor="let cita of citas.slice(4)">
-        <div class="cita-info">
-          <div class="cita-header">
-            <h3>Paciente ID: {{ cita.idUsuario }}</h3>
-            <p class="cita-fecha">{{ cita.fechaHora | date:'short' }}</p>
-          </div>
-          <h4>Ubicación:</h4>
-          <p>{{ cita.ubicacion }}</p>
-          <h4>Comentarios:</h4>
-          <p>{{ cita.comentarios }}</p>
-        </div>
-        <div class="estado-hover">{{ cita.estado | titlecase }}</div>
-      </div>
+  <div style="margin-bottom: 1%;" class="cita-card" *ngFor="let cita of citas">
+    <div class="cita-info">
+        <h3>Paciente ID: {{ cita.idUsuario }}</h3>
+        <p class="cita-fecha">Fecha y Hora cita: {{ cita.fechaHora | date:'short' }}</p>
+        <h4>Ubicación: {{ cita.ubicacion }}</h4>
+        <h4>Comentarios: {{ cita.comentarios }}</h4>
+        <h4>estado: {{ cita.estado }}</h4>
     </div>
   </div>
-</div>
-
+  
 
 <!-- Modal para agregar una nueva cita -->
 <div class="modal" *ngIf="mostrarModal">

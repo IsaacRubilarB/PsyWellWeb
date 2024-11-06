@@ -35,8 +35,9 @@ export class CitasComponent implements OnInit {
 
   constructor(private citasService: CitasService, private fb: FormBuilder) {
     this.citaForm = this.fb.group({
-      idUsuario: [1, Validators.required],
+      idUsuario: [, Validators.required],
       fechaHora: ['', Validators.required],
+      estado: ['Pendiente', Validators.required],
       ubicacion: ['', Validators.required],
       comentarios: ['']
     });
@@ -94,6 +95,13 @@ export class CitasComponent implements OnInit {
   }
 
   private resetNuevaCita() {
-    this.citaForm.reset();
+    this.citaForm.reset({
+      idUsuario: '',               // Asigna un valor por defecto si es necesario
+      fechaHora: '',               // Deja el campo en blanco o asigna un valor predeterminado
+      estado: 'Pendiente',         // Estado predeterminado en "Pendiente"
+      ubicacion: '',               // Asigna valor por defecto si es necesario
+      comentarios: ''              // Puede estar vacío
+    });
   }
+  
 }

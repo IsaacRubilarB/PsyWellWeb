@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
-import { Router } from '@angular/router';  // Importamos el Router para hacer la redirección
+import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-login-registro',
@@ -11,16 +12,56 @@ import { Router } from '@angular/router';  // Importamos el Router para hacer la
   styleUrls: ['./login-registro.component.scss']
 })
 export class LoginRegistroComponent {
-  isLogin = true;  // Variable para alternar entre login y registro
+  isLogin = true;
+  email = '';
+  password = '';
+  confirmPassword = '';
+  nombre = '';
+  fechaNacimiento = '';
+  genero = '';
+  errorMessage = '';
+passwordTouched: any;
+generoTouched: any;
+nombreTouched: any;
+emailTouched: any;
 
-  constructor(private router: Router) {}  // Inyectamos el Router en el constructor
+  constructor(private authService: AuthService, private router: Router) {}
 
   flip() {
-    this.isLogin = !this.isLogin;  // Cambia entre login y registro
+    this.isLogin = !this.isLogin;
+    this.errorMessage = '';
   }
 
-  // Método temporal para simular el ingreso y redirigir al dashboard
-  onLogin() {
-    this.router.navigate(['/dashboard']);  // Redirige al dashboard
+  async onLogin() {
+    try {
+      await this.authService.onLogin(this.email, this.password);
+      this.router.navigate(['/dashboard']);
+    } catch (error) {
+      this.errorMessage = 'Error al iniciar sesión: ' + (error as Error).message;
+    }
   }
+
+  async onRegister() {
+    if (this.password !== this.confirmPassword) {
+      this.errorMessage = 'Las contraseñas no coinciden';
+      return;
+    }
+  
+    try {
+      // Asegúrate de que 'psicologo' esté siendo pasado como 'perfil'
+      await this.authService.register(
+        this.email, 
+        this.password, 
+        this.nombre, 
+        this.fechaNacimiento,  // fechaNacimiento
+        this.genero,           // genero
+        'psicologo'            // perfil (debe ser 'psicologo')
+      );
+        this.router.navigate(['/dashboard']);
+    } catch (error) {
+      this.errorMessage = 'Error al registrar usuario: ' + (error as Error).message;
+    }
+  }
+  
+  
 }

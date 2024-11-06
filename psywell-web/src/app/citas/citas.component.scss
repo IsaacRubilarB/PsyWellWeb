@@ -63,10 +63,11 @@ h2{
   color: #ffffff; 
   background-color: #007bff; 
   border: none;
-  border-radius: 50px; 
+  border-radius: 10px; 
   cursor: pointer;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   text-align: center;
+  margin-bottom: 2%;
 }
 
 .btn-agregar-cita:hover {
@@ -74,12 +75,34 @@ h2{
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
 }
 
+h3{
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+h4{
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+p{
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+  color: #fafafa;
+}
+
 .cita-card {
+  opacity: 0.5; /* El valor va de 0 (transparente) a 1 (opaco) */
   display: flex;
   justify-content: flex-start;
   align-items: center;
   padding: 20px;
-  background-color: rgba(147, 207, 150, 0); 
+  background-color:rgba(0, 0, 0, 0.7); 
   border-radius: 10px;
   border-left: 5px solid #ffc107; 
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
