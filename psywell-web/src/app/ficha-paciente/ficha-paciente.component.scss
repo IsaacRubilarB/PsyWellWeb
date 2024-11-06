@@ -1,0 +1,136 @@
+.modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background-color: #1e3a5f;
+    padding: 2rem;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+    position: relative;
+    border: 2px solid #ffffff;
+    text-align: center;
+    color: #e5e5e5;
+  }
+  
+  .close-modal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #ff4d4d;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .progress-bar {
+    width: 100%;
+    background-color: #3e4a61;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .progress {
+    height: 10px;
+    background-color: #ffc107;
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+  
+  .progress-text {
+    margin-top: -8px;
+    font-size: 0.9rem;
+    color: #ffc107;
+    font-weight: bold;
+  }
+  
+  .modal-title {
+    color: #ffc107;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .section {
+    margin-bottom: 1.5rem;
+  
+    h3 {
+      color: #ffc107;
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+  
+    label {
+      font-weight: bold;
+      color: #b0c4de;
+    }
+  
+    input, select, textarea {
+      width: 90%;
+      padding: 0.75rem;
+      margin-top: 0.25rem;
+      border: 1px solid #b0c4de;
+      border-radius: 5px;
+      background-color: #2e4964;
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+  }
+  
+  .phone-input {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  
+    .flag-icon {
+      font-size: 1.2rem;
+      margin-right: 5px;
+    }
+  
+    input {
+      flex: 1;
+    }
+  }
+  
+  .save-button {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #ffc107;
+    color: #212121;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  
+    &:hover {
+      background-color: #f5b700;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .modal-content {
+      width: 95%;
+      padding: 1.5rem;
+    }
+  }
+  

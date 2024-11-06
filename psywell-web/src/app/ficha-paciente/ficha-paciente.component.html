@@ -1,0 +1,71 @@
+<div class="modal-container">
+    <div class="modal-content">
+      <button class="close-modal" (click)="closeModal()">✖</button>
+  
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress" [style.width.%]="progressPercentage"></div>
+        </div>
+        <p class="progress-text">{{ progressPercentage }}% completado</p>
+      </div>
+  
+      <h2 class="modal-title">Ficha del Paciente</h2>
+  
+      <form (ngSubmit)="onSubmit()" class="ficha-form">
+        <!-- Información Personal -->
+        <div class="section">
+          <h3>Información Personal</h3>
+          <label for="nombres">Nombres</label>
+          <input type="text" id="nombres" [(ngModel)]="paciente.nombres" name="nombres" (input)="updateProgress()" required />
+  
+          <label for="apellidos">Apellidos</label>
+          <input type="text" id="apellidos" [(ngModel)]="paciente.apellidos" name="apellidos" (input)="updateProgress()" required />
+  
+          <label for="fechaNacimiento">Fecha de Nacimiento</label>
+          <input type="date" id="fechaNacimiento" [(ngModel)]="paciente.fechaNacimiento" name="fechaNacimiento" (input)="updateProgress()" />
+  
+          <label for="genero">Género</label>
+          <div class="gender-select">
+            <select id="genero" [(ngModel)]="paciente.genero" name="genero" (change)="updateProgress()">
+              <option value="">Seleccione</option>
+              <option value="Masculino">👨 Masculino</option>
+              <option value="Femenino">👩 Femenino</option>
+              <option value="Otro">🌈 24 tipos de gay</option>
+            </select>
+          </div>
+        </div>
+  
+        <!-- Contacto -->
+        <div class="section">
+          <h3>Contacto</h3>
+          <label for="correo">Correo Electrónico</label>
+          <input type="email" id="correo" [(ngModel)]="paciente.correo" name="correo" (input)="updateProgress()" />
+  
+          <label for="telefono">Teléfono</label>
+          <div class="phone-input">
+            <span class="flag-icon">🇨🇱 +56</span>
+            <input type="tel" id="telefono" [(ngModel)]="paciente.telefono" name="telefono" placeholder="Ingrese teléfono" (input)="updateProgress()" />
+          </div>
+  
+          <label for="telefonoEmercia">Teléfono de Emergencia</label>
+          <input type="tel" id="telefonoEmercia" [(ngModel)]="paciente.telefonoEmercia" name="telefonoEmercia" (input)="updateProgress()" />
+  
+          <label for="direccion">Dirección</label>
+          <textarea id="direccion" [(ngModel)]="paciente.direccion" name="direccion" (input)="updateProgress()"></textarea>
+        </div>
+  
+        <!-- Historia Clínica -->
+        <div class="section">
+          <h3>Historia Clínica</h3>
+          <label for="notasSesionAnterior">Notas de la Sesión Anterior</label>
+          <textarea id="notasSesionAnterior" [(ngModel)]="paciente.notasSesionAnterior" name="notasSesionAnterior" (input)="updateProgress()"></textarea>
+  
+          <label for="medicamentos">Medicamentos</label>
+          <textarea id="medicamentos" [(ngModel)]="paciente.medicamentos" name="medicamentos" (input)="updateProgress()"></textarea>
+        </div>
+  
+        <button type="submit" class="save-button">Guardar Ficha</button>
+      </form>
+    </div>
+  </div>
+  
