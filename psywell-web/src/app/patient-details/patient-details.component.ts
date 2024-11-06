@@ -4,21 +4,24 @@ import { Chart, registerables } from 'chart.js';
 import lottie from 'lottie-web';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
+import { FichaPacienteComponent } from '../ficha-paciente/ficha-paciente.component';
+
 
 @Component({
   selector: 'app-patient-details',
   templateUrl: './patient-details.component.html',
   styleUrls: ['./patient-details.component.scss'],
-  standalone: true,  
-  imports: [CommonModule, NavbarComponent],  
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]  
+  standalone: true,
+  imports: [CommonModule, NavbarComponent, FichaPacienteComponent]
 })
+
 export class PatientDetailsComponent implements AfterViewInit {
   patientId: string | null = null;
   patientDetails: any = {};
   bpm: number = 75;
   sleepHours: number = 7;
   stressLevel: number = 40;
+  isFichaPacienteModalOpen = false;  // Estado para el modal
 
   @ViewChild('heartAnimation') heartAnimationDiv!: ElementRef;
   @ViewChild('sleepAnimation') sleepAnimationDiv!: ElementRef;
@@ -151,5 +154,14 @@ export class PatientDetailsComponent implements AfterViewInit {
 
   generateReport() {
     this.router.navigate(['/reports']);
+  }
+
+  // Métodos para abrir y cerrar el modal de la ficha del paciente
+  openFichaPacienteModal() {
+    this.isFichaPacienteModalOpen = true;
+  }
+
+  closeFichaPacienteModal() {
+    this.isFichaPacienteModalOpen = false;
   }
 }
