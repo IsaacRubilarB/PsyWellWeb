@@ -55,8 +55,10 @@ export class RecursosMaterialesComponent {
 
   selectCategory(type: string) {
     this.selectedCategory = type;
+    console.log('Categoría seleccionada:', this.selectedCategory);  // Verifica que la categoría esté cambiando
     this.fetchResources(type);
   }
+  
 
   selectPaciente(pacienteId: string) {
     this.selectedPacienteId = pacienteId;
@@ -73,10 +75,19 @@ export class RecursosMaterialesComponent {
 
   fetchResources(type: string) {
     this.recursosService.getRecursosPorTipo(type).subscribe((resources: any[]) => {
-      this.resources[type] = resources;
+      let miLista = [];
+      for(let i = 0 ; i < resources.length ; i++){
+        if(resources[i].tipo == type){
+          miLista.push(resources[i]);
+        }
+      }
+      this.resources[type] = miLista;
+      console.log('Recursos cargados desde Firestore:', resources);  // Aquí revisamos los datos de Firestore
       this.filterResources();
     });
   }
+  
+  
 
   filterResources() {
     this.filteredResources = this.resources[this.selectedCategory]?.filter(resource => {

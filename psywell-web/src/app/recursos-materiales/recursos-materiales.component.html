@@ -31,12 +31,15 @@
         <div *ngIf="selectedCategory === 'videos'" class="video-container">
           <iframe
             width="100%"
-            height="200"
+            height="100%"
             [src]="resource.url | safe"
             frameborder="0"
             allowfullscreen
           ></iframe>
+          <p *ngIf="!resource.url">URL no válida</p> <!-- Muestra mensaje si no hay URL -->
         </div>
+        
+        
 
         <img *ngIf="resource.portada" [src]="resource.portada" alt="Portada" class="portada-preview" />
 

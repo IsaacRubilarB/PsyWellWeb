@@ -112,24 +112,28 @@ export class FormularioRecursosComponent {
       titulo: this.titulo,
       descripcion: this.descripcion,
       tipo: this.tipoRecurso,
-      autor: this.autor,
-      categoria: this.categoria,
+      autor: this.autor || '', // Guarda como cadena vacía si está vacío
+      categoria: this.categoria || 'Sin Categoría',
       fecha_subida: new Date(),
       visibilidad: true,
       pacienteAsignado: this.pacienteSeleccionado ? this.pacienteSeleccionado.id : null,
       url: this.tipoRecurso === 'videos' ? this.videoUrl : this.portadaUrl
     };
-
-    if (this.portadaUrl) {
-      nuevoRecurso.portada = this.portadaUrl;
+  
+    if (this.tipoRecurso === 'videos' && this.videoUrl.includes('youtube.com/watch')) {
+      const videoId = this.videoUrl.split('v=')[1].split('&')[0];
+      nuevoRecurso.url = `https://www.youtube.com/embed/${videoId}`;
     }
-
+    
+  
     const collectionName = this.tipoRecurso === 'libros' ? 'libros' : 'recursos-materiales';
     this.firestore.collection(collectionName).add(nuevoRecurso).then(() => {
       this.mostrarAlerta('Éxito', 'Recurso subido exitosamente', 'success');
       this.resetForm();
     });
   }
+  
+  
 
   resetForm() {
     this.titulo = '';
