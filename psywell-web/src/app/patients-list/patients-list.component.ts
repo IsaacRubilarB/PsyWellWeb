@@ -1,7 +1,8 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
+import { UsersService } from 'app/services/userService';
 
 interface Patient {
   id: string;
@@ -13,7 +14,7 @@ interface Patient {
   lastSession: string;
   nextAppointment: string;
   riskLevel: string;
-  progress: number; // Porcentaje de progreso en el tratamiento
+  progress: number;
 }
 
 @Component({
@@ -24,47 +25,38 @@ interface Patient {
   styleUrls: ['./patients-list.component.scss'],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class PatientsListComponent {
-  patients: Patient[] = [
-    {
-      id: '1',
-      name: 'Cristina Zapata',
-      age: 25,
-      diagnosis: 'Depresión',
-      emotionalStatus: 'Estable',
-      photo: './assets/profiles/ana.png',
-      lastSession: '2024-10-28',
-      nextAppointment: '2024-11-05',
-      riskLevel: 'Bajo',
-      progress: 70
-    },
-    {
-      id: '2',
-      name: 'Juan Pérez',
-      age: 30,
-      diagnosis: 'Ansiedad',
-      emotionalStatus: 'Moderado',
-      photo: './assets/profiles/juan.png',
-      lastSession: '2024-10-25',
-      nextAppointment: '2024-11-10',
-      riskLevel: 'Moderado',
-      progress: 40
-    },
-    {
-      id: '3',
-      name: 'Cristopher Soto',
-      age: 23,
-      diagnosis: 'Depresión Severa',
-      emotionalStatus: 'Severo',
-      photo: './assets/profiles/carlos.png',
-      lastSession: '2024-10-20',
-      nextAppointment: '2024-11-15',
-      riskLevel: 'Alto',
-      progress: 20
-    }
-  ];
-  
-  filteredPatients: Patient[] = [...this.patients];
+export class PatientsListComponent implements OnInit {
+  patients: Patient[] = [];
+  filteredPatients: Patient[] = [];
+
+  constructor(private usersService: UsersService) {}
+
+  ngOnInit(): void {
+    this.cargarPacientes();
+  }
+
+  cargarPacientes() {
+    this.usersService.listarUsuarios().subscribe(
+      (data: any[]) => {
+        this.patients = data.map(user => ({
+          id: user.id || '',
+          name: user.name || 'Desconocido',
+          age: user.age || 0,
+          diagnosis: user.diagnosis || 'Sin diagnóstico',
+          emotionalStatus: user.emotionalStatus || 'Sin estado',
+          photo: user.photo || './assets/profiles/default.png',
+          lastSession: user.lastSession || 'N/A',
+          nextAppointment: user.nextAppointment || 'N/A',
+          riskLevel: user.riskLevel || 'Sin riesgo',
+          progress: user.progress || 0
+        }));
+        this.filteredPatients = [...this.patients];
+      },
+      (error: any) => {
+        console.error('Error al cargar pacientes:', error);
+      }
+    );
+  }
 
   onSearch(event: any) {
     const query = event.target.value.toLowerCase();

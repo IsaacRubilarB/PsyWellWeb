@@ -7,6 +7,7 @@ import { SafePipe } from './safe.pipe';
 import { FormularioRecursosComponent } from '../formulario-recursos/formulario-recursos.component';
 import { RecursosService } from 'app/services/recursos.service';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-recursos-materiales',
@@ -102,14 +103,57 @@ export class RecursosMaterialesComponent {
     });
   }
 
-  deleteResource(id: string, type: string) {
-    const collectionName = type === 'libros' ? 'libros' : type === 'audios' ? 'audios' : 'recursos-materiales';
-
-    this.recursosService.deleteRecursoPorId(id, collectionName).then(() => {
-      this.resources[type] = this.resources[type].filter(resource => resource.id !== id);
-      this.filterResources();
+  mostrarAlerta(titulo: string, texto: string, icono: 'success' | 'error') {
+    Swal.fire({
+      title: titulo,
+      text: texto,
+      icon: icono,
+      confirmButtonText: 'OK',
+      customClass: {
+        popup: 'swal2-border-radius',
+        confirmButton: 'swal2-confirm-button'
+      }
     });
   }
+  
+
+  deleteResource(id: string, type: string) {
+    // Mostrar la alerta de confirmación
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Deseas eliminar este recurso? Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      customClass: {
+        popup: 'swal2-border-radius',
+        confirmButton: 'swal2-confirm-button',
+        cancelButton: 'swal2-cancel-button' 
+      }
+    }).then((result) => {
+      // Si el usuario confirma, proceder con la eliminación
+      if (result.isConfirmed) {
+        const collectionName = type === 'libros' ? 'libros' : type === 'audios' ? 'audios' : 'recursos-materiales';
+  
+        this.recursosService.deleteRecursoPorId(id, collectionName).then(() => {
+          // Actualizar los recursos y aplicar el filtro
+          this.resources[type] = this.resources[type].filter(resource => resource.id !== id);
+          this.filterResources();
+  
+          // Mostrar alerta de éxito
+          this.mostrarAlerta('Eliminado', 'El recurso ha sido eliminado correctamente.', 'success');
+        }).catch((error) => {
+          console.error('Error al eliminar el recurso:', error);
+  
+          // Mostrar alerta de error
+          this.mostrarAlerta('Error', 'Hubo un problema al eliminar el recurso.', 'error');
+        });
+      }
+    });
+  }
+  
+  
 
   getTitleForCategory(type: string): string {
     return this.sidebarItems.find(item => item.tipo === type)?.titulo || '';
@@ -153,12 +197,13 @@ viewResource(resource: any) {
 }
 
 updateProgressBar() {
-  const progressBarElement = document.querySelector('.progress-bar') as HTMLElement;
+  const progressBarElement = document.querySelector(`.progress-bar[data-id="${this.activeResourceId}"]`) as HTMLElement;
   if (progressBarElement && this.duration > 0) {
     const progressPercentage = (this.currentAudioTime / this.duration) * 100;
     progressBarElement.style.setProperty('--progress', `${progressPercentage}%`);
   }
 }
+
 
 
 

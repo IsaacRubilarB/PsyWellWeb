@@ -54,10 +54,11 @@
       <i class="material-icons">{{ isPlaying(resource) ? 'pause' : 'play_arrow' }}</i>
     </button>
     <div class="progress-bar">
-      <div class="progress-bar-fill" [style.width.%]="(currentAudioTime / duration) * 100"></div>
+      <div class="progress-bar-fill" [style.width.%]="resource.id === activeResourceId ? (currentAudioTime / duration) * 100 : 0"></div>
     </div>
-    <span class="audio-duration">{{ formatTime(duration) }}</span>
+    <span class="audio-duration">{{ formatTime(resource.id === activeResourceId ? duration : 0) }}</span>
   </div>
+  
 </div>
 
 <p class="audio-description">{{ resource.descripcion }}</p>

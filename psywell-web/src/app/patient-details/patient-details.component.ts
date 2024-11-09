@@ -47,7 +47,7 @@ export class PatientDetailsComponent implements AfterViewInit {
     this.simulateSleepHoursChange();
     this.loadStressAnimation(); 
     this.loadPillAnimations(); 
-    this.loadCalendarAnimations(); // Cargar la animación en las citas
+    this.loadCalendarAnimations(); 
   }
 
   loadAnimations() {
