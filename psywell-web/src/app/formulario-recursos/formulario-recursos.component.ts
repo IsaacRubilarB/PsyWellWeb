@@ -56,6 +56,8 @@ export class FormularioRecursosComponent {
     this.archivo = event.target.files[0];
     if (this.tipoRecurso === 'libros' && this.archivo) {
       this.generatePdfPreview(this.archivo);
+    } else if (this.tipoRecurso === 'audios' && this.archivo) {
+      this.uploadAudioFile(this.archivo);
     }
   }
 
@@ -75,9 +77,11 @@ export class FormularioRecursosComponent {
         await page.render({ canvasContext: context, viewport }).promise;
         const dataUrl = canvas.toDataURL('image/png');
 
-        const filePath = `portadas/${file.name}_portada.png`;
-        const task = await this.storage.upload(filePath, this.dataUrlToBlob(dataUrl));
-        this.portadaUrl = await task.ref.getDownloadURL();
+        // Subir la portada al storage
+        this.uploadPortadaToStorage(dataUrl, file.name);
+
+        // Subir el archivo PDF completo al storage
+        this.uploadPdfFile(file);
       };
       reader.readAsArrayBuffer(file);
     } catch (error) {
@@ -85,6 +89,38 @@ export class FormularioRecursosComponent {
       this.mostrarAlerta('Error', 'No se pudo generar la vista previa del libro.', 'error');
     }
   }
+
+  uploadPortadaToStorage(dataUrl: string, fileName: string) {
+    const filePath = `portadas/${fileName}_portada.png`;
+    const task = this.storage.upload(filePath, this.dataUrlToBlob(dataUrl));
+    task.snapshotChanges().subscribe(async () => {
+      this.portadaUrl = await this.storage.ref(filePath).getDownloadURL().toPromise();
+      console.log("URL de portada:", this.portadaUrl);
+    });
+  }
+
+  uploadPdfFile(file: File) {
+    const filePath = `libros/${file.name}`;
+    const fileRef = this.storage.ref(filePath);
+    const task = this.storage.upload(filePath, file);
+
+    task.snapshotChanges().subscribe(async () => {
+      this.recursoUrl = await fileRef.getDownloadURL().toPromise();
+      console.log("URL del PDF completo:", this.recursoUrl);
+    });
+  }
+
+  uploadAudioFile(file: File) {
+    const filePath = `audios/${file.name}`;
+    const fileRef = this.storage.ref(filePath);
+    const task = this.storage.upload(filePath, file);
+
+    task.snapshotChanges().subscribe(async () => {
+      this.recursoUrl = await fileRef.getDownloadURL().toPromise();
+      console.log("URL del audio:", this.recursoUrl);
+    });
+}
+
 
   dataUrlToBlob(dataUrl: string): Blob {
     const byteString = atob(dataUrl.split(',')[1]);
@@ -97,11 +133,13 @@ export class FormularioRecursosComponent {
     return new Blob([ab], { type: mimeString });
   }
 
-  submitForm() {
+  async submitForm() {
     if (this.tipoRecurso === 'libros' && this.archivo) {
-      this.generatePdfPreview(this.archivo).then(() => {
-        this.guardarRecurso();
-      });
+      await this.generatePdfPreview(this.archivo);
+      this.guardarRecurso();
+    } else if (this.tipoRecurso === 'audios' && this.archivo) {
+      this.uploadAudioFile(this.archivo);
+      this.guardarRecurso();
     } else {
       this.guardarRecurso();
     }
@@ -112,28 +150,24 @@ export class FormularioRecursosComponent {
       titulo: this.titulo,
       descripcion: this.descripcion,
       tipo: this.tipoRecurso,
-      autor: this.autor || '', // Guarda como cadena vacía si está vacío
+      autor: this.autor || '',
       categoria: this.categoria || 'Sin Categoría',
       fecha_subida: new Date(),
       visibilidad: true,
       pacienteAsignado: this.pacienteSeleccionado ? this.pacienteSeleccionado.id : null,
-      url: this.tipoRecurso === 'videos' ? this.videoUrl : this.portadaUrl
+      url: this.recursoUrl,
+      portada: this.tipoRecurso === 'libros' ? this.portadaUrl : null
     };
-  
-    if (this.tipoRecurso === 'videos' && this.videoUrl.includes('youtube.com/watch')) {
-      const videoId = this.videoUrl.split('v=')[1].split('&')[0];
-      nuevoRecurso.url = `https://www.youtube.com/embed/${videoId}`;
-    }
-    
-  
-    const collectionName = this.tipoRecurso === 'libros' ? 'libros' : 'recursos-materiales';
+
+    const collectionName = this.tipoRecurso === 'libros' ? 'libros' : this.tipoRecurso === 'audios' ? 'audios' : 'recursos-materiales';
     this.firestore.collection(collectionName).add(nuevoRecurso).then(() => {
       this.mostrarAlerta('Éxito', 'Recurso subido exitosamente', 'success');
       this.resetForm();
+    }).catch(error => {
+      console.error("Error al guardar recurso en Firestore:", error);
+      this.mostrarAlerta('Error', 'No se pudo guardar el recurso.', 'error');
     });
   }
-  
-  
 
   resetForm() {
     this.titulo = '';

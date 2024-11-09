@@ -21,7 +21,14 @@ export class RecursosService {
 
   // Obtener colección según el tipo de recurso
   private getCollectionByType(tipo: string): AngularFirestoreCollection<Recurso> {
-    return this.firestore.collection<Recurso>("recursos-materiales");
+    // Cambiar la colección según el tipo
+    if (tipo === 'libros') {
+      return this.firestore.collection<Recurso>('libros');
+    } else if (tipo === 'audios') {
+      return this.firestore.collection<Recurso>('audios');
+    } else {
+      return this.firestore.collection<Recurso>('recursos-materiales'); // Default para videos y foros
+    }
   }
 
   // Obtener recursos por tipo de recurso desde la colección específica

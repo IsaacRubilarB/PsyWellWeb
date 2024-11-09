@@ -36,22 +36,37 @@
             frameborder="0"
             allowfullscreen
           ></iframe>
-          <p *ngIf="!resource.url">URL no válida</p> <!-- Muestra mensaje si no hay URL -->
+          <p *ngIf="!resource.url">URL no válida</p>
         </div>
-        
-        
 
         <img *ngIf="resource.portada" [src]="resource.portada" alt="Portada" class="portada-preview" />
 
-        <p>{{ resource.descripcion }}</p>
+      <!-- Reproductor de audio para la categoría de audios -->
+<div *ngIf="selectedCategory === 'audios'" class="audio-player">
+  <div class="audio-info">
+    <div class="audio-details">
+      <h4 class="audio-title">{{ resource.titulo }}</h4>
+    </div>
+  </div>
+
+  <div class="audio-controls">
+    <button class="play-button" (click)="toggleAudio(resource)">
+      <i class="material-icons">{{ isPlaying(resource) ? 'pause' : 'play_arrow' }}</i>
+    </button>
+    <div class="progress-bar">
+      <div class="progress-bar-fill" [style.width.%]="(currentAudioTime / duration) * 100"></div>
+    </div>
+    <span class="audio-duration">{{ formatTime(duration) }}</span>
+  </div>
+</div>
+
+<p class="audio-description">{{ resource.descripcion }}</p>
+
+
 
         <!-- Botones de acción -->
         <div class="button-group">
-          <button
-            *ngIf="selectedCategory === 'presentaciones'"
-            class="view-button"
-            (click)="viewResource(resource)"
-          >
+          <button *ngIf="selectedCategory === 'libros'" class="view-button" (click)="viewResource(resource)">
             <i class="material-icons">search</i>
           </button>
           <button class="delete-button" (click)="deleteResource(resource.id, selectedCategory)">
@@ -60,6 +75,7 @@
         </div>
       </div>
     </div>
+
     <p *ngIf="filteredResources.length === 0" class="no-data-message">
       No se encontraron recursos para esta categoría.
     </p>
