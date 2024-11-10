@@ -1,36 +1,30 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Router } from '@angular/router';
-import { lastValueFrom, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { BehaviorSubject, lastValueFrom, Observable } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
+  private userInfoSubject = new BehaviorSubject<{ nombre: string; genero: string }>({ nombre: 'Usuario', genero: 'masculino' });
+  userInfo$ = this.userInfoSubject.asObservable();
+
   constructor(
     private afAuth: AngularFireAuth,
-    private firestore: AngularFirestore,
-    private http: HttpClient,  // Asegúrate de tener HttpClientModule en AppModule
+    private http: HttpClient,
     private router: Router
   ) {}
 
   async register(email: string, password: string, nombre: string, fechaNacimiento: string, genero: string, perfil: string) {
     try {
-      // 1. Crear usuario en Firebase
       const userCredential = await this.afAuth.createUserWithEmailAndPassword(email, password);
       const uid = userCredential.user?.uid;
 
       if (uid) {
-        // 2. Guardar en PostgreSQL y obtener el ID
         const postgresId = await this.saveUserToPostgres(uid, nombre, email, password, fechaNacimiento, genero, perfil);
-        
-        // 3. Guardar en Firestore con el ID de PostgreSQL
-        await this.saveUserToFirestore(uid, nombre, email, postgresId);
-
-        // Redirigir al usuario al dashboard
         this.router.navigate(['/dashboard']);
       } else {
         throw new Error('UID de Firebase no válido');
@@ -40,22 +34,6 @@ export class AuthService {
       throw new Error('Error al registrar usuario: ' + (error as Error).message);
     }
   }
-  private async saveUserToFirestore(uid: string, nombre: string, email: string, postgresId: string) {
-    const userRef = this.firestore.collection('usuarios').doc(uid);
-    try {
-      await userRef.set({
-        nombre: nombre,
-        email: email,
-        postgresId: postgresId,  // Aquí lo guardamos con el postgresId obtenido
-        fechaCreacion: new Date(),
-      });
-      console.log('Usuario guardado correctamente en Firestore');
-    } catch (error) {
-      console.error('Error al guardar usuario en Firestore:', error);
-      throw new Error('Error al guardar usuario en Firestore');
-    }
-  }
-  
 
   private async saveUserToPostgres(uid: string, nombre: string, email: string, contrasena: string, fechaNacimiento: string, genero: string, perfil: string): Promise<any> {
     try {
@@ -66,15 +44,14 @@ export class AuthService {
         contrasena,
         fechaNacimiento,
         genero,
-        perfil  // Asegúrate de que 'perfil' sea el último valor
+        perfil
       }));
   
-      console.log('Response from PostgreSQL:', response);  // Verifica la respuesta
-  
-      // Si no se recibe postgresId, lanza un error, pero no interrumpe el flujo
+      console.log('Response from PostgreSQL:', response);
+
       if (!response.postgresId) {
         console.warn('postgresId no recibido desde PostgreSQL');
-        return null;  // Puedes retornar null o un valor que indiques como fallback
+        return null;
       }
   
       return response.postgresId;
@@ -82,20 +59,52 @@ export class AuthService {
       console.error('Error al guardar usuario en PostgreSQL:', error);
       throw new Error('Error al guardar usuario en PostgreSQL');
     }
-  }  
-  
-  // Método para iniciar sesión con Firebase
+  }
+
   async onLogin(email: string, password: string) {
     try {
-      await this.afAuth.signInWithEmailAndPassword(email, password);
-      this.router.navigate(['/dashboard']);
+      const userCredential = await this.afAuth.signInWithEmailAndPassword(email, password);
+      const uid = userCredential.user?.uid;
+
+      if (uid) {
+        // Recupera el id del usuario en PostgreSQL
+        this.fetchUserIdFromPostgres(email).subscribe(
+          (id) => {
+            this.fetchUserInfoFromPostgres(id);
+            this.router.navigate(['/dashboard']);
+          },
+          (error) => {
+            console.error('Error al obtener id de usuario desde PostgreSQL:', error);
+          }
+        );
+      }
     } catch (error) {
       console.error('Error al iniciar sesión: ', error);
       throw new Error('Error al iniciar sesión: ' + (error as Error).message);
     }
   }
 
-  // Método para cerrar sesión
+  private fetchUserIdFromPostgres(email: string): Observable<number> {
+    // Endpoint en el backend que busca el id usando el email
+    return this.http.get<number>(`http://localhost:8081/obtenerIdUsuarioPorEmail/${email}`);
+  }
+
+  // Método para obtener la información del usuario desde PostgreSQL usando el id
+  private fetchUserInfoFromPostgres(id: number) {
+    this.http.get<any>(`http://localhost:8081/ListarUsuariosById/${id}`).subscribe(
+      (data) => {
+        if (data && data.nombre && data.genero) {
+          this.userInfoSubject.next({ nombre: data.nombre, genero: data.genero });
+        } else {
+          console.warn('No se encontraron datos de usuario en PostgreSQL');
+        }
+      },
+      (error) => {
+        console.error('Error al obtener usuario de PostgreSQL:', error);
+      }
+    );
+  }
+
   async logout() {
     try {
       await this.afAuth.signOut();

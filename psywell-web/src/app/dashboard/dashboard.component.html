@@ -4,7 +4,12 @@
   <!-- Contenedor principal del dashboard -->
   <div class="header">
     <img src="assets/logo.png" alt="PsyWell Logo" class="logo" />
-    <h1 class="welcome-message">Bienvenida, Dra. {{ psicologoName }}</h1>
+    <h1 class="welcome-message">
+      Bienvenid{{ genero === 'femenino' ? 'a' : 'o' }}, 
+      <ng-container *ngIf="genero === 'femenino'; else masculino">Dra.</ng-container>
+      <ng-template #masculino>Dr.</ng-template>
+      {{ psicologoName }}
+    </h1>
   </div>
 
   <!-- Resumen de perfil con fondo personalizado -->

@@ -1,9 +1,11 @@
 import { Component, OnInit, OnDestroy, ElementRef, Renderer2 } from '@angular/core';
 import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
-import interact from 'interactjs'; // Importa interact.js
+import interact from 'interactjs';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
+import { UsersService } from 'app/services/userService';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,10 +15,12 @@ import { NavbarComponent } from '../navbar/navbar.component';
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  psicologoName: string = 'Cristina Zapata';
+  psicologoName: string = ''; 
   especialidad: string = 'Psicóloga Especialista en Salud Mental';
   aniosExperiencia: number = 10;
   fondoPerfil: SafeStyle = '';
+  genero: string = 'masculino'; 
+
   stickyNotes: { title: string; content: string, position?: { x: number, y: number } }[] = [
     { title: 'Nota Rápida 1', content: 'Recordar preguntar sobre sueño a Manuel Fernández.', position: { x: 0, y: 0 } },
     { title: 'Nota Rápida 2', content: 'Preparar informe de progreso para Sofía Martínez.', position: { x: 0, y: 0 } },
@@ -29,17 +33,47 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isCarouselActive: boolean = false;
   carouselInterval: any;
 
-  constructor(private sanitizer: DomSanitizer, private renderer: Renderer2, private el: ElementRef) {}
+  constructor(
+    private sanitizer: DomSanitizer,
+    private renderer: Renderer2,
+    private el: ElementRef,
+    private usersService: UsersService,
+    private afAuth: AngularFireAuth
+  ) {}
 
   ngOnInit() {
     this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle('url(assets/portada.png)');
     this.filteredNotes = [...this.stickyNotes];
     this.checkCarousel();
 
-    // Inicializar interact.js para cada nota
+    // Obtener el ID del usuario actual de Firebase y luego buscar su información en PostgreSQL
+    this.afAuth.authState.subscribe(user => {
+      if (user && user.email) {
+        this.cargarPsicologo(user.email);
+      }
+    });
+
     setTimeout(() => {
       this.initializeDrag();
     });
+  }
+
+  cargarPsicologo(email: string) {
+    this.usersService.listarUsuarios().subscribe(
+      (response: any) => {
+        const usuarios = Array.isArray(response.data) ? response.data : [];
+        const psicologo = usuarios.find((user: any) => user.perfil === 'psicologo' && user.email === email);
+        if (psicologo) {
+          this.psicologoName = psicologo.nombre;
+          this.genero = psicologo.genero;
+        } else {
+          console.warn('No se encontró el psicólogo con el correo especificado.');
+        }
+      },
+      (error: any) => {
+        console.error('Error al cargar datos del psicólogo:', error);
+      }
+    );
   }
 
   ngOnDestroy() {
@@ -55,10 +89,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
             const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
 
-            // Aplicar la posición
             target.style.transform = `translate(${x}px, ${y}px)`;
-
-            // Actualizar los atributos de datos
             target.setAttribute('data-x', x);
             target.setAttribute('data-y', y);
           }
