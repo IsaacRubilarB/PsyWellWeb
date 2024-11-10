@@ -1,11 +1,11 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { UsersService } from 'app/services/userService';
 
 interface Paciente {
   nombres: string;
-  apellidos: string;
-  fechaNacimiento: Date | null;
+  fechaNacimiento: string | null; // Cambiado a string para el formato de fecha
   genero: string;
   correo: string;
   telefono: string;
@@ -22,12 +22,12 @@ interface Paciente {
   standalone: true,
   imports: [FormsModule, CommonModule]
 })
-export class FichaPacienteComponent {
+export class FichaPacienteComponent implements OnInit {
   @Output() closeModalEvent = new EventEmitter<void>();
+  @Input() patientId!: string; // Recibe el ID del paciente desde el componente padre
 
   paciente: Paciente = {
     nombres: '',
-    apellidos: '',
     fechaNacimiento: null,
     genero: '',
     correo: '',
@@ -38,10 +38,58 @@ export class FichaPacienteComponent {
     medicamentos: ''
   };
 
+  formattedFechaNacimiento: string | null = null;
   progressPercentage = 0;
   showSuccessMessage = false;
   isConfirmingClose = false;
   showRequiredError = false;
+
+  constructor(private usersService: UsersService) {}
+
+  ngOnInit() {
+    if (this.patientId) {
+      this.cargarDatosPaciente(this.patientId);
+    }
+  }
+
+  cargarDatosPaciente(id: string) {
+    this.usersService.obtenerUsuarioPorId(id).subscribe(
+      (response: any) => {
+        const data = response.data;
+        if (data) {
+          this.paciente = {
+            nombres: data.nombre || '',
+            fechaNacimiento: data.fechaNacimiento || null,
+            genero: data.genero || '',
+            correo: data.email || '',
+            telefono: data.telefono || '',
+            telefonoEmercia: data.telefonoEmercia || '',
+            direccion: data.direccion || '',
+            notasSesionAnterior: '',
+            medicamentos: ''
+          };
+          this.formattedFechaNacimiento = this.formatearFechaNacimiento(this.paciente.fechaNacimiento);
+          this.updateProgress();
+        }
+      },
+      (error) => {
+        console.error('Error al obtener datos del paciente:', error);
+      }
+    );
+  }
+
+  formatearFechaNacimiento(fecha: string | null): string | null {
+    if (!fecha) return null;
+
+    const [dia, mes, año] = fecha.split('/');
+    const meses = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+
+    const mesNombre = meses[parseInt(mes, 10) - 1];
+    return `${dia} de ${mesNombre} de ${año}`;
+  }
 
   updateProgress() {
     const fieldsFilled = Object.values(this.paciente).filter(value => value).length;
@@ -52,7 +100,6 @@ export class FichaPacienteComponent {
   isFormComplete(): boolean {
     return (
       !!this.paciente.nombres &&
-      !!this.paciente.apellidos &&
       !!this.paciente.fechaNacimiento &&
       !!this.paciente.genero &&
       !!this.paciente.correo &&

@@ -17,34 +17,25 @@
         <h3>Información Personal</h3>
         <div class="input-group">
           <div class="input-item">
-            <label for="nombres">Nombres</label>
-            <input type="text" id="nombres" [(ngModel)]="paciente.nombres" name="nombres" (input)="updateProgress()" required />
-            <div *ngIf="showRequiredError && !paciente.nombres" class="error-message">*Campo requerido</div>
-          </div>
-
-          <div class="input-item">
-            <label for="apellidos">Apellidos</label>
-            <input type="text" id="apellidos" [(ngModel)]="paciente.apellidos" name="apellidos" (input)="updateProgress()" required />
-            <div *ngIf="showRequiredError && !paciente.apellidos" class="error-message">*Campo requerido</div>
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" [(ngModel)]="paciente.nombres" name="nombre" readonly />
           </div>
         </div>
 
         <div class="input-group">
-          <div class="input-item">
-            <label for="fechaNacimiento">Fecha de Nacimiento</label>
-            <input type="date" id="fechaNacimiento" [(ngModel)]="paciente.fechaNacimiento" name="fechaNacimiento" (input)="updateProgress()" required />
-            <div *ngIf="showRequiredError && !paciente.fechaNacimiento" class="error-message">*Campo requerido</div>
-          </div>
 
           <div class="input-item">
+            <label for="fechaNacimiento">Fecha de Nacimiento</label>
+            <input type="text" id="fechaNacimiento" [value]="formattedFechaNacimiento" readonly />
+          </div>
+          
+          <div class="input-item">
             <label for="genero">Género</label>
-            <select id="genero" [(ngModel)]="paciente.genero" name="genero" (change)="updateProgress()" required>
-              <option value="">Seleccione</option>
-              <option value="Masculino">👨 Masculino</option>
-              <option value="Femenino">👩 Femenino</option>
-              <option value="Otro">🌈 Otro</option>
+            <select id="genero" [(ngModel)]="paciente.genero" name="genero" disabled>
+              <option value="masculino">👨 Masculino</option>
+              <option value="femenino">👩 Femenino</option>
+              <option value="otro">🌈 Otro</option>
             </select>
-            <div *ngIf="showRequiredError && !paciente.genero" class="error-message">*Campo requerido</div>
           </div>
         </div>
       </div>
@@ -55,8 +46,7 @@
         <div class="input-group">
           <div class="input-item">
             <label for="correo">Correo Electrónico</label>
-            <input type="email" id="correo" [(ngModel)]="paciente.correo" name="correo" (input)="updateProgress()" required />
-            <div *ngIf="showRequiredError && !paciente.correo" class="error-message">*Campo requerido</div>
+            <input type="email" id="correo" [(ngModel)]="paciente.correo" name="correo" readonly />
           </div>
         </div>
 
@@ -65,23 +55,40 @@
             <label for="telefono">Teléfono</label>
             <div class="phone-input">
               <span class="flag-icon">🇨🇱 +56</span>
-              <input type="tel" id="telefono" [(ngModel)]="paciente.telefono" name="telefono" placeholder="Ingrese teléfono" (input)="updateProgress()" required />
+              <input
+                type="tel"
+                id="telefono"
+                [(ngModel)]="paciente.telefono"
+                name="telefono"
+                placeholder="Ingrese teléfono"
+                required
+                [disabled]="!!paciente.telefono"
+              />
             </div>
-            <div *ngIf="showRequiredError && !paciente.telefono" class="error-message">*Campo requerido</div>
           </div>
 
           <div class="input-item">
             <label for="telefonoEmercia">Teléfono de Emergencia</label>
-            <input type="tel" id="telefonoEmercia" [(ngModel)]="paciente.telefonoEmercia" name="telefonoEmercia" (input)="updateProgress()" required />
-            <div *ngIf="showRequiredError && !paciente.telefonoEmercia" class="error-message">*Campo requerido</div>
+            <input
+              type="tel"
+              id="telefonoEmercia"
+              [(ngModel)]="paciente.telefonoEmercia"
+              name="telefonoEmercia"
+              required
+            />
           </div>
         </div>
 
         <div class="input-group">
           <div class="input-item">
             <label for="direccion">Dirección</label>
-            <input type="text" id="direccion" [(ngModel)]="paciente.direccion" name="direccion" (input)="updateProgress()" required />
-            <div *ngIf="showRequiredError && !paciente.direccion" class="error-message">*Campo requerido</div>
+            <input
+              type="text"
+              id="direccion"
+              [(ngModel)]="paciente.direccion"
+              name="direccion"
+              required
+            />
           </div>
         </div>
       </div>
@@ -92,12 +99,20 @@
         <div class="input-group">
           <div class="input-item">
             <label for="notasSesionAnterior">Notas de la Sesión Anterior</label>
-            <textarea id="notasSesionAnterior" [(ngModel)]="paciente.notasSesionAnterior" name="notasSesionAnterior" (input)="updateProgress()"></textarea>
+            <textarea
+              id="notasSesionAnterior"
+              [(ngModel)]="paciente.notasSesionAnterior"
+              name="notasSesionAnterior"
+            ></textarea>
           </div>
 
           <div class="input-item">
             <label for="medicamentos">Medicamentos</label>
-            <textarea id="medicamentos" [(ngModel)]="paciente.medicamentos" name="medicamentos" (input)="updateProgress()"></textarea>
+            <textarea
+              id="medicamentos"
+              [(ngModel)]="paciente.medicamentos"
+              name="medicamentos"
+            ></textarea>
           </div>
         </div>
       </div>

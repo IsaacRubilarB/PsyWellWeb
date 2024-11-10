@@ -4,10 +4,24 @@ import { RouterModule } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { UsersService } from 'app/services/userService';
 
+interface User {
+  idUsuario: number;
+  nombre: string;
+  fechaNacimiento: string;
+  perfil: string;
+  diagnosis?: string;
+  emotionalStatus?: string;
+  photo?: string;
+  lastSession?: string;
+  nextAppointment?: string;
+  riskLevel?: string;
+  progress?: number;
+}
+
 interface Patient {
   id: string;
   name: string;
-  age: number;
+  age: number | string;
   diagnosis: string;
   emotionalStatus: string;
   photo: string;
@@ -35,21 +49,43 @@ export class PatientsListComponent implements OnInit {
     this.cargarPacientes();
   }
 
+  calculateAge(fechaNacimiento: string): number | string {
+    if (!fechaNacimiento) return 'Edad desconocida';
+    const birthDate = new Date(fechaNacimiento);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return isNaN(age) ? 'Edad desconocida' : age;
+  }
+
+  formatDate(dateStr: string | undefined): string {
+    if (!dateStr) return 'No disponible';
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? 'No disponible' : date.toLocaleDateString();
+  }
+
   cargarPacientes() {
     this.usersService.listarUsuarios().subscribe(
-      (data: any[]) => {
-        this.patients = data.map(user => ({
-          id: user.id || '',
-          name: user.name || 'Desconocido',
-          age: user.age || 0,
-          diagnosis: user.diagnosis || 'Sin diagnóstico',
-          emotionalStatus: user.emotionalStatus || 'Sin estado',
-          photo: user.photo || './assets/profiles/default.png',
-          lastSession: user.lastSession || 'N/A',
-          nextAppointment: user.nextAppointment || 'N/A',
-          riskLevel: user.riskLevel || 'Sin riesgo',
-          progress: user.progress || 0
-        }));
+      (response: any) => {
+        const usuarios = Array.isArray(response.data) ? response.data : [];
+        this.patients = usuarios
+          .filter((user: User) => user.perfil === 'paciente')
+          .map((user: User): Patient => ({
+            id: user.idUsuario.toString(),
+            name: user.nombre,
+            age: this.calculateAge(user.fechaNacimiento),
+            diagnosis: user.diagnosis || 'Sin diagnóstico',
+            emotionalStatus: user.emotionalStatus || 'Sin estado',
+            photo: user.photo || './assets/profiles/default.png',
+            lastSession: this.formatDate(user.lastSession),
+            nextAppointment: this.formatDate(user.nextAppointment),
+            riskLevel: user.riskLevel || 'Sin riesgo',
+            progress: user.progress || 0
+          }));
         this.filteredPatients = [...this.patients];
       },
       (error: any) => {
@@ -82,21 +118,21 @@ export class PatientsListComponent implements OnInit {
     const riskLevel = event.target.value;
     this.filteredPatients = riskLevel === 'todos'
       ? [...this.patients]
-      : this.patients.filter(patient => patient.riskLevel.toLowerCase() === riskLevel);
+      : this.filteredPatients.filter(patient => patient.riskLevel.toLowerCase() === riskLevel);
   }
 
   filterByDiagnosis(event: any) {
     const diagnosis = event.target.value;
     this.filteredPatients = diagnosis === 'todos'
       ? [...this.patients]
-      : this.patients.filter(patient => patient.diagnosis.toLowerCase() === diagnosis.toLowerCase());
-  }
-
-  scheduleAppointment(patient: Patient) {
-    console.log(`Programar cita para ${patient.name}`);
+      : this.filteredPatients.filter(patient => patient.diagnosis.toLowerCase() === diagnosis.toLowerCase());
   }
 
   sendMessage(patient: Patient) {
     console.log(`Enviar mensaje a ${patient.name}`);
+  }
+
+  scheduleAppointment(patient: Patient) {
+    console.log(`Programar cita para ${patient.name}`);
   }
 }

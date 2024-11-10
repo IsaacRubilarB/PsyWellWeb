@@ -6,7 +6,6 @@
   max-width: 1000px;
   margin: 80px auto;
   border: 2px solid #FFD966;
-  position: relative;
   overflow: hidden;
 }
 
@@ -20,30 +19,28 @@
 .search-bar-container {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 15px;
   margin-bottom: 30px;
-  position: relative;
 }
 
 .search-bar {
-  width: 85%;
+  width: 80%;
   padding: 12px;
   border: none;
   border-radius: 10px;
   font-size: 16px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
   outline: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
 .search-bar:focus {
-  border-color: #FFD966;
   box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
 }
 
 .logo-container {
-  width: 80px;
-  height: auto;
+  width: 60px;
+  height: 60px;
 }
 
 .logo-container img {
@@ -69,6 +66,7 @@
     border: 1px solid #FFD966;
     border-radius: 5px;
     outline: none;
+    font-size: 14px;
   }
 }
 
@@ -76,13 +74,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 15px;
   margin: 12px 0;
   background-color: #2E3A48;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  position: relative;
-  overflow: hidden;
   transition: background-color 0.3s ease, transform 0.2s ease;
 
   &:hover {
@@ -93,8 +89,8 @@
 }
 
 .patient-photo {
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   overflow: hidden;
 
@@ -213,5 +209,16 @@
   .patients-list .patient-card {
     flex-direction: column;
     align-items: flex-start;
+    padding: 20px;
+  }
+
+  .patient-actions {
+    flex-direction: row;
+    gap: 5px;
+
+    .btn-details, .btn-message, .btn-appointment {
+      padding: 8px 12px;
+      font-size: 14px;
+    }
   }
 }

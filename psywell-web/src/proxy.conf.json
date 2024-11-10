@@ -24,5 +24,14 @@
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Credentials": "true"
     }
+  },
+  "/api": {
+    "target": "http://localhost:8081",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api": ""
+    },
+    "logLevel": "debug"
   }
 }

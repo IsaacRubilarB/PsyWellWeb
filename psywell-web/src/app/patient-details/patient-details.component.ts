@@ -1,27 +1,29 @@
-import { Component, AfterViewInit, ChangeDetectorRef, ElementRef, ViewChild, ViewChildren, QueryList, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, AfterViewInit, ChangeDetectorRef, ElementRef, ViewChild, ViewChildren, QueryList, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Chart, registerables } from 'chart.js';
+import { UsersService } from 'app/services/userService';
 import lottie from 'lottie-web';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FichaPacienteComponent } from '../ficha-paciente/ficha-paciente.component';
-
 
 @Component({
   selector: 'app-patient-details',
   templateUrl: './patient-details.component.html',
   styleUrls: ['./patient-details.component.scss'],
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FichaPacienteComponent]
+  imports: [CommonModule, NavbarComponent, FichaPacienteComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-
-export class PatientDetailsComponent implements AfterViewInit {
+export class PatientDetailsComponent implements AfterViewInit, OnInit {
   patientId: string | null = null;
   patientDetails: any = {};
   bpm: number = 75;
   sleepHours: number = 7;
   stressLevel: number = 40;
-  isFichaPacienteModalOpen = false;  // Estado para el modal
+  isFichaPacienteModalOpen = false;
+
+  medications: any[] = [];  // Array de medicamentos
+  appointments: any[] = [];  // Array de citas
 
   @ViewChild('heartAnimation') heartAnimationDiv!: ElementRef;
   @ViewChild('sleepAnimation') sleepAnimationDiv!: ElementRef;
@@ -33,21 +35,75 @@ export class PatientDetailsComponent implements AfterViewInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private usersService: UsersService,
     private cdr: ChangeDetectorRef
-  ) {
-    Chart.register(...registerables);
+  ) {}
+
+  ngOnInit(): void {
+    this.patientId = this.route.snapshot.paramMap.get('id');
+    if (this.patientId) {
+      this.obtenerDetallesPaciente(this.patientId);
+    }
   }
 
+  obtenerDetallesPaciente(id: string) {
+    this.usersService.obtenerUsuarioPorId(id).subscribe(
+      (response: any) => {
+        console.log("Datos recibidos del paciente:", response); // Verificación en consola
+        
+        const data = response.data; // Accede a 'data' dentro de la respuesta
+        if (data) {
+          this.patientDetails = {
+            name: data.nombre || 'Nombre desconocido',
+            age: data.fechaNacimiento ? this.calculateAge(data.fechaNacimiento) : 'Edad desconocida',
+            diagnosis: data.diagnosis || 'Sin diagnóstico',
+            notes: data.notes || 'Sin notas'
+          };
+  
+          // Aseguramos que `medications` y `appointments` se llenen si existen en la respuesta
+          this.medications = data.medications || [];  
+          this.appointments = data.appointments || [];  
+        } else {
+          console.warn("No se recibieron datos del paciente.");
+        }
+      },
+      (error: any) => {
+        console.error('Error al obtener detalles del paciente:', error);
+      }
+    );
+  }
+  
+  
+  
+
+  calculateAge(fechaNacimiento: string): number {
+    if (!fechaNacimiento) {
+      return NaN; // Retorna NaN si fechaNacimiento es undefined o null
+    }
+  
+    const [day, month, year] = fechaNacimiento.split('/');
+    if (!day || !month || !year) return NaN; // Retorna NaN si el formato es incorrecto
+  
+    const birthDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+  
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  }
+  
+
   ngAfterViewInit(): void {
-    this.patientId = this.route.snapshot.paramMap.get('id');
-    this.patientDetails = this.getPatientDetails(this.patientId);
     this.cdr.detectChanges();
-    this.loadAnimations(); 
-    this.simulateBpmChange(); 
+    this.loadAnimations();
+    this.simulateBpmChange();
     this.simulateSleepHoursChange();
-    this.loadStressAnimation(); 
-    this.loadPillAnimations(); 
-    this.loadCalendarAnimations(); 
+    this.loadStressAnimation();
+    this.loadPillAnimations();
+    this.loadCalendarAnimations();
   }
 
   loadAnimations() {
@@ -56,7 +112,7 @@ export class PatientDetailsComponent implements AfterViewInit {
       renderer: 'svg',
       loop: true,
       autoplay: true,
-      path: '/assets/lottie/bpm.json' 
+      path: '/assets/lottie/bpm.json'
     });
 
     lottie.loadAnimation({
@@ -64,22 +120,20 @@ export class PatientDetailsComponent implements AfterViewInit {
       renderer: 'svg',
       loop: true,
       autoplay: true,
-      path: '/assets/lottie/sueno.json' 
+      path: '/assets/lottie/sueno.json'
     });
   }
 
-  // Simular el cambio de BPM dinámico
   simulateBpmChange() {
     setInterval(() => {
-      this.bpm = Math.floor(Math.random() * (90 - 60 + 1) + 60); 
+      this.bpm = Math.floor(Math.random() * (90 - 60 + 1) + 60);
       this.cdr.detectChanges();
     }, 2000);
   }
 
-  // Simular el cambio de las horas de sueño dinámico
   simulateSleepHoursChange() {
     setInterval(() => {
-      this.sleepHours = Math.floor(Math.random() * (9 - 5 + 1) + 5); 
+      this.sleepHours = Math.floor(Math.random() * (9 - 5 + 1) + 5);
       this.cdr.detectChanges();
     }, 3000);
   }
@@ -90,20 +144,18 @@ export class PatientDetailsComponent implements AfterViewInit {
       renderer: 'svg',
       loop: false,
       autoplay: true,
-      path: '/assets/lottie/stress.json' 
+      path: '/assets/lottie/stress.json'
     });
 
     setInterval(() => {
-      this.stressLevel = Math.floor(Math.random() * 100); 
-      
-      const frame = Math.round((this.stressLevel / 100) * (stressAnimation.totalFrames - 1)); 
-      
-      stressAnimation.goToAndStop(frame, true); 
-      this.cdr.detectChanges(); 
-    }, 2000); 
+      this.stressLevel = Math.floor(Math.random() * 100);
+      const frame = Math.round((this.stressLevel / 100) * (stressAnimation.totalFrames - 1));
+      stressAnimation.goToAndStop(frame, true);
+      this.cdr.detectChanges();
+    }, 2000);
   }
 
-  // Cargar la animación de fondo en las tarjetas de medicamentos
+  // Método para cargar la animación en los elementos de medicamento
   loadPillAnimations() {
     this.pillBackgroundDivs.forEach((pillBackgroundDiv) => {
       lottie.loadAnimation({
@@ -111,12 +163,12 @@ export class PatientDetailsComponent implements AfterViewInit {
         renderer: 'svg',
         loop: true,
         autoplay: true,
-        path: '/assets/lottie/pill.json' 
+        path: '/assets/lottie/pill.json'
       });
     });
   }
 
-  // Cargar la animación de fondo en las tarjetas de citas
+  // Método para cargar la animación en los elementos de citas
   loadCalendarAnimations() {
     this.calendarBackgroundDivs.forEach((calendarBackgroundDiv) => {
       lottie.loadAnimation({
@@ -124,29 +176,10 @@ export class PatientDetailsComponent implements AfterViewInit {
         renderer: 'svg',
         loop: true,
         autoplay: true,
-        path: '/assets/lottie/calendar.json' 
+        path: '/assets/lottie/calendar.json'
       });
     });
   }
-
-  getPatientDetails(id: string | null) {
-    const patients = [
-      { id: '1', name: 'Cristina Zapata', age: 25, diagnosis: 'Depresión', notes: 'Paciente en seguimiento.' },
-      { id: '2', name: 'Juan Pérez', age: 30, diagnosis: 'Ansiedad', notes: 'Sesiones semanales de terapia.' },
-      { id: '3', name: 'Cristopher Soto', age: 23, diagnosis: 'Depresión Severa', notes: 'Sesiones semanales de terapia, vigilancia continua.' }
-    ];
-    return patients.find(patient => patient.id === id);
-  }
-
-  medications = [
-    { name: 'Paroxetina', description: 'Recetado para la ansiedad' },
-    { name: 'Sertralina', description: 'Recetado para la depresión' },
-  ];
-
-  appointments = [
-    { date: '2024-10-01', time: '10:00 AM', description: 'Sesión de terapia' },
-    { date: '2024-10-15', time: '2:00 PM', description: 'Revisión psiquiátrica' },
-  ];
 
   goBack() {
     this.router.navigate(['/patients']);
@@ -156,7 +189,6 @@ export class PatientDetailsComponent implements AfterViewInit {
     this.router.navigate(['/reports']);
   }
 
-  // Métodos para abrir y cerrar el modal de la ficha del paciente
   openFichaPacienteModal() {
     this.isFichaPacienteModalOpen = true;
   }

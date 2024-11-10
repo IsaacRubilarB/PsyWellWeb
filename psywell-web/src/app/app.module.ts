@@ -12,28 +12,35 @@ import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { environment } from 'environments/environments';
 import { NavbarComponent } from './navbar/navbar.component';
 
+// Angular Material imports
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
+
 @NgModule({
-  
   imports: [
     BrowserModule,
     FormsModule,
+    ReactiveFormsModule,
     HttpClientModule,
     AppRoutingModule,
     RouterModule,
-    NavbarComponent, // Asegúrate de incluir NavbarComponent aquí
-    BrowserModule,
-    FormsModule,
-    ReactiveFormsModule,
-
-     // Asegúrate de incluir FormsModule si usas ngModel
-
-
-    // Inicializar Firebase con la configuración específica de Firebase
+    NavbarComponent,
+    
+    // Firebase initialization
     AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFirestoreModule, 
+    AngularFirestoreModule,
+
+    // Angular Material Modules
+    MatButtonModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatSelectModule,
   ],
   providers: [],
   bootstrap: [AppModule],
-  
 })
 export class AppModule {}

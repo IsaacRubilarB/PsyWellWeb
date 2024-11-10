@@ -11,6 +11,7 @@
       <p><strong>Diagnóstico:</strong> {{ patientDetails.diagnosis }}</p>
       <p><strong>Notas:</strong> {{ patientDetails.notes }}</p>
     </div>
+    
 
     <!-- Botón para abrir el modal -->
     <button class="btn-open-modal" (click)="openFichaPacienteModal()">Abrir Ficha del Paciente</button>
@@ -75,7 +76,14 @@
 <!-- Modal para Ficha del Paciente -->
 <div *ngIf="isFichaPacienteModalOpen" class="modal-container">
   <div class="modal-content">
-    <!-- Aquí se muestra el componente de ficha de paciente con el evento de cierre -->
-    <app-ficha-paciente (closeModalEvent)="closeFichaPacienteModal()"></app-ficha-paciente>
-  </div>
+
+    <app-ficha-paciente
+    *ngIf="isFichaPacienteModalOpen"
+    [patientId]="patientId || ''" 
+    (closeModalEvent)="closeFichaPacienteModal()"
+  ></app-ficha-paciente>
+  
+
+
+    </div>
 </div>
