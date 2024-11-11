@@ -1,37 +1,137 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { AngularFirestore } from '@angular/fire/compat/firestore'; 
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, lastValueFrom, Observable } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { lastValueFrom } from 'rxjs';
+import { GoogleAuthProvider } from '@angular/fire/auth';
+import { map, Observable } from 'rxjs'; 
+import { UsersService } from './userService'; 
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private userInfoSubject = new BehaviorSubject<{ nombre: string; genero: string }>({ nombre: 'Usuario', genero: 'masculino' });
-  userInfo$ = this.userInfoSubject.asObservable();
-
   constructor(
     private afAuth: AngularFireAuth,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private firestore: AngularFirestore, 
+    private usersService: UsersService 
   ) {}
 
+  getAuth() {
+    return this.afAuth;
+  }
+
+  // Método de inicio de sesión con correo y contraseña
+  async signInWithEmailAndPassword(email: string, password: string) {
+    try {
+      await this.afAuth.signInWithEmailAndPassword(email, password);
+      this.router.navigate(['/dashboard']);
+    } catch (error: any) { 
+      console.error('Error al iniciar sesión:', error);
+      throw new Error('Error al iniciar sesión: ' + error.message); 
+    }
+  }
+
+  // Método para iniciar sesión con Google
+  async signInWithGoogle() {
+    try {
+      const provider = new GoogleAuthProvider();
+      const userCredential = await this.afAuth.signInWithPopup(provider);
+      const user = userCredential.user;
+
+      if (user) {
+        const providerData = user.providerData[0];
+
+        const displayName = user.displayName || 'Usuario';
+        const email = user.email || '';
+        const gender = 'otro';  
+        const birthdate = null;  
+
+        const isUserExisting = await this.checkIfUserExists(email);
+
+        if (isUserExisting) {
+          // Si el usuario ya existe, redirigir al dashboard
+          this.router.navigate(['/dashboard']);
+        } else {
+          // Si no existe, proceder con el registro
+          const usuarioInput = {
+            email,
+            nombre: displayName,
+            genero: gender,
+            fechaNacimiento: birthdate || "",  
+            perfil: 'psicologo',
+            contrasena: '',  
+            estado: true
+          };
+
+          await this.register(usuarioInput.email, usuarioInput.contrasena, usuarioInput.nombre, usuarioInput.fechaNacimiento, usuarioInput.genero, usuarioInput.perfil);
+        }
+      } else {
+        throw new Error('No se pudo obtener información del usuario');
+      }
+    } catch (error) {
+      console.error('Error al iniciar sesión con Google:', error);
+      throw new Error('No se pudo iniciar sesión con Google.');
+    }
+  }
+
+  // Verificar si el usuario ya existe en la base de datos utilizando UsersService
+  async checkIfUserExists(email: string): Promise<boolean> {
+    try {
+      const response = await lastValueFrom(this.usersService.verificarUsuario(email));
+      return response && response.postgresId ? true : false;
+    } catch (error) {
+      console.error('Error al verificar usuario:', error);
+      return false; 
+    }
+  }
+
+  async logout() {
+    try {
+      await this.afAuth.signOut();
+      this.router.navigate(['/login']);
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  }
+
+  // Método de registro (cuando el usuario es nuevo)
   async register(email: string, password: string, nombre: string, fechaNacimiento: string, genero: string, perfil: string) {
+    console.log('Registrando usuario...', { email, password, nombre, fechaNacimiento, genero, perfil });
+
     try {
       const userCredential = await this.afAuth.createUserWithEmailAndPassword(email, password);
       const uid = userCredential.user?.uid;
 
       if (uid) {
         const postgresId = await this.saveUserToPostgres(uid, nombre, email, password, fechaNacimiento, genero, perfil);
+        await this.saveUserToFirestore(uid, nombre, email, postgresId);
         this.router.navigate(['/dashboard']);
       } else {
         throw new Error('UID de Firebase no válido');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al registrar usuario:', error);
-      throw new Error('Error al registrar usuario: ' + (error as Error).message);
+      throw new Error('Error al registrar usuario: ' + error.message);
+    }
+  }
+
+  private async saveUserToFirestore(uid: string, nombre: string, email: string, postgresId: string) {
+    const userRef = this.firestore.collection('usuarios').doc(uid);
+    try {
+      await userRef.set({
+        nombre: nombre,
+        email: email,
+        postgresId: postgresId,
+        fechaCreacion: new Date(),
+      });
+      console.log('Usuario guardado correctamente en Firestore');
+    } catch (error) {
+      console.error('Error al guardar usuario en Firestore:', error);
+      throw new Error('Error al guardar usuario en Firestore');
     }
   }
 
@@ -46,14 +146,11 @@ export class AuthService {
         genero,
         perfil
       }));
-  
       console.log('Response from PostgreSQL:', response);
-
       if (!response.postgresId) {
         console.warn('postgresId no recibido desde PostgreSQL');
         return null;
       }
-  
       return response.postgresId;
     } catch (error) {
       console.error('Error al guardar usuario en PostgreSQL:', error);
@@ -61,60 +158,8 @@ export class AuthService {
     }
   }
 
-  async onLogin(email: string, password: string) {
-    try {
-      const userCredential = await this.afAuth.signInWithEmailAndPassword(email, password);
-      const uid = userCredential.user?.uid;
-
-      if (uid) {
-        // Recupera el id del usuario en PostgreSQL
-        this.fetchUserIdFromPostgres(email).subscribe(
-          (id) => {
-            this.fetchUserInfoFromPostgres(id);
-            this.router.navigate(['/dashboard']);
-          },
-          (error) => {
-            console.error('Error al obtener id de usuario desde PostgreSQL:', error);
-          }
-        );
-      }
-    } catch (error) {
-      console.error('Error al iniciar sesión: ', error);
-      throw new Error('Error al iniciar sesión: ' + (error as Error).message);
-    }
-  }
-
-  private fetchUserIdFromPostgres(email: string): Observable<number> {
-    // Endpoint en el backend que busca el id usando el email
-    return this.http.get<number>(`http://localhost:8081/obtenerIdUsuarioPorEmail/${email}`);
-  }
-
-  // Método para obtener la información del usuario desde PostgreSQL usando el id
-  private fetchUserInfoFromPostgres(id: number) {
-    this.http.get<any>(`http://localhost:8081/ListarUsuariosById/${id}`).subscribe(
-      (data) => {
-        if (data && data.nombre && data.genero) {
-          this.userInfoSubject.next({ nombre: data.nombre, genero: data.genero });
-        } else {
-          console.warn('No se encontraron datos de usuario en PostgreSQL');
-        }
-      },
-      (error) => {
-        console.error('Error al obtener usuario de PostgreSQL:', error);
-      }
-    );
-  }
-
-  async logout() {
-    try {
-      await this.afAuth.signOut();
-      this.router.navigate(['/login']);
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-    }
-  }
-
+  // Método para verificar si el usuario está autenticado
   isAuthenticated(): Observable<boolean> {
-    return this.afAuth.authState.pipe(map(user => !!user));
+    return this.afAuth.authState.pipe(map(user => !!user)); 
   }
 }

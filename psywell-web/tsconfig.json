@@ -21,12 +21,15 @@
       "ES2022",
       "dom"
     ],
-    "baseUrl": "src"  // Añade esta línea
+    "baseUrl": "src"
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-  }
+  },
+  "include": [
+    "src/**/*.ts"  // Asegura que todos los archivos TypeScript sean incluidos
+  ]
 }

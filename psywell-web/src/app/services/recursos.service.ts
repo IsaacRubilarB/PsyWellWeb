@@ -27,7 +27,7 @@ export class RecursosService {
     } else if (tipo === 'audios') {
       return this.firestore.collection<Recurso>('audios');
     } else {
-      return this.firestore.collection<Recurso>('recursos-materiales'); // Default para videos y foros
+      return this.firestore.collection<Recurso>('recursos-materiales'); 
     }
   }
 
