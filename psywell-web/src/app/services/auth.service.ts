@@ -119,7 +119,7 @@ export class AuthService {
     }
   }
 
-  private async saveUserToFirestore(uid: string, nombre: string, email: string, postgresId: string) {
+  public async saveUserToFirestore(uid: string, nombre: string, email: string, postgresId: string) {
     const userRef = this.firestore.collection('usuarios').doc(uid);
     try {
       await userRef.set({
@@ -134,7 +134,7 @@ export class AuthService {
       throw new Error('Error al guardar usuario en Firestore');
     }
   }
-
+  
   private async saveUserToPostgres(uid: string, nombre: string, email: string, contrasena: string, fechaNacimiento: string, genero: string, perfil: string): Promise<any> {
     try {
       const response = await lastValueFrom(this.http.post<any>('http://localhost:8081/agregarUsuario', {

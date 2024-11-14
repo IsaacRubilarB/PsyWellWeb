@@ -60,6 +60,7 @@ export class LoginRegistroComponent {
   }
 
   async onRegister() {
+    // Validaciones en el frontend
     if (this.password !== this.confirmPassword) {
       this.errorMessage = 'Las contraseñas no coinciden';
       return;
@@ -70,31 +71,58 @@ export class LoginRegistroComponent {
       return;
     }
   
-    const isUserExisting = await this.checkIfUserExists(this.email);
-    if (isUserExisting) {
-      this.errorMessage = 'Este correo electrónico ya está registrado. Por favor, inicia sesión.';
-      return;
-    }
+    try {
+      // Formatear la fecha en dd-MM-yyyy
+      const fechaNacimientoFormateada = this.formatDate(this.fechaNacimiento);
   
-    console.log('Datos para registrar:', this.email, this.password, this.nombre, this.fechaNacimiento, this.genero, this.perfil);
-    
-    // Enviar los datos a la API
-    this.http.post<any>('http://localhost:8081/agregarUsuario', {
-      idUsuario: null,  
-      nombre: this.nombre,
-      email: this.email,
-      contrasena: this.password,
-      perfil: this.perfil,
-      fechaNacimiento: this.fechaNacimiento ? this.fechaNacimiento.toISOString().split('T')[0] : "",  
-      genero: this.genero,
-      estado: true
-    }).subscribe(response => {
-      console.log('Usuario guardado correctamente', response);
-      this.router.navigate(['/dashboard']);  
-    }, error => {
-      console.error('Error al guardar usuario', error);
-      this.errorMessage = 'Error al guardar usuario: ' + (error as any).message; 
-    });
+      // Preparar los datos para PostgreSQL
+      const userInput = {
+        nombre: this.nombre,
+        email: this.email,
+        contrasena: this.password,
+        perfil: this.perfil || 'psicologo',
+        fechaNacimiento: fechaNacimientoFormateada, // Fecha en formato dd-MM-yyyy
+        genero: this.genero,
+        estado: true
+      };
+  
+      console.log('Datos para PostgreSQL:', userInput);
+  
+      // Registrar en PostgreSQL
+      const response = await this.http.post<any>('http://localhost:8081/agregarUsuario', userInput).toPromise();
+      if (response && response.status === 'success') {
+        console.log('Usuario registrado en PostgreSQL:', response);
+  
+        // Registrar en Firebase
+        const firebaseUser = await this.authService.getAuth().createUserWithEmailAndPassword(this.email, this.password);
+        if (!firebaseUser.user) {
+          throw new Error('Error: No se pudo obtener el usuario de Firebase');
+        }
+        const firebaseUid = firebaseUser.user.uid;
+  
+        // Guardar en Firestore
+        await this.authService.saveUserToFirestore(firebaseUid, this.nombre, this.email, response.data.idUsuario);
+  
+        console.log('Usuario registrado en Firebase Firestore');
+  
+        // Redirigir al dashboard tras un registro exitoso
+        this.router.navigate(['/dashboard']);
+      } else {
+        throw new Error(response.message || 'Error desconocido al registrar usuario en PostgreSQL');
+      }
+    } catch (error) {
+      console.error('Error al registrar usuario:', error);
+      this.errorMessage = 'Error al registrar usuario: ' + (error as any).message;
+    }
+  }
+  
+  // Método para formatear la fecha a dd-MM-yyyy
+  private formatDate(date: string | Date): string {
+    const parsedDate = new Date(date);
+    const day = String(parsedDate.getDate()).padStart(2, '0');
+    const month = String(parsedDate.getMonth() + 1).padStart(2, '0'); // Los meses comienzan desde 0
+    const year = parsedDate.getFullYear();
+    return `${day}-${month}-${year}`;
   }
   
   
