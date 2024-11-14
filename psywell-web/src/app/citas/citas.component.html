@@ -10,44 +10,47 @@
 
   <div style="margin-bottom: 1%;" class="cita-card" *ngFor="let cita of citas">
     <div class="cita-info">
-        <h3>Paciente ID: {{ cita.idUsuario }}</h3>
-        <p class="cita-fecha">Fecha y Hora cita: {{ cita.fechaHora | date:'short' }}</p>
-        <h4>Ubicación: {{ cita.ubicacion }}</h4>
-        <h4>Comentarios: {{ cita.comentarios }}</h4>
-        <h4>estado: {{ cita.estado }}</h4>
+      <p><strong>Psicólogo:</strong> {{ cita.nombrePsicologo }}</p>
+      <p><strong>Paciente:</strong> {{ cita.nombrePaciente }}</p>
+      <p><strong>Fecha:</strong> {{ cita.fecha | date:'yyyy/MM/dd' }}</p>
+      <p><strong>Hora de Inicio:</strong> {{ cita.horaInicio }}</p>
+      <p><strong>Hora de Fin:</strong> {{ cita.horaFin }}</p>          
+      <h4><strong>Ubicación:</strong> {{ cita.ubicacion }}</h4>
+      <h4><strong>Comentarios:</strong> {{ cita.comentarios }}</h4>
+      <h4><strong>Estado:</strong> {{ cita.estado }}</h4>
     </div>
   </div>
   
+  
 
-<!-- Modal para agregar una nueva cita -->
-<div class="modal" *ngIf="mostrarModal">
-  <div style="text-align: center;" class="modal-content">
-    <h2>Agregar Cita</h2>
-    <form [formGroup]="citaForm" (ngSubmit)="guardarCita()">
-      <div style="margin-bottom: 15px; text-align: center;">
-        <label for="paciente" style="display: block; font-weight: bold; margin-bottom: 5px;">Paciente</label>
-        <input type="text" id="paciente" formControlName="idUsuario" required style="width: 60%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
-      </div>
+  <!-- Modal para agregar una nueva cita -->
+  <div class="modal" *ngIf="mostrarModal">
+    <div style="text-align: center;" class="modal-content">
+      <h2>Agregar Cita</h2>
+      <form [formGroup]="citaForm" (ngSubmit)="guardarCita()">
+        <div style="margin-bottom: 15px; text-align: center;">
+          <label for="paciente" style="display: block; font-weight: bold; margin-bottom: 5px;">Paciente</label>
+          <input type="text" id="paciente" formControlName="idUsuario" required style="width: 60%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+        </div>
 
-      <div style="margin-bottom: 15px; text-align: center;">
-        <label for="fechaHora" style="display: block; font-weight: bold; margin-bottom: 5px;">Fecha y Hora</label>
-        <input type="datetime-local" id="fechaHora" formControlName="fechaHora" required style="width: 60%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
-      </div>
+        <div style="margin-bottom: 15px; text-align: center;">
+          <label for="fechaHora" style="display: block; font-weight: bold; margin-bottom: 5px;">Fecha y Hora</label>
+          <input type="datetime-local" id="fechaHora" formControlName="fechaHora" required style="width: 60%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+        </div>
 
-      <div style="margin-bottom: 15px; text-align: center;">
-        <label for="ubicacion" style="display: block; font-weight: bold; margin-bottom: 5px;">Ubicación</label>
-        <input type="text" id="ubicacion" formControlName="ubicacion" required style="width: 60%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
-      </div>
+        <div style="margin-bottom: 15px; text-align: center;">
+          <label for="ubicacion" style="display: block; font-weight: bold; margin-bottom: 5px;">Ubicación</label>
+          <input type="text" id="ubicacion" formControlName="ubicacion" required style="width: 60%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+        </div>
 
-      <div style="margin-bottom: 15px; text-align: center;">
-        <label for="comentarios" style="display: block; font-weight: bold; margin-bottom: 5px;">Comentarios</label>
-        <textarea id="comentarios" formControlName="comentarios" style="width: 60%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;"></textarea>
-      </div>
+        <div style="margin-bottom: 15px; text-align: center;">
+          <label for="comentarios" style="display: block; font-weight: bold; margin-bottom: 5px;">Comentarios</label>
+          <textarea id="comentarios" formControlName="comentarios" style="width: 60%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;"></textarea>
+        </div>
 
-      <button type="submit" [disabled]="!citaForm.valid">Guardar Cita</button>
-      <button type="button" (click)="cerrarModal()">Cancelar</button>
-    </form>
+        <button type="submit" [disabled]="!citaForm.valid">Guardar Cita</button>
+        <button type="button" (click)="cerrarModal()">Cancelar</button>
+      </form>
+    </div>
   </div>
 </div>
-
-

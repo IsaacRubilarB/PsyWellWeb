@@ -2,21 +2,7 @@
 
 <div class="reports-container">
   <h1>Estado Anímico de los Pacientes</h1>
-  
-  <!-- Selector de rango de días -->
-  <div class="time-range">
-    <label for="timeRange">Rango de Tiempo:</label>
-    <select id="timeRange" [(ngModel)]="timeRange" (change)="updateTimeRange()">
-      <option value="7">Última Semana</option>
-      <option value="15">Últimos 15 Días</option>
-      <option value="30">Último Mes</option>
-    </select>
-  </div>
 
-  <!-- Gráfico -->
-  <div class="chart-section">
-    <canvas #chartCanvas></canvas>
-  </div>
 
   <!-- Información del paciente seleccionado -->
   <div *ngIf="selectedPatient" class="patient-details">

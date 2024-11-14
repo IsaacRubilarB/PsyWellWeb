@@ -3,17 +3,22 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { CitasService } from '../services/citasService';
 import { NavbarComponent } from 'app/navbar/navbar.component';
 import { CommonModule } from '@angular/common';
+import { UsersService } from '../services/userService';
+
 
 export interface Cita {
-  idCita: number;       
-  idUsuario: number;     
-  fechaHora: Date;       
-  estado: string;
+nombrePaciente: any;
+nombrePsicologo: any;
+  idCita: number;
+  idPaciente: number;
+  idPsicologo: number | null;
   ubicacion: string;
+  estado: string;
+  fecha: string;   // Fecha en formato YYYY-MM-DD
+  horaInicio: string;  // Hora en formato HH:mm:ss
+  horaFin: string;  // Hora en formato HH:mm:ss
   comentarios: string;
 }
-
-
 
 export interface ListaCitasResponse {
   status: string;
@@ -28,12 +33,17 @@ export interface ListaCitasResponse {
   imports: [NavbarComponent, CommonModule, ReactiveFormsModule]
 })
 export class CitasComponent implements OnInit {
-  citas: Cita[] = []; 
-  mostrarModal = false; 
+  citas: Cita[] = [];
+  psicologos: any[] = []; // Lista de psicólogos
+  pacientes: any[] = []; // Lista de pacientes
+  mostrarModal = false;
   citaForm: FormGroup;
   errorMessage: string | null = null;
+  userId: string | null = null;
+nombrePaciente: any;
 
-  constructor(private citasService: CitasService, private fb: FormBuilder) {
+
+  constructor(private citasService: CitasService, private fb: FormBuilder, private userService: UsersService) {
     this.citaForm = this.fb.group({
       idUsuario: [, Validators.required],
       fechaHora: ['', Validators.required],
@@ -45,9 +55,10 @@ export class CitasComponent implements OnInit {
 
   ngOnInit() {
     console.log('CitasComponent inicializado');
-    this.obtenerCitas(); 
+    this.obtenerUsuarios();  // Primero obtenemos los usuarios
+    this.obtenerCitas(); // Luego obtenemos las citas
   }
-  
+
   abrirModal() {
     this.mostrarModal = true;
   }
@@ -60,10 +71,23 @@ export class CitasComponent implements OnInit {
   obtenerCitas() {
     this.citasService.listarCitas().subscribe({
       next: (response) => {
-        // Asegúrate de que la respuesta tiene el formato esperado
         if (response && response.status === 'success' && Array.isArray(response.data)) {
           console.log('Citas obtenidas:', response.data);
-          this.citas = response.data; // Aquí asignamos el array de citas
+          this.citas = response.data.map((cita: any) => {
+            return {
+              idCita: cita.idCita,
+              idPaciente: cita.idPaciente,
+              idPsicologo: cita.idPsicologo || null,
+              ubicacion: cita.ubicacion,
+              estado: cita.estado,
+              fecha: cita.fecha,
+              horaInicio: cita.horaInicio,
+              horaFin: cita.horaFin,
+              comentarios: cita.comentarios,
+              nombrePaciente: this.getNombreUsuario(cita.idPaciente), // Reemplazamos ID por el nombre
+              nombrePsicologo: this.getNombreUsuario(cita.idPsicologo) // Reemplazamos ID por el nombre
+            };
+          });
         } else {
           console.error('La respuesta no es válida:', response);
         }
@@ -74,8 +98,34 @@ export class CitasComponent implements OnInit {
       }
     });
   }
+
+  getNombreUsuario(id: number): string {
+    // Verifica que los datos de psicólogos y pacientes estén cargados
+    console.log('Psicologos:', this.psicologos, 'Pacientes:', this.pacientes);
+    const usuario = this.psicologos.find(p => p.idUsuario === id) || this.pacientes.find(p => p.idUsuario === id);
+    return usuario ? usuario.nombre : 'Desconocido';
+  }
   
   
+  obtenerUsuarios() {
+    this.userService.listarUsuarios().subscribe(
+      (response: any) => {
+        if (response && response.data) {
+          console.log('Usuarios cargados:', response);  // Agregar log para verificar los datos recibidos
+          this.psicologos = response.data.filter((userId: { perfil: string; }) => userId.perfil === 'psicologo');
+          this.pacientes = response.data.filter((userId: { perfil: string; }) => userId.perfil === 'paciente');
+        } else {
+          console.error('No se encontraron usuarios');
+        }
+      },
+      (error) => {
+        console.error('Error al obtener usuarios', error);
+      }
+    );
+  }
+  
+  
+
 
   guardarCita() {
     if (this.citaForm.valid) {
@@ -96,12 +146,11 @@ export class CitasComponent implements OnInit {
 
   private resetNuevaCita() {
     this.citaForm.reset({
-      idUsuario: '',               // Asigna un valor por defecto si es necesario
-      fechaHora: '',               // Deja el campo en blanco o asigna un valor predeterminado
-      estado: 'Pendiente',         // Estado predeterminado en "Pendiente"
-      ubicacion: '',               // Asigna valor por defecto si es necesario
-      comentarios: ''              // Puede estar vacío
+      idUsuario: '',
+      fechaHora: '',
+      estado: 'Pendiente',
+      ubicacion: '',
+      comentarios: ''
     });
   }
-  
 }

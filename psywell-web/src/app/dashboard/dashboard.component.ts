@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { UsersService } from 'app/services/userService';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 
 @Component({
   selector: 'app-dashboard',
@@ -20,6 +21,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   aniosExperiencia: number = 10;
   fondoPerfil: SafeStyle = '';
   genero: string = 'masculino'; 
+  userId: string | null = null; 
 
   stickyNotes: { title: string; content: string, position?: { x: number, y: number } }[] = [
     { title: 'Nota Rápida 1', content: 'Recordar preguntar sobre sueño a Manuel Fernández.', position: { x: 0, y: 0 } },
@@ -32,53 +34,92 @@ export class DashboardComponent implements OnInit, OnDestroy {
   currentNoteIndex: number = 0;
   isCarouselActive: boolean = false;
   carouselInterval: any;
+userName: any;
+
+
 
   constructor(
     private sanitizer: DomSanitizer,
     private renderer: Renderer2,
     private el: ElementRef,
     private usersService: UsersService,
-    private afAuth: AngularFireAuth
+    private afAuth: AngularFireAuth,
+    private afs: AngularFirestore // Inyectar Firestore
+
   ) {}
 
   ngOnInit() {
     this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle('url(assets/portada.png)');
-    this.filteredNotes = [...this.stickyNotes];
-    this.checkCarousel();
-
-    // Obtener el ID del usuario actual de Firebase y luego buscar su información en PostgreSQL
+    
+    // Suscripción al estado de autenticación del usuario
     this.afAuth.authState.subscribe(user => {
-      if (user && user.email) {
-        this.cargarPsicologo(user.email);
+      if (user) {
+        this.cargarPsicologo(user.email || ''); // Usar el email para identificar al usuario
       }
     });
-
     setTimeout(() => {
       this.initializeDrag();
     });
   }
+  
 
-  cargarPsicologo(email: string) {
+
+  cargarPsicologo(uid: string) {
     this.usersService.listarUsuarios().subscribe(
       (response: any) => {
-        const usuarios = Array.isArray(response.data) ? response.data : [];
-        const psicologo = usuarios.find((user: any) => user.perfil === 'psicologo' && user.email === email);
-        if (psicologo) {
-          this.psicologoName = psicologo.nombre;
-          this.genero = psicologo.genero;
+        console.log('Usuarios cargados:', response); // Verifica los datos que se reciben
+  
+        // Buscar solo el usuario que corresponde al UID del usuario logueado
+        const user = response.data.find((user: any) => user.email === uid);  // Usamos email o uid si es necesario
+  
+        if (user) {
+          this.userId = user.idUsuario; // Asume que 'idUsuario' es el ID que buscas
+          this.userName = user.nombre;  // Asegúrate de capturar el nombre si lo necesitas
+          console.log('Usuario logueado:', user);
         } else {
-          console.warn('No se encontró el psicólogo con el correo especificado.');
+          console.error('No se encontró el usuario con ese UID');
         }
       },
-      (error: any) => {
-        console.error('Error al cargar datos del psicólogo:', error);
+      (error) => {
+        console.error('Error al listar los usuarios:', error);
       }
     );
   }
+  
+  
+  
 
   ngOnDestroy() {
-    this.clearCarouselInterval();
+    if (this.carouselInterval) {
+      clearInterval(this.carouselInterval);
+    }
   }
+
+  async loadUserId(uid: string) {
+    console.log('UID del usuario:', uid);  // Verificar el UID
+    
+    // Llamar al servicio para listar todos los usuarios
+    this.usersService.listarUsuarios().subscribe(
+      (response: any) => {
+        // Buscar el usuario correspondiente a ese UID en la respuesta
+        const user = response.data.find((user: any) => user.uid === uid);
+        
+        if (user) {
+          this.userId = user.idUsuario;  // Asumir que 'idUsuario' es el ID de usuario de Postgres
+          console.log('ID de usuario obtenido desde Postgres:', this.userId);
+        } else {
+          console.error('No se encontró el usuario con ese UID');
+        }
+      },
+      (error) => {
+        console.error('Error al listar los usuarios:', error);
+      }
+    );
+  }
+  
+  
+  
+  
 
   initializeDrag() {
     interact('.sticky-note-item')
