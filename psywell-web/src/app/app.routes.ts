@@ -3,7 +3,6 @@ import { LoginRegistroComponent } from './login-registro/login-registro.componen
 import { PatientsListComponent } from './patients-list/patients-list.component';
 import { PatientDetailsComponent } from './patient-details/patient-details.component';
 import { ReportsComponent } from './reports/reports.component';
-import { CalendarIntegrationComponent } from './calendar-integration/calendar-integration.component'; 
 import { RecursosMaterialesComponent } from './recursos-materiales/recursos-materiales.component';
 
 import { DashboardComponent } from './dashboard/dashboard.component';
@@ -16,5 +15,4 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent }, 
   { path: 'citas', loadComponent: () => import('./citas/citas.component').then(m => m.CitasComponent) },
   { path: 'recursos-materiales', loadComponent: () => import('./recursos-materiales/recursos-materiales.component').then(m => m.RecursosMaterialesComponent) },
-  { path: 'calendar-integration', component: CalendarIntegrationComponent },
 ];

@@ -62,10 +62,18 @@
         </div>
         <div class="patient-actions">
           <button class="btn-details" [routerLink]="['/patient', patient.id]">Ver detalle</button>
-          <button class="btn-message" (click)="sendMessage(patient)">Enviar mensaje</button>
+          <button class="btn-message" (click)="openMessageModal(patient)">Enviar mensaje</button>
           <button class="btn-appointment" [routerLink]="['/citas']">Programar cita</button>
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Modal para Enviar Mensaje -->
+<div *ngIf="isModalOpen" class="modal" id="modal-mensajes">
+  <div class="modal-content">
+    <button class="close-btn" (click)="closeModal()">X</button>
+    <app-mensajes [patient]="selectedPatient" (closeModal)="closeModal()"></app-mensajes>
   </div>
 </div>

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { UsersService } from 'app/services/userService';
+import { MensajesComponent } from '../mensajes/mensajes.component'; // Asegúrate de que el componente de mensajes esté importado
 
 interface User {
   idUsuario: number;
@@ -34,7 +35,7 @@ interface Patient {
 @Component({
   selector: 'app-patients-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavbarComponent],
+  imports: [CommonModule, RouterModule, NavbarComponent, MensajesComponent],  // Importando MensajesComponent
   templateUrl: './patients-list.component.html',
   styleUrls: ['./patients-list.component.scss'],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
@@ -42,6 +43,8 @@ interface Patient {
 export class PatientsListComponent implements OnInit {
   patients: Patient[] = [];
   filteredPatients: Patient[] = [];
+  selectedPatient: Patient | null = null; // Paciente seleccionado
+  isModalOpen: boolean = false; // Estado del modal
 
   constructor(private usersService: UsersService) {}
 
@@ -49,25 +52,7 @@ export class PatientsListComponent implements OnInit {
     this.cargarPacientes();
   }
 
-  calculateAge(fechaNacimiento: string): number | string {
-    if (!fechaNacimiento) return 'Edad desconocida';
-    const birthDate = new Date(fechaNacimiento);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDifference = today.getMonth() - birthDate.getMonth();
-
-    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return isNaN(age) ? 'Edad desconocida' : age;
-  }
-
-  formatDate(dateStr: string | undefined): string {
-    if (!dateStr) return 'No disponible';
-    const date = new Date(dateStr);
-    return isNaN(date.getTime()) ? 'No disponible' : date.toLocaleDateString();
-  }
-
+  // Lógica para cargar pacientes
   cargarPacientes() {
     this.usersService.listarUsuarios().subscribe(
       (response: any) => {
@@ -94,6 +79,40 @@ export class PatientsListComponent implements OnInit {
     );
   }
 
+  // Método para calcular la edad
+  calculateAge(fechaNacimiento: string): number | string {
+    if (!fechaNacimiento) return 'Edad desconocida';
+    const birthDate = new Date(fechaNacimiento);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return isNaN(age) ? 'Edad desconocida' : age;
+  }
+
+  // Método para formatear fechas
+  formatDate(dateStr: string | undefined): string {
+    if (!dateStr) return 'No disponible';
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? 'No disponible' : date.toLocaleDateString();
+  }
+
+  // Método para abrir el modal
+  openMessageModal(patient: Patient) {
+    this.selectedPatient = patient; // Guardamos el paciente seleccionado
+    this.isModalOpen = true; // Abre el modal
+  }
+
+  // Método para cerrar el modal
+  closeModal() {
+    this.selectedPatient = null;
+    this.isModalOpen = false; // Cierra el modal
+  }
+
+  // Otros métodos de lógica
   onSearch(event: any) {
     const query = event.target.value.toLowerCase();
     this.filteredPatients = this.patients.filter(patient =>
@@ -128,10 +147,7 @@ export class PatientsListComponent implements OnInit {
       : this.filteredPatients.filter(patient => patient.diagnosis.toLowerCase() === diagnosis.toLowerCase());
   }
 
-  sendMessage(patient: Patient) {
-    console.log(`Enviar mensaje a ${patient.name}`);
-  }
-
+  // Método para programar cita
   scheduleAppointment(patient: Patient) {
     console.log(`Programar cita para ${patient.name}`);
   }

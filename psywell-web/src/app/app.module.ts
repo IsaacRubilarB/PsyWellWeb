@@ -1,8 +1,7 @@
-// app.module.ts
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';  // Asegúrate de importar FormsModule
 import { HttpClientModule } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
 
@@ -22,7 +21,7 @@ import { MatSelectModule } from '@angular/material/select';
 @NgModule({
   imports: [
     BrowserModule,
-    FormsModule,
+    FormsModule,  // Asegúrate de incluirlo aquí
     ReactiveFormsModule,
     HttpClientModule,
     AppRoutingModule,

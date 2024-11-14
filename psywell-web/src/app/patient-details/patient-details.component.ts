@@ -22,8 +22,8 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
   stressLevel: number = 40;
   isFichaPacienteModalOpen = false;
 
-  medications: any[] = [];  // Array de medicamentos
-  appointments: any[] = [];  // Array de citas
+  medications: any[] = [];  
+  appointments: any[] = [];  
 
   @ViewChild('heartAnimation') heartAnimationDiv!: ElementRef;
   @ViewChild('sleepAnimation') sleepAnimationDiv!: ElementRef;
