@@ -38,7 +38,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   currentNoteIndex: number = 0;
   isCarouselActive: boolean = false;
   carouselInterval: any;
-  userName: any;
 
   constructor(
     private sanitizer: DomSanitizer,
@@ -56,7 +55,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       if (user && user.email) {
         this.correoUsuario = user.email;
         this.cargarPsicologo(user.email);
-        this.cargarImagenes();
       }
     });
 
@@ -65,51 +63,66 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  onSearch(event: any): void {
-    const searchValue = event.target.value.toLowerCase();
-    this.filteredNotes = this.stickyNotes.filter(note =>
-      note.title.toLowerCase().includes(searchValue)
-    );
-  }
-  
   cargarPsicologo(email: string) {
+    if (!email) {
+      console.warn('El email proporcionado es nulo o indefinido.');
+      return;
+    }
+
+    console.log('Intentando cargar los datos del psicólogo para el correo:', email);
+
     this.usersService.listarUsuarios().subscribe(
       (response: any) => {
-        const usuario = response.data.find((user: any) => user.email === email);
-        if (usuario) {
-          this.psicologoName = usuario.nombre;
-          this.genero = usuario.genero; // Asegúrate de que 'genero' sea 'femenino' o 'masculino'
-          console.log('Género asignado:', this.genero); // Depuración
+        if (response && response.data) {
+          const usuario = response.data.find((user: any) => user.email === email);
+          if (usuario) {
+            this.psicologoName = usuario.nombre || 'Desconocido';
+            this.genero = usuario.genero || 'indefinido';
+            this.userId = usuario.id ? usuario.id.toString() : null;
+            this.correoUsuario = usuario.email || ''; // Asigna el correo correctamente
+
+            console.log('Datos del psicólogo cargados correctamente:', usuario);
+
+            // Cargar imágenes después de asignar el correo
+            this.cargarImagenes();
+          } else {
+            console.error('No se encontró un usuario con el email proporcionado:', email);
+          }
+        } else {
+          console.error('La respuesta de listarUsuarios no es válida o no contiene datos:', response);
         }
       },
-      (error: any) => {
-        console.error('Error al cargar los datos del psicólogo:', error);
+      (error) => {
+        console.error('Error al intentar cargar los datos del psicólogo:', error);
       }
     );
   }
-  
-
 
   cargarImagenes(): void {
-    const perfilPath = `fotoPerfil/${this.correoUsuario}`;
-    this.storage.ref(perfilPath).getDownloadURL().subscribe(
-      (url) => {
-        this.fotoPerfil = url;
-      },
-      (err) => {
-        console.warn('No se encontró foto de perfil:', err);
-      }
-    );
+    if (!this.correoUsuario) {
+      console.warn('Correo del usuario no disponible, no se pueden cargar las imágenes.');
+      return;
+    }
 
+    console.log('Intentando cargar imágenes para el usuario con correo:', this.correoUsuario);
+
+    // Construir rutas de imágenes
+    const perfilPath = `fotoPerfil/${this.correoUsuario}`;
     const portadaPath = `fotoPortada/${this.correoUsuario}`;
-    this.storage.ref(portadaPath).getDownloadURL().subscribe(
-      (url) => {
-        this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle(`url(${url})`);
-      },
-      (err) => {
-        console.warn('No se encontró foto de portada:', err);
-      }
-    );
+
+    // Foto de perfil
+    const perfilUrl = `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/${encodeURIComponent(perfilPath)}?alt=media`;
+    console.log('URL esperada para la foto de perfil:', perfilUrl);
+
+    this.fotoPerfil = perfilUrl;
+    console.log('Foto de perfil asignada:', this.fotoPerfil);
+
+    // Foto de portada
+    const portadaUrl = `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/${encodeURIComponent(portadaPath)}?alt=media`;
+    console.log('URL esperada para la foto de portada:', portadaUrl);
+
+    this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle(`url(${portadaUrl})`);
+    console.log('Foto de portada asignada:', this.fondoPerfil);
   }
 
   triggerFileInput(type: 'perfil' | 'portada'): void {
@@ -246,4 +259,3 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return '';
   }
 }
-

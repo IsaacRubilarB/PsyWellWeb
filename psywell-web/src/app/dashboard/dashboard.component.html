@@ -5,17 +5,17 @@
   <div class="header">
     <img src="assets/logo.png" alt="PsyWell Logo" class="logo" />
     <h1 class="welcome-message">
-      Bienvenid{{ genero === 'femenino' ? 'a' : 'o' }}, 
+      Bienvenid{{ genero === 'femenino' ? 'a' : 'o' }},
       <ng-container *ngIf="genero === 'femenino'; else masculino">Dra.</ng-container>
       <ng-template #masculino>Dr.</ng-template>
       {{ psicologoName }}
     </h1>
-    
   </div>
 
-  <div class="profile-summary" [style.background-image]="fondoPerfil">
+  <!-- Perfil y Portada -->
+  <div class="profile-summary" [style.backgroundImage]="fondoPerfil || 'url(assets/default-cover.jpg)'">
     <div class="profile-picture-container" (click)="triggerFileInput('perfil')">
-      <img [src]="fotoPerfil || 'assets/patient.png'" alt="Foto de Usuario" class="profile-picture" />
+      <img [src]="fotoPerfil || 'assets/default-profile.png'" alt="Foto de Usuario" class="profile-picture" />
       <span class="edit-icon">✏️</span>
     </div>
     <div class="profile-details">
@@ -49,7 +49,6 @@
       style="display: none"
     />
   </div>
-  
 
   <!-- Sección de Recordatorios y Estadísticas -->
   <div class="info-section">
@@ -72,7 +71,7 @@
         </div>
       </div>
     </div>
-  
+
     <!-- Sección de Estadísticas de Sesiones -->
     <div class="session-stats">
       <h2>Estadísticas de Sesiones</h2>
@@ -97,18 +96,18 @@
   <!-- Notas Rápidas -->
   <div class="sticky-notes-container">
     <h2>Notas Rápidas</h2>
-  
+
     <div class="add-note-form">
       <input type="text" [(ngModel)]="newNoteTitle" placeholder="Título de la nota" />
       <textarea [(ngModel)]="newNoteContent" placeholder="Contenido de la nota"></textarea>
       <button (click)="addStickyNote()">Añadir Nota</button>
     </div>
-  
+
     <div class="note-controls">
       <input type="text" placeholder="Buscar nota..." [(ngModel)]="searchQuery" (input)="filterNotes()" />
       <button (click)="sortNotes()">Ordenar Alfabéticamente</button>
     </div>
-  
+
     <!-- Carrusel de Notas -->
     <div *ngIf="isCarouselActive" class="note-carousel">
       <button class="prev" (click)="prevNote()">‹</button>
@@ -118,7 +117,7 @@
       </div>
       <button class="next" (click)="nextNote()">›</button>
     </div>
-  
+
     <!-- Lista de Notas Filtradas -->
     <div *ngIf="!isCarouselActive" class="sticky-notes-list">
       <div *ngFor="let note of filteredNotes; let i = index" class="sticky-note-item">
