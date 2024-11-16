@@ -8,6 +8,7 @@ import { UsersService } from 'app/services/userService';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { finalize } from 'rxjs/operators';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 
 @Component({
   selector: 'app-dashboard',
@@ -24,6 +25,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   fotoPerfil: string = '';
   genero: string = 'masculino';
   correoUsuario: string = '';
+  userId: string | null = null; 
 
   stickyNotes: { title: string; content: string, position?: { x: number, y: number } }[] = [
     { title: 'Nota Rápida 1', content: 'Recordar preguntar sobre sueño a Manuel Fernández.', position: { x: 0, y: 0 } },
@@ -36,6 +38,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   currentNoteIndex: number = 0;
   isCarouselActive: boolean = false;
   carouselInterval: any;
+  userName: any;
 
   constructor(
     private sanitizer: DomSanitizer,
@@ -43,15 +46,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private el: ElementRef,
     private usersService: UsersService,
     private afAuth: AngularFireAuth,
-    private storage: AngularFireStorage
+    private storage: AngularFireStorage,
+    private afs: AngularFirestore
   ) {}
 
   ngOnInit() {
     this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle('url(assets/portada.png)');
-    this.filteredNotes = [...this.stickyNotes];
-    this.checkCarousel();
-
-    // Obtener el ID del usuario actual de Firebase y luego buscar su información en PostgreSQL
     this.afAuth.authState.subscribe(user => {
       if (user && user.email) {
         this.correoUsuario = user.email;
@@ -65,23 +65,30 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  onSearch(event: any): void {
+    const searchValue = event.target.value.toLowerCase();
+    this.filteredNotes = this.stickyNotes.filter(note =>
+      note.title.toLowerCase().includes(searchValue)
+    );
+  }
+  
   cargarPsicologo(email: string) {
     this.usersService.listarUsuarios().subscribe(
       (response: any) => {
-        const usuarios = Array.isArray(response.data) ? response.data : [];
-        const psicologo = usuarios.find((user: any) => user.perfil === 'psicologo' && user.email === email);
-        if (psicologo) {
-          this.psicologoName = psicologo.nombre;
-          this.genero = psicologo.genero;
-        } else {
-          console.warn('No se encontró el psicólogo con el correo especificado.');
+        const usuario = response.data.find((user: any) => user.email === email);
+        if (usuario) {
+          this.psicologoName = usuario.nombre;
+          this.genero = usuario.genero; // Asegúrate de que 'genero' sea 'femenino' o 'masculino'
+          console.log('Género asignado:', this.genero); // Depuración
         }
       },
       (error: any) => {
-        console.error('Error al cargar datos del psicólogo:', error);
+        console.error('Error al cargar los datos del psicólogo:', error);
       }
     );
   }
+  
+
 
   cargarImagenes(): void {
     const perfilPath = `fotoPerfil/${this.correoUsuario}`;
@@ -93,11 +100,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
         console.warn('No se encontró foto de perfil:', err);
       }
     );
-  
+
     const portadaPath = `fotoPortada/${this.correoUsuario}`;
     this.storage.ref(portadaPath).getDownloadURL().subscribe(
       (url) => {
-        // Asignar directamente la URL al estilo de fondo
         this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle(`url(${url})`);
       },
       (err) => {
@@ -105,8 +111,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
     );
   }
-  
-  
 
   triggerFileInput(type: 'perfil' | 'portada'): void {
     const fileInput = document.getElementById(type) as HTMLInputElement;
@@ -120,7 +124,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const filePath = `fotoPerfil/${this.correoUsuario}`;
       const fileRef = this.storage.ref(filePath);
       const uploadTask = this.storage.upload(filePath, file);
-  
+
       uploadTask.snapshotChanges().pipe(
         finalize(() => {
           fileRef.getDownloadURL().subscribe((url) => {
@@ -130,7 +134,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       ).subscribe();
     }
   }
-  
+
   onBackgroundUpload(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
@@ -138,7 +142,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const filePath = `fotoPortada/${this.correoUsuario}`;
       const fileRef = this.storage.ref(filePath);
       const uploadTask = this.storage.upload(filePath, file);
-  
+
       uploadTask.snapshotChanges().pipe(
         finalize(() => {
           fileRef.getDownloadURL().subscribe((url) => {
@@ -148,10 +152,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
       ).subscribe();
     }
   }
-  
 
   ngOnDestroy() {
-    this.clearCarouselInterval();
+    if (this.carouselInterval) {
+      clearInterval(this.carouselInterval);
+    }
   }
 
   initializeDrag() {
@@ -241,3 +246,4 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return '';
   }
 }
+
