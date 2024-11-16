@@ -6,6 +6,8 @@ import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { UsersService } from 'app/services/userService';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { AngularFireStorage } from '@angular/fire/compat/storage';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-dashboard',
@@ -19,7 +21,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   especialidad: string = 'Psicóloga Especialista en Salud Mental';
   aniosExperiencia: number = 10;
   fondoPerfil: SafeStyle = '';
-  genero: string = 'masculino'; 
+  fotoPerfil: string = '';
+  genero: string = 'masculino';
+  correoUsuario: string = '';
 
   stickyNotes: { title: string; content: string, position?: { x: number, y: number } }[] = [
     { title: 'Nota Rápida 1', content: 'Recordar preguntar sobre sueño a Manuel Fernández.', position: { x: 0, y: 0 } },
@@ -38,7 +42,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private renderer: Renderer2,
     private el: ElementRef,
     private usersService: UsersService,
-    private afAuth: AngularFireAuth
+    private afAuth: AngularFireAuth,
+    private storage: AngularFireStorage
   ) {}
 
   ngOnInit() {
@@ -49,7 +54,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Obtener el ID del usuario actual de Firebase y luego buscar su información en PostgreSQL
     this.afAuth.authState.subscribe(user => {
       if (user && user.email) {
+        this.correoUsuario = user.email;
         this.cargarPsicologo(user.email);
+        this.cargarImagenes();
       }
     });
 
@@ -76,6 +83,73 @@ export class DashboardComponent implements OnInit, OnDestroy {
     );
   }
 
+  cargarImagenes(): void {
+    const perfilPath = `fotoPerfil/${this.correoUsuario}`;
+    this.storage.ref(perfilPath).getDownloadURL().subscribe(
+      (url) => {
+        this.fotoPerfil = url;
+      },
+      (err) => {
+        console.warn('No se encontró foto de perfil:', err);
+      }
+    );
+  
+    const portadaPath = `fotoPortada/${this.correoUsuario}`;
+    this.storage.ref(portadaPath).getDownloadURL().subscribe(
+      (url) => {
+        // Asignar directamente la URL al estilo de fondo
+        this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle(`url(${url})`);
+      },
+      (err) => {
+        console.warn('No se encontró foto de portada:', err);
+      }
+    );
+  }
+  
+  
+
+  triggerFileInput(type: 'perfil' | 'portada'): void {
+    const fileInput = document.getElementById(type) as HTMLInputElement;
+    if (fileInput) fileInput.click();
+  }
+
+  onProfilePictureUpload(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const filePath = `fotoPerfil/${this.correoUsuario}`;
+      const fileRef = this.storage.ref(filePath);
+      const uploadTask = this.storage.upload(filePath, file);
+  
+      uploadTask.snapshotChanges().pipe(
+        finalize(() => {
+          fileRef.getDownloadURL().subscribe((url) => {
+            this.fotoPerfil = url;
+          });
+        })
+      ).subscribe();
+    }
+  }
+  
+  onBackgroundUpload(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const filePath = `fotoPortada/${this.correoUsuario}`;
+      const fileRef = this.storage.ref(filePath);
+      const uploadTask = this.storage.upload(filePath, file);
+  
+      uploadTask.snapshotChanges().pipe(
+        finalize(() => {
+          fileRef.getDownloadURL().subscribe((url) => {
+            this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle(`url(${url})`);
+          });
+        })
+      ).subscribe();
+    }
+  }
+  
+
   ngOnDestroy() {
     this.clearCarouselInterval();
   }
@@ -95,24 +169,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
           }
         }
       });
-  }
-
-  triggerFileInput(): void {
-    const fileInput = document.querySelector('.file-input') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.click();
-    }
-  }
-
-  onBackgroundUpload(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle(`url(${reader.result})`);
-      };
-      reader.readAsDataURL(input.files[0]);
-    }
   }
 
   addStickyNote() {

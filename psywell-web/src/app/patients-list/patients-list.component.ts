@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { UsersService } from 'app/services/userService';
-import { MensajesComponent } from '../mensajes/mensajes.component'; // Asegúrate de que el componente de mensajes esté importado
 
 interface User {
   idUsuario: number;
@@ -35,7 +34,7 @@ interface Patient {
 @Component({
   selector: 'app-patients-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavbarComponent, MensajesComponent],  // Importando MensajesComponent
+  imports: [CommonModule, RouterModule, NavbarComponent],  // Importando MensajesComponent
   templateUrl: './patients-list.component.html',
   styleUrls: ['./patients-list.component.scss'],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]

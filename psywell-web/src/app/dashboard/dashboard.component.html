@@ -1,6 +1,5 @@
 <app-navbar></app-navbar>
 
-
 <div class="dashboard-container">
   <!-- Contenedor principal del dashboard -->
   <div class="header">
@@ -13,17 +12,43 @@
     </h1>
   </div>
 
-  <!-- Resumen de perfil con fondo personalizado -->
   <div class="profile-summary" [style.background-image]="fondoPerfil">
-    <img src="assets/patient.png" alt="Foto de Usuario" class="profile-picture" />
+    <div class="profile-picture-container" (click)="triggerFileInput('perfil')">
+      <img [src]="fotoPerfil || 'assets/patient.png'" alt="Foto de Usuario" class="profile-picture" />
+      <span class="edit-icon">✏️</span>
+    </div>
     <div class="profile-details">
       <h2>{{ psicologoName }}</h2>
-      <p>{{ especialidad }}</p>
+      <p>
+        <ng-container *ngIf="genero === 'femenino'; else masculino">
+          Psicóloga
+        </ng-container>
+        <ng-template #masculino>
+          Psicólogo
+        </ng-template>
+        Especialista en Salud Mental
+      </p>
       <p>Experiencia: {{ aniosExperiencia }} años</p>
     </div>
-    <button class="btn-change-background" (click)="triggerFileInput()">Cambiar</button>
-    <input type="file" accept="image/*" (change)="onBackgroundUpload($event)" class="file-input" style="display: none" />
+    <button class="btn-change-background" (click)="triggerFileInput('portada')">✏️</button>
+    <input
+      type="file"
+      accept="image/*"
+      (change)="onBackgroundUpload($event)"
+      class="file-input"
+      id="portada"
+      style="display: none"
+    />
+    <input
+      type="file"
+      accept="image/*"
+      (change)="onProfilePictureUpload($event)"
+      class="file-input"
+      id="perfil"
+      style="display: none"
+    />
   </div>
+  
 
   <!-- Sección de Recordatorios y Estadísticas -->
   <div class="info-section">
