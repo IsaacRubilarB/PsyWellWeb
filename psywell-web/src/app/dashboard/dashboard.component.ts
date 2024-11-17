@@ -25,7 +25,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   fotoPerfil: string = '';
   genero: string = 'masculino';
   correoUsuario: string = '';
-  userId: string | null = null; 
+  userId: string | null = null;
 
   stickyNotes: { title: string; content: string, position?: { x: number, y: number } }[] = [
     { title: 'Nota Rápida 1', content: 'Recordar preguntar sobre sueño a Manuel Fernández.', position: { x: 0, y: 0 } },
@@ -103,68 +103,76 @@ export class DashboardComponent implements OnInit, OnDestroy {
       console.warn('Correo del usuario no disponible, no se pueden cargar las imágenes.');
       return;
     }
-
+  
     console.log('Intentando cargar imágenes para el usuario con correo:', this.correoUsuario);
-
+  
     // Construir rutas de imágenes
     const perfilPath = `fotoPerfil/${this.correoUsuario}`;
     const portadaPath = `fotoPortada/${this.correoUsuario}`;
-
-    // Foto de perfil
+  
+    // Construir URL correcta para Firebase Storage
     const perfilUrl = `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/${encodeURIComponent(perfilPath)}?alt=media`;
-    console.log('URL esperada para la foto de perfil:', perfilUrl);
-
-    this.fotoPerfil = perfilUrl;
-    console.log('Foto de perfil asignada:', this.fotoPerfil);
-
-    // Foto de portada
     const portadaUrl = `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/${encodeURIComponent(portadaPath)}?alt=media`;
+  
+    console.log('URL esperada para la foto de perfil:', perfilUrl);
     console.log('URL esperada para la foto de portada:', portadaUrl);
-
+  
+    // Asignar las URLs generadas a las variables
+    this.fotoPerfil = perfilUrl;
     this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle(`url(${portadaUrl})`);
-    console.log('Foto de portada asignada:', this.fondoPerfil);
   }
+  
 
   triggerFileInput(type: 'perfil' | 'portada'): void {
     const fileInput = document.getElementById(type) as HTMLInputElement;
     if (fileInput) fileInput.click();
   }
 
-  onProfilePictureUpload(event: Event): void {
+  onUpload(event: Event, tipo: 'perfil' | 'portada'): void {
     const input = event.target as HTMLInputElement;
+  
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      const filePath = `fotoPerfil/${this.correoUsuario}`;
+      const filePath = tipo === 'perfil' ? `fotoPerfil/${this.correoUsuario}` : `fotoPortada/${this.correoUsuario}`;
       const fileRef = this.storage.ref(filePath);
+  
+      console.log(`Iniciando subida del archivo: ${filePath}`);
+  
+      // Subir archivo al bucket
       const uploadTask = this.storage.upload(filePath, file);
-
+  
       uploadTask.snapshotChanges().pipe(
         finalize(() => {
           fileRef.getDownloadURL().subscribe((url) => {
-            this.fotoPerfil = url;
+            if (tipo === 'perfil') {
+              this.fotoPerfil = url; // Asigna la URL a la variable
+            } else {
+              this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle(`url(${url})`);
+            }
+            console.log(`${tipo === 'perfil' ? 'Foto de perfil' : 'Foto de portada'} subida correctamente:`, url);
           });
         })
-      ).subscribe();
+      ).subscribe({
+        next: (snapshot) => {
+          if (snapshot?.bytesTransferred !== undefined && snapshot?.totalBytes !== undefined) {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log(`Progreso de subida: ${progress.toFixed(2)}%`);
+          }
+        },
+        error: (err) => {
+          console.error('Error al subir la imagen:', err);
+        }
+      });
+    } else {
+      console.warn('No se seleccionó ningún archivo.');
     }
   }
+  
+  
+  
+  
+  
 
-  onBackgroundUpload(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      const filePath = `fotoPortada/${this.correoUsuario}`;
-      const fileRef = this.storage.ref(filePath);
-      const uploadTask = this.storage.upload(filePath, file);
-
-      uploadTask.snapshotChanges().pipe(
-        finalize(() => {
-          fileRef.getDownloadURL().subscribe((url) => {
-            this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle(`url(${url})`);
-          });
-        })
-      ).subscribe();
-    }
-  }
 
   ngOnDestroy() {
     if (this.carouselInterval) {

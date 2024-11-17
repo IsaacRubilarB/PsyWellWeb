@@ -1,8 +1,8 @@
 [
   {
-    "origin": ["*"],
-    "method": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
-    "responseHeader": ["*"],
+    "origin": ["http://localhost:4200", "https://*.firebaseapp.com", "https://firebasestorage.googleapis.com"],
+    "method": ["GET", "HEAD", "OPTIONS", "POST", "PUT"],
+    "responseHeader": ["Content-Type", "Authorization", "Access-Control-Allow-Origin"],
     "maxAgeSeconds": 3600
   }
 ]

@@ -14,10 +14,13 @@
 
   <!-- Perfil y Portada -->
   <div class="profile-summary" [style.backgroundImage]="fondoPerfil || 'url(assets/default-cover.jpg)'">
+    <!-- Foto de Perfil -->
     <div class="profile-picture-container" (click)="triggerFileInput('perfil')">
       <img [src]="fotoPerfil || 'assets/default-profile.png'" alt="Foto de Usuario" class="profile-picture" />
       <span class="edit-icon">✏️</span>
     </div>
+
+    <!-- Detalles del Perfil -->
     <div class="profile-details">
       <h2>{{ psicologoName }}</h2>
       <p>
@@ -31,11 +34,15 @@
       </p>
       <p>Experiencia: {{ aniosExperiencia }} años</p>
     </div>
+
+    <!-- Botón para Cambiar Portada -->
     <button class="btn-change-background" (click)="triggerFileInput('portada')">✏️</button>
+
+    <!-- Inputs Ocultos para Subida de Archivos -->
     <input
       type="file"
       accept="image/*"
-      (change)="onBackgroundUpload($event)"
+      (change)="onUpload($event, 'portada')"
       class="file-input"
       id="portada"
       style="display: none"
@@ -43,7 +50,7 @@
     <input
       type="file"
       accept="image/*"
-      (change)="onProfilePictureUpload($event)"
+      (change)="onUpload($event, 'perfil')"
       class="file-input"
       id="perfil"
       style="display: none"
@@ -52,6 +59,7 @@
 
   <!-- Sección de Recordatorios y Estadísticas -->
   <div class="info-section">
+    <!-- Recordatorios -->
     <div class="reminder-section">
       <h2>Recordatorios</h2>
       <div class="reminder-list">
@@ -72,7 +80,7 @@
       </div>
     </div>
 
-    <!-- Sección de Estadísticas de Sesiones -->
+    <!-- Estadísticas de Sesiones -->
     <div class="session-stats">
       <h2>Estadísticas de Sesiones</h2>
       <div class="stat-card">
@@ -97,12 +105,14 @@
   <div class="sticky-notes-container">
     <h2>Notas Rápidas</h2>
 
+    <!-- Formulario para Añadir Notas -->
     <div class="add-note-form">
       <input type="text" [(ngModel)]="newNoteTitle" placeholder="Título de la nota" />
       <textarea [(ngModel)]="newNoteContent" placeholder="Contenido de la nota"></textarea>
       <button (click)="addStickyNote()">Añadir Nota</button>
     </div>
 
+    <!-- Controles de Notas -->
     <div class="note-controls">
       <input type="text" placeholder="Buscar nota..." [(ngModel)]="searchQuery" (input)="filterNotes()" />
       <button (click)="sortNotes()">Ordenar Alfabéticamente</button>
@@ -118,7 +128,7 @@
       <button class="next" (click)="nextNote()">›</button>
     </div>
 
-    <!-- Lista de Notas Filtradas -->
+    <!-- Lista de Notas -->
     <div *ngIf="!isCarouselActive" class="sticky-notes-list">
       <div *ngFor="let note of filteredNotes; let i = index" class="sticky-note-item">
         <h3>{{ note.title }}</h3>
