@@ -15,56 +15,40 @@
 
     <!-- Panel de filtros avanzados -->
     <div class="filters-panel">
-      <label>
-        Nivel de Riesgo:
-        <select (change)="filterByRisk($event)">
-          <option value="todos">Todos</option>
-          <option value="bajo">Bajo</option>
-          <option value="moderado">Moderado</option>
-          <option value="alto">Alto</option>
-        </select>
-      </label>
-      <label>
+
         Diagnóstico:
         <select (change)="filterByDiagnosis($event)">
           <option value="todos">Todos</option>
           <option value="Depresión">Depresión</option>
           <option value="Ansiedad">Ansiedad</option>
           <option value="Depresión Severa">Depresión Severa</option>
-        </select>
-      </label>
-    </div>
+        </select>    </div>
 
     <!-- Lista de pacientes -->
     <div class="patients-list">
       <div *ngFor="let patient of filteredPatients" class="patient-card">
         <div class="patient-photo">
-          <img [src]="patient.photo" alt="{{ patient.name }}" />
+          <img [src]="patient.photo || './assets/profiles/default.png'" alt="{{ patient.name }}" />
         </div>
         <div class="patient-info">
           <h3 class="patient-name">{{ patient.name }}</h3>
           <div class="patient-details">
             <p><i class="fas fa-user"></i> {{ patient.age }} Años</p>
             <p><i class="fas fa-notes-medical"></i> {{ patient.diagnosis }}</p>
-            <p><i class="fas fa-calendar-check"></i> Última Sesión: {{ patient.lastSession }}</p>
             <p><i class="fas fa-calendar-alt"></i> Próxima Cita: {{ patient.nextAppointment }}</p>
-            <p class="status" [ngClass]="getStatusClass(patient.riskLevel)">
-              <i class="fas fa-circle"></i> Riesgo: {{ patient.riskLevel }}
-            </p>
-            <!-- Barra de progreso de tratamiento -->
-            <div class="progress-container">
-              <label>Progreso del Tratamiento</label>
-              <div class="progress-bar">
-                <div class="progress" [style.width]="patient.progress + '%'"></div>
-              </div>
-            </div>
+             
+           
           </div>
         </div>
         <div class="patient-actions">
-          <button class="btn-details" [routerLink]="['/patient', patient.id]">Ver detalle</button>
-          <button class="btn-message" (click)="openMessageModal(patient)">Enviar mensaje</button>
-          <button class="btn-appointment" [routerLink]="['/citas']">Programar cita</button>
+          <button class="btn-details" [routerLink]="['/patient', patient.id]">
+            <i class="fas fa-info-circle"></i> Ver detalle
+          </button>
+          <button class="btn-appointment" [routerLink]="['/citas']">
+            <i class="fas fa-calendar-plus"></i> Programar cita
+          </button>
         </div>
+        
       </div>
     </div>
   </div>

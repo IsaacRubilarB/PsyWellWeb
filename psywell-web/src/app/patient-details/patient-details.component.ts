@@ -22,8 +22,8 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
   stressLevel: number = 40;
   isFichaPacienteModalOpen = false;
 
-  medications: any[] = [];  
-  appointments: any[] = [];  
+  medications: any[] = [];
+  appointments: any[] = [];
 
   @ViewChild('heartAnimation') heartAnimationDiv!: ElementRef;
   @ViewChild('sleepAnimation') sleepAnimationDiv!: ElementRef;
@@ -50,19 +50,34 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
     this.usersService.obtenerUsuarioPorId(id).subscribe(
       (response: any) => {
         console.log("Datos recibidos del paciente:", response); // Verificación en consola
-        
+
         const data = response.data; // Accede a 'data' dentro de la respuesta
         if (data) {
+          // Obtenemos el correo electrónico del paciente
+          const email = data.correo || data.email || '';
+          if (!email) {
+            console.warn(`El paciente ${data.nombre} no tiene correo electrónico.`);
+          }
+
+          // Generamos la URL de la foto
+          const photoUrl = email ? this.getFirebaseImageUrl(email, 'profile') : 'assets/patient.png';
+
+          // Agregamos logs para depuración
+          console.log(`Email del paciente: ${email}`);
+          console.log(`URL de la foto del paciente: ${photoUrl}`);
+
           this.patientDetails = {
             name: data.nombre || 'Nombre desconocido',
             age: data.fechaNacimiento ? this.calculateAge(data.fechaNacimiento) : 'Edad desconocida',
             diagnosis: data.diagnosis || 'Sin diagnóstico',
-            notes: data.notes || 'Sin notas'
+            notes: data.notes || 'Sin notas',
+            email: email,
+            photo: photoUrl
           };
-  
+
           // Aseguramos que `medications` y `appointments` se llenen si existen en la respuesta
-          this.medications = data.medications || [];  
-          this.appointments = data.appointments || [];  
+          this.medications = data.medications || [];
+          this.appointments = data.appointments || [];
         } else {
           console.warn("No se recibieron datos del paciente.");
         }
@@ -72,29 +87,38 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
       }
     );
   }
-  
-  
-  
+
+  // Método para obtener el URL de la imagen desde Firebase Storage
+  private getFirebaseImageUrl(email: string, tipo: 'profile' | 'banner'): string {
+    const sanitizedEmail = email.replace(/@/g, '_').replace(/\./g, '_');
+    const folder = tipo === 'profile' ? 'fotoPerfil' : 'fotoPortada';
+    const url = `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/${folder}%2F${encodeURIComponent(sanitizedEmail)}?alt=media`;
+
+    // Log para depuración
+    console.log(`Email sanitizado: ${sanitizedEmail}`);
+    console.log(`URL generada: ${url}`);
+
+    return url;
+  }
 
   calculateAge(fechaNacimiento: string): number {
     if (!fechaNacimiento) {
       return NaN; // Retorna NaN si fechaNacimiento es undefined o null
     }
-  
+
     const [day, month, year] = fechaNacimiento.split('/');
     if (!day || !month || !year) return NaN; // Retorna NaN si el formato es incorrecto
-  
+
     const birthDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDifference = today.getMonth() - birthDate.getMonth();
-  
+
     if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
     return age;
   }
-  
 
   ngAfterViewInit(): void {
     this.cdr.detectChanges();

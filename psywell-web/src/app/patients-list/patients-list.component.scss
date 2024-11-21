@@ -1,12 +1,29 @@
+/* Estilos generales */
 .patients-list-container {
   background-color: #293b57;
   padding: 20px;
   border-radius: 15px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   max-width: 1000px;
+  width: 90%;
   margin: 80px auto;
   border: 2px solid #FFD966;
   overflow: hidden;
+}
+
+/* Ajustes responsive para el contenedor principal */
+@media (max-width: 768px) {
+  .patients-list-container {
+    margin: 40px auto;
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .patients-list-container {
+    margin: 20px auto;
+    padding: 10px;
+  }
 }
 
 .header-title {
@@ -14,6 +31,19 @@
   font-size: 32px;
   margin-bottom: 20px;
   text-align: center;
+}
+
+/* Ajustes responsive para el título */
+@media (max-width: 768px) {
+  .header-title {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-title {
+    font-size: 24px;
+  }
 }
 
 .search-bar-container {
@@ -48,9 +78,27 @@
   height: auto;
 }
 
+/* Ajustes responsive para la barra de búsqueda */
+@media (max-width: 768px) {
+  .search-bar-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-bar {
+    width: 100%;
+  }
+
+  .logo-container {
+    margin-top: 10px;
+    align-self: center;
+  }
+}
+
 .filters-panel {
   display: flex;
-  justify-content: space-around;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 20px;
   color: #FFD966;
 
@@ -70,6 +118,23 @@
   }
 }
 
+/* Ajustes responsive para el panel de filtros */
+@media (max-width: 768px) {
+  .filters-panel {
+    flex-direction: column;
+    align-items: flex-start;
+
+    label, select {
+      width: 100%;
+    }
+
+    select {
+      margin-top: 5px;
+      margin-left: 0;
+    }
+  }
+}
+
 .patients-list .patient-card {
   display: flex;
   justify-content: space-between;
@@ -85,6 +150,14 @@
     background-color: #384b53;
     transform: scale(1.02);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Ajustes responsive para las tarjetas de pacientes */
+@media (max-width: 768px) {
+  .patients-list .patient-card {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
@@ -130,52 +203,35 @@
         color: #FFD966;
       }
     }
+  }
+}
 
-    .status {
-      font-weight: bold;
-      display: flex;
-      align-items: center;
+/* Ajustes responsive para la información del paciente */
+@media (max-width: 768px) {
+  .patient-info .patient-name {
+    font-size: 18px;
+  }
 
-      &.low {
-        color: #00c853;
-      }
+  .patient-details p {
+    font-size: 13px;
+  }
 
-      &.moderate {
-        color: #ffab00;
-      }
+  .patient-details p i {
+    font-size: 14px;
+  }
+}
 
-      &.high {
-        color: #d50000;
-      }
+@media (max-width: 480px) {
+  .patient-info .patient-name {
+    font-size: 16px;
+  }
 
-      i {
-        margin-right: 5px;
-      }
-    }
+  .patient-details p {
+    font-size: 12px;
+  }
 
-    .progress-container {
-      margin-top: 10px;
-
-      label {
-        color: #FFD966;
-        font-size: 12px;
-      }
-
-      .progress-bar {
-        background-color: #555;
-        border-radius: 5px;
-        overflow: hidden;
-        height: 8px;
-        width: 100%;
-        margin-top: 5px;
-
-        .progress {
-          height: 100%;
-          background-color: #FFD966;
-          border-radius: 5px;
-        }
-      }
-    }
+  .patient-details p i {
+    font-size: 12px;
   }
 }
 
@@ -185,6 +241,8 @@
   align-items: center;
 
   .btn-details, .btn-message, .btn-appointment {
+    display: flex;
+    align-items: center;
     padding: 10px 15px;
     border: none;
     border-radius: 5px;
@@ -195,23 +253,18 @@
     margin-bottom: 5px;
     transition: background-color 0.3s ease;
 
+    i {
+      margin-right: 8px;
+    }
+
     &:hover {
       background-color: #e6ac00;
     }
   }
 }
 
+/* Ajustes responsive para las acciones del paciente */
 @media (max-width: 768px) {
-  .patients-list-container {
-    padding: 15px;
-  }
-
-  .patients-list .patient-card {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 20px;
-  }
-
   .patient-actions {
     flex-direction: row;
     gap: 5px;
@@ -223,6 +276,7 @@
   }
 }
 
+/* Estilos para el modal */
 .modal {
   position: fixed;
   top: 0;
@@ -235,57 +289,4 @@
   align-items: center;
   z-index: 1000;
   transition: opacity 0.3s ease;
-}
-
-.modal-content {
-  background-color: #2e3a48;
-  padding: 20px;
-  border-radius: 10px;
-  width: 70%;
-  max-width: 600px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-.modal-content header {
-  font-size: 24px;
-  color: #FFD966;
-  margin-bottom: 15px;
-}
-
-.modal-content .close-btn {
-  background: none;
-  border: none;
-  color: #FFD966;
-  font-size: 24px;
-  cursor: pointer;
-}
-
-.modal-content .close-btn:hover {
-  color: #ffab00;
-}
-
-.modal-content .chat-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.modal-content .chat-form input {
-  padding: 12px;
-  border: 1px solid #FFD966;
-  border-radius: 8px;
-  font-size: 16px;
-}
-
-.modal-content .chat-form button {
-  padding: 12px;
-  background-color: #FFD966;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.modal-content .chat-form button:hover {
-  background-color: #e6ac00;
 }

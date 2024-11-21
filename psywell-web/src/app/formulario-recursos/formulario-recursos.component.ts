@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { CommonModule } from '@angular/common';
@@ -14,6 +14,19 @@ interface Paciente {
   imagen: string;
 }
 
+interface Recurso {
+  titulo: string;
+  descripcion: string;
+  tipo: string;
+  autor?: string;
+  categoria?: string;
+  fecha_subida: Date;
+  visibilidad: boolean;
+  pacienteAsignado: string | null;
+  url: string | null;
+  portada?: string | null;
+}
+
 @Component({
   selector: 'app-formulario-recursos',
   standalone: true,
@@ -21,7 +34,7 @@ interface Paciente {
   templateUrl: './formulario-recursos.component.html',
   styleUrls: ['./formulario-recursos.component.scss']
 })
-export class FormularioRecursosComponent {
+export class FormularioRecursosComponent implements OnInit {
   titulo = '';
   descripcion = '';
   tipoRecurso = '';
@@ -32,17 +45,35 @@ export class FormularioRecursosComponent {
   portadaUrl: string | null = null;
   pacienteSeleccionado: Paciente | null = null;
   categoria = '';
-
-  pacientes: Paciente[] = [
-    { id: '1', nombre: 'Juan Pérez', imagen: 'assets/profiles/juan.png' },
-    { id: '2', nombre: 'Ana López', imagen: 'assets/profiles/ana.png' },
-    { id: '3', nombre: 'Carlos García', imagen: 'assets/profiles/carlos.png' },
-    { id: '4', nombre: 'María Fernández', imagen: 'assets/profiles/maria.png' }
-  ];
+  pacientes: Paciente[] = []; // Lista de pacientes cargados
 
   constructor(private firestore: AngularFirestore, private storage: AngularFireStorage) {}
 
-  onTipoRecursoChange() {
+  ngOnInit(): void {
+    this.cargarPacientes();
+  }
+
+  cargarPacientes(): void {
+    this.firestore
+      .collection('pacientes')
+      .valueChanges({ idField: 'id' })
+      .subscribe(
+        (data: any[]) => {
+          this.pacientes = data.map((paciente) => ({
+            id: paciente.id,
+            nombre: paciente.nombre || 'Sin nombre',
+            imagen: paciente.imagen || 'assets/profiles/default.png' // Imagen por defecto
+          }));
+          console.log('Pacientes cargados:', this.pacientes);
+        },
+        (error) => {
+          console.error('Error al cargar pacientes:', error);
+          this.mostrarAlerta('Error', 'No se pudieron cargar los pacientes.', 'error');
+        }
+      );
+  }
+
+  onTipoRecursoChange(): void {
     if (this.tipoRecurso !== 'videos') {
       this.videoUrl = '';
     }
@@ -52,16 +83,16 @@ export class FormularioRecursosComponent {
     }
   }
 
-  onFileSelected(event: any) {
+  onFileSelected(event: any): void {
     this.archivo = event.target.files[0];
     if (this.tipoRecurso === 'libros' && this.archivo) {
       this.generatePdfPreview(this.archivo);
     } else if (this.tipoRecurso === 'audios' && this.archivo) {
-      this.uploadAudioFile(this.archivo);
+      this.uploadFile(this.archivo, `audios/${this.archivo.name}`, 'audio');
     }
   }
 
-  async generatePdfPreview(file: File) {
+  async generatePdfPreview(file: File): Promise<void> {
     try {
       const reader = new FileReader();
       reader.onload = async () => {
@@ -78,49 +109,35 @@ export class FormularioRecursosComponent {
         const dataUrl = canvas.toDataURL('image/png');
 
         // Subir la portada al storage
-        this.uploadPortadaToStorage(dataUrl, file.name);
+        await this.uploadFile(this.dataUrlToBlob(dataUrl), `portadas/${file.name}_portada.png`, 'portada');
 
         // Subir el archivo PDF completo al storage
-        this.uploadPdfFile(file);
+        await this.uploadFile(file, `libros/${file.name}`, 'pdf');
       };
       reader.readAsArrayBuffer(file);
     } catch (error) {
-      console.error("Error al generar la vista previa del PDF:", error);
+      console.error('Error al generar la vista previa del PDF:', error);
       this.mostrarAlerta('Error', 'No se pudo generar la vista previa del libro.', 'error');
     }
   }
 
-  uploadPortadaToStorage(dataUrl: string, fileName: string) {
-    const filePath = `portadas/${fileName}_portada.png`;
-    const task = this.storage.upload(filePath, this.dataUrlToBlob(dataUrl));
-    task.snapshotChanges().subscribe(async () => {
-      this.portadaUrl = await this.storage.ref(filePath).getDownloadURL().toPromise();
-      console.log("URL de portada:", this.portadaUrl);
-    });
+  async uploadFile(file: File | Blob, path: string, type: 'pdf' | 'audio' | 'portada'): Promise<void> {
+    try {
+      const task = this.storage.upload(path, file);
+      const snapshot = await task.snapshotChanges().toPromise();
+      const fileRef = this.storage.ref(path);
+      const downloadUrl = await fileRef.getDownloadURL().toPromise();
+
+      if (type === 'pdf' || type === 'audio') {
+        this.recursoUrl = downloadUrl;
+      } else if (type === 'portada') {
+        this.portadaUrl = downloadUrl;
+      }
+      console.log(`${type} URL:`, downloadUrl);
+    } catch (error) {
+      console.error(`Error al subir ${type}:`, error);
+    }
   }
-
-  uploadPdfFile(file: File) {
-    const filePath = `libros/${file.name}`;
-    const fileRef = this.storage.ref(filePath);
-    const task = this.storage.upload(filePath, file);
-
-    task.snapshotChanges().subscribe(async () => {
-      this.recursoUrl = await fileRef.getDownloadURL().toPromise();
-      console.log("URL del PDF completo:", this.recursoUrl);
-    });
-  }
-
-  uploadAudioFile(file: File) {
-    const filePath = `audios/${file.name}`;
-    const fileRef = this.storage.ref(filePath);
-    const task = this.storage.upload(filePath, file);
-
-    task.snapshotChanges().subscribe(async () => {
-      this.recursoUrl = await fileRef.getDownloadURL().toPromise();
-      console.log("URL del audio:", this.recursoUrl);
-    });
-}
-
 
   dataUrlToBlob(dataUrl: string): Blob {
     const byteString = atob(dataUrl.split(',')[1]);
@@ -133,20 +150,17 @@ export class FormularioRecursosComponent {
     return new Blob([ab], { type: mimeString });
   }
 
-  async submitForm() {
+  async submitForm(): Promise<void> {
     if (this.tipoRecurso === 'libros' && this.archivo) {
       await this.generatePdfPreview(this.archivo);
-      this.guardarRecurso();
     } else if (this.tipoRecurso === 'audios' && this.archivo) {
-      this.uploadAudioFile(this.archivo);
-      this.guardarRecurso();
-    } else {
-      this.guardarRecurso();
+      await this.uploadFile(this.archivo, `audios/${this.archivo.name}`, 'audio');
     }
+    this.guardarRecurso();
   }
 
-  guardarRecurso() {
-    const nuevoRecurso: any = {
+  guardarRecurso(): void {
+    const nuevoRecurso: Recurso = {
       titulo: this.titulo,
       descripcion: this.descripcion,
       tipo: this.tipoRecurso,
@@ -159,17 +173,26 @@ export class FormularioRecursosComponent {
       portada: this.tipoRecurso === 'libros' ? this.portadaUrl : null
     };
 
-    const collectionName = this.tipoRecurso === 'libros' ? 'libros' : this.tipoRecurso === 'audios' ? 'audios' : 'recursos-materiales';
-    this.firestore.collection(collectionName).add(nuevoRecurso).then(() => {
-      this.mostrarAlerta('Éxito', 'Recurso subido exitosamente', 'success');
-      this.resetForm();
-    }).catch(error => {
-      console.error("Error al guardar recurso en Firestore:", error);
-      this.mostrarAlerta('Error', 'No se pudo guardar el recurso.', 'error');
-    });
+    const collectionName =
+      this.tipoRecurso === 'libros'
+        ? 'libros'
+        : this.tipoRecurso === 'audios'
+        ? 'audios'
+        : 'recursos-materiales';
+    this.firestore
+      .collection(collectionName)
+      .add(nuevoRecurso)
+      .then(() => {
+        this.mostrarAlerta('Éxito', 'Recurso subido exitosamente', 'success');
+        this.resetForm();
+      })
+      .catch((error) => {
+        console.error('Error al guardar recurso en Firestore:', error);
+        this.mostrarAlerta('Error', 'No se pudo guardar el recurso.', 'error');
+      });
   }
 
-  resetForm() {
+  resetForm(): void {
     this.titulo = '';
     this.descripcion = '';
     this.tipoRecurso = '';
@@ -182,7 +205,7 @@ export class FormularioRecursosComponent {
     this.pacienteSeleccionado = null;
   }
 
-  mostrarAlerta(titulo: string, texto: string, icono: 'success' | 'error') {
+  mostrarAlerta(titulo: string, texto: string, icono: 'success' | 'error'): void {
     Swal.fire({
       title: titulo,
       text: texto,

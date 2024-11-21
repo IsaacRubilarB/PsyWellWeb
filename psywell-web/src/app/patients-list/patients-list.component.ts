@@ -9,6 +9,8 @@ interface User {
   nombre: string;
   fechaNacimiento: string;
   perfil: string;
+  correo?: string; // Aseguramos que el campo 'correo' esté disponible
+  email?: string;  // En caso de que el campo sea 'email'
   diagnosis?: string;
   emotionalStatus?: string;
   photo?: string;
@@ -29,12 +31,13 @@ interface Patient {
   nextAppointment: string;
   riskLevel: string;
   progress: number;
+  email: string;
 }
 
 @Component({
   selector: 'app-patients-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavbarComponent],  // Importando MensajesComponent
+  imports: [CommonModule, RouterModule, NavbarComponent],
   templateUrl: './patients-list.component.html',
   styleUrls: ['./patients-list.component.scss'],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
@@ -55,27 +58,62 @@ export class PatientsListComponent implements OnInit {
   cargarPacientes() {
     this.usersService.listarUsuarios().subscribe(
       (response: any) => {
+        // Agregamos un log para ver la respuesta completa
+        console.log('Respuesta del servicio:', response);
+
         const usuarios = Array.isArray(response.data) ? response.data : [];
         this.patients = usuarios
           .filter((user: User) => user.perfil === 'paciente')
-          .map((user: User): Patient => ({
-            id: user.idUsuario.toString(),
-            name: user.nombre,
-            age: this.calculateAge(user.fechaNacimiento),
-            diagnosis: user.diagnosis || 'Sin diagnóstico',
-            emotionalStatus: user.emotionalStatus || 'Sin estado',
-            photo: user.photo || './assets/profiles/default.png',
-            lastSession: this.formatDate(user.lastSession),
-            nextAppointment: this.formatDate(user.nextAppointment),
-            riskLevel: user.riskLevel || 'Sin riesgo',
-            progress: user.progress || 0
-          }));
+          .map((user: User): Patient => {
+            // Obtenemos el correo electrónico del usuario
+            const email = user.correo || user.email || '';
+            if (!email) {
+              console.warn(`El usuario ${user.nombre} no tiene correo electrónico.`);
+            }
+
+            // Generamos la URL de la foto
+            const photoUrl = email ? this.getFirebaseImageUrl(email, 'profile') : './assets/profiles/default.png';
+
+            // Agregamos logs para depuración
+            console.log(`Usuario: ${user.nombre}`);
+            console.log(`Email original: ${email}`);
+            console.log(`Foto URL generada: ${photoUrl}`);
+
+            return {
+              id: user.idUsuario.toString(),
+              name: user.nombre,
+              age: this.calculateAge(user.fechaNacimiento),
+              diagnosis: user.diagnosis || 'Sin diagnóstico',
+              emotionalStatus: user.emotionalStatus || 'Sin estado',
+              photo: photoUrl,
+              lastSession: this.formatDate(user.lastSession),
+              nextAppointment: this.formatDate(user.nextAppointment),
+              riskLevel: user.riskLevel || 'Sin riesgo',
+              progress: user.progress || 0,
+              email: email
+            };
+          });
         this.filteredPatients = [...this.patients];
       },
       (error: any) => {
         console.error('Error al cargar pacientes:', error);
       }
     );
+  }
+
+  // Método para obtener el URL de la imagen desde Firebase Storage
+  private getFirebaseImageUrl(email: string, tipo: 'profile' | 'banner'): string {
+    const sanitizedEmail = email.replace(/@/g, '_').replace(/\./g, '_');
+    const folder = tipo === 'profile' ? 'fotoPerfil' : 'fotoPortada';
+
+    // Actualizamos el dominio a 'firebasestorage.app' en lugar de 'appspot.com'
+    const url = `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/${folder}%2F${encodeURIComponent(sanitizedEmail)}?alt=media`;
+
+    // Agregamos logs para depuración
+    console.log(`Email sanitizado: ${sanitizedEmail}`);
+    console.log(`URL de la imagen generada: ${url}`);
+
+    return url;
   }
 
   // Método para calcular la edad
@@ -119,25 +157,6 @@ export class PatientsListComponent implements OnInit {
     );
   }
 
-  getStatusClass(riskLevel: string): string {
-    switch (riskLevel.toLowerCase()) {
-      case 'bajo':
-        return 'low';
-      case 'moderado':
-        return 'moderate';
-      case 'alto':
-        return 'high';
-      default:
-        return '';
-    }
-  }
-
-  filterByRisk(event: any) {
-    const riskLevel = event.target.value;
-    this.filteredPatients = riskLevel === 'todos'
-      ? [...this.patients]
-      : this.filteredPatients.filter(patient => patient.riskLevel.toLowerCase() === riskLevel);
-  }
 
   filterByDiagnosis(event: any) {
     const diagnosis = event.target.value;

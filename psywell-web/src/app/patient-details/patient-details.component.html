@@ -4,7 +4,8 @@
   <h1>Detalles del Paciente</h1>
   
   <div class="patient-profile">
-    <img class="patient-photo" src="assets/patient.png" alt="Foto del paciente" />
+    <!-- Actualizamos la imagen para que use el enlace de la foto del paciente -->
+    <img class="patient-photo" [src]="patientDetails.photo || 'assets/patient.png'" alt="Foto del paciente" />
     <div class="patient-info">
       <h2>{{ patientDetails.name }}</h2>
       <p><strong>Edad:</strong> {{ patientDetails.age }} Años</p>
@@ -76,14 +77,10 @@
 <!-- Modal para Ficha del Paciente -->
 <div *ngIf="isFichaPacienteModalOpen" class="modal-container">
   <div class="modal-content">
-
     <app-ficha-paciente
-    *ngIf="isFichaPacienteModalOpen"
-    [patientId]="patientId || ''" 
-    (closeModalEvent)="closeFichaPacienteModal()"
-  ></app-ficha-paciente>
-  
-
-
-    </div>
+      *ngIf="isFichaPacienteModalOpen"
+      [patientId]="patientId || ''" 
+      (closeModalEvent)="closeFichaPacienteModal()"
+    ></app-ficha-paciente>
+  </div>
 </div>

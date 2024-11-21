@@ -1,125 +1,317 @@
 .citas-container {
-  padding: 20px;
   background-color: #293b57;
+  padding: 20px;
   border-radius: 15px;
-  border: 2px solid #FFD966;
-
-  max-width: 1100px;
+  max-width: 1000px;
   margin: 100px auto;
-  color: #080808; 
-  position: relative;
-}
+  border: 2px solid #FFD966;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
 
-.modal {
-  position: fixed;
-  z-index: 1000; 
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7); 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  .header-title {
+    color: #FFFFFF;
+    font-size: 32px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  /* Barra de búsqueda */
+  .search-bar-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+
+    .search-bar {
+      width: 90%;
+      max-width: 600px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      outline: none;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+
+      &:focus {
+        box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+      }
+    }
+  }
+
+  /* Botón para agregar cita */
+  .add-cita-button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+
+    .btn-agregar-cita {
+      padding: 10px 20px;
+      background-color: #FFD966;
+      color: #333;
+      font-weight: bold;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background-color 0.3s ease;
+
+      i {
+        font-size: 16px;
+      }
+
+      &:hover {
+        background-color: #e6ac00;
+      }
+    }
+  }
+
+  /* Lista de citas */
+  .citas-list {
+    .cita-card {
+      background-color: #2E3A48;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      border: 1px solid #ffffff;
+      &:hover {
+        background-color: #384b53;
+        transform: scale(1.02);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      }
+
+      .cita-header {
+        display: flex;
+        align-items: center;
+        flex-basis: 30%;
+        gap: 15px;
+
+        .cita-photo {
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          overflow: hidden;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+
+        .cita-info {
+          h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #FFD966;
+          }
+
+          p {
+            margin: 0;
+            font-size: 14px;
+            color: #d4d4d4;
+
+            i {
+              margin-right: 5px;
+              color: #FFD966;
+            }
+          }
+        }
+      }
+
+      .cita-details {
+        flex-basis: 50%;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        padding-left: 10px;
+        color: #d4d4d4;
+
+        p {
+          margin: 0;
+          font-size: 14px;
+
+          i {
+            margin-right: 5px;
+            color: #FFD966;
+          }
+        }
+
+        .cita-date,
+        .cita-time,
+        .cita-location,
+        .cita-comments {
+          font-size: 14px;
+        }
+      }
+
+      .cita-actions {
+        flex-basis: 20%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+
+        .btn-editar,
+        .btn-eliminar {
+          padding: 8px 12px;
+          background-color: #FFD966;
+          color: #333;
+          font-weight: bold;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          transition: background-color 0.3s ease;
+
+          i {
+            font-size: 16px;
+          }
+
+          &:hover {
+            background-color: #e6ac00;
+          }
+        }
+      }
+    }
+  }
+
+
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 10px;
   
-}
-
-.modal-content {
-  background-color: rgba(136, 178, 184, 0.7); 
-  padding: 20px;
-  border-radius: 10px;
-  width: 400px; 
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  border-left: 5px solid #ffc107; 
-
-}
-
-h1 {
-  text-align: center;
-  margin-bottom: 30px;
-  font-size: 30px;
-  color: #ffffff; 
-  text-shadow: 0px 0px 10px #050505; 
-}
-
-h2{
-  color: #dda90b; 
-  text-shadow: 0px 0px 10px #050505; 
-
-}
-
-.cita-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* Botón Agregar Cita estilo Bootstrap */
-.btn-agregar-cita {
-  display: inline-block;
-  padding: 10px 20px;
-  font-size: 16px;
-  font-weight: bold;
-  color: #ffffff; 
-  background-color: #007bff; 
-  border: none;
-  border-radius: 10px; 
-  cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  text-align: center;
-  margin-bottom: 2%;
-}
-
-.btn-agregar-cita:hover {
-  background-color: #0056b3; 
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
-}
-
-h3{
-  margin: 0;
-  font-size: 20px;
-  font-weight: bold;
-  color: #ffffff;
-}
-
-h4{
-  margin: 0;
-  font-size: 20px;
-  font-weight: bold;
-  color: #ffffff;
-}
-
-p{
-  margin: 0;
-  font-size: 20px;
-  font-weight: bold;
-  color: #fafafa;
-}
-
-.cita-card {
-  opacity: 0.5; /* El valor va de 0 (transparente) a 1 (opaco) */
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  padding: 20px;
-  background-color:rgba(0, 0, 0, 0.7); 
-  border-radius: 10px;
-  border-left: 5px solid #ffc107; 
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  gap: 15px;
-  position: relative;
-}
-
-/* Resto de los estilos de .cita-card y otros componentes */
-
-@media (max-width: 768px) {
-  .citas-container {
-    padding: 15px;
+    .modal-content {
+      background-color: #1e3a5f;
+      padding: 2rem;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 700px;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+      color: #e5e5e5;
+      border: 2px solid #ffffff;
+      animation: slideIn 0.5s ease-out;
+  
+      h2 {
+        text-align: center;
+        color: #ffc107;
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+      }
+  
+      .form-group {
+        margin-bottom: 1rem;
+        position: relative;
+  
+        label {
+          font-weight: bold;
+          color: #b0c4de;
+          display: block;
+          margin-bottom: 5px;
+        }
+  
+        .input-with-icon {
+          display: flex;
+          align-items: center;
+          background-color: #2e4964;
+          border: 1px solid #b0c4de;
+          border-radius: 5px;
+          padding: 0.5rem;
+          
+          i {
+            color: #ffc107;
+            margin-right: 10px;
+          }
+  
+          input,
+          select,
+          textarea {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+          }
+  
+          textarea {
+            resize: vertical;
+          }
+        }
+      }
+  
+      .form-row {
+        display: flex;
+        gap: 20px;
+  
+        .form-group {
+          flex: 1;
+        }
+      }
+  
+      .modal-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+  
+        .btn-primary {
+          background-color: #ffc107;
+          color: #212121;
+          padding: 10px 20px;
+          border: none;
+          border-radius: 8px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+  
+          &:hover {
+            background-color: #f5b700;
+          }
+        }
+  
+        .btn-secondary {
+          background-color: #555;
+          color: #fff;
+          padding: 10px 20px;
+          border: none;
+          border-radius: 8px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+  
+          &:hover {
+            background-color: #777;
+          }
+        }
+      }
+    }
+  
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   }
-
-  .cita-card {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+  
 }

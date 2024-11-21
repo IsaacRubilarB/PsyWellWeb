@@ -1,31 +1,24 @@
-import { Component, ElementRef, OnInit, Renderer2 } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CitasService } from '../services/citasService';
 import { NavbarComponent } from 'app/navbar/navbar.component';
 import { CommonModule } from '@angular/common';
 import { UsersService } from '../services/userService';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { DomSanitizer } from '@angular/platform-browser';
-import interact from 'interactjs';
 
 export interface Cita {
-  nombrePaciente: string;
-  nombrePsicologo: string;
   idCita: number;
   idPaciente: number;
   idPsicologo: number | null;
   ubicacion: string;
   estado: string;
-  fecha: string;   
-  horaInicio: string;  
-  horaFin: string;  
+  fecha: string;
+  horaInicio: string;
+  horaFin: string;
   comentarios: string;
-}
+  nombrePaciente: string;
+  fotoPaciente?: string; // Nueva propiedad
 
-export interface ListaCitasResponse {
-  status: string;
-  data: Cita[];
 }
 
 @Component({
@@ -37,64 +30,39 @@ export interface ListaCitasResponse {
 })
 export class CitasComponent implements OnInit {
   citas: Cita[] = [];
-  psicologos: any[] = [];
+  filteredCitas: Cita[] = []; // Arreglo para almacenar las citas filtradas
   pacientes: any[] = [];
   mostrarModal = false;
   citaForm: FormGroup;
   errorMessage: string | null = null;
-  userId: string | null = null;
-  userName: string = '';
-  especialidad: string = 'Psicóloga Especialista en Salud Mental';
-  aniosExperiencia: number = 10;
-  genero: string = 'masculino';
+  userId: number | null = null;
+  modoEdicion = false;
+  citaEnEdicion: Cita | null = null;
 
   constructor(
     private citasService: CitasService,
-    private fb: FormBuilder, 
+    private fb: FormBuilder,
     private usersService: UsersService,
-    private afs: AngularFirestore,
-    private afAuth: AngularFireAuth,
-    private el: ElementRef,
-    private sanitizer: DomSanitizer,
-    private renderer: Renderer2,
+    private afAuth: AngularFireAuth
   ) {
     this.citaForm = this.fb.group({
-      idUsuario: [, Validators.required],
-      fechaHora: ['', Validators.required],
-      estado: ['Pendiente', Validators.required],
+      idPaciente: ['', Validators.required],
+      fecha: ['', Validators.required],
+      horaInicio: ['', Validators.required],
+      horaFin: ['', Validators.required],
       ubicacion: ['', Validators.required],
-      comentarios: ['']
+      comentarios: [''],
+      estado: ['Pendiente', Validators.required]
     });
   }
 
   ngOnInit() {
-    console.log('CitasComponent inicializado');
-    this.obtenerUsuarios();  
+    this.obtenerUsuarios();
     this.afAuth.authState.subscribe(user => {
       if (user) {
         this.cargarPsicologo(user.email || '');
       }
     });
-    setTimeout(() => {
-      this.initializeDrag();
-    });
-  }
-
-  initializeDrag() {
-    interact('.sticky-note-item')
-      .draggable({
-        listeners: {
-          move: (event) => {
-            const target = event.target;
-            const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-            const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-
-            target.style.transform = `translate(${x}px, ${y}px)`;
-            target.setAttribute('data-x', x);
-            target.setAttribute('data-y', y);
-          }
-        }
-      });
   }
 
   cargarPsicologo(email: string) {
@@ -103,11 +71,9 @@ export class CitasComponent implements OnInit {
         const user = response.data.find((user: any) => user.email === email);
         if (user) {
           this.userId = user.idUsuario;
-          this.userName = user.nombre;
-          console.log('Usuario logueado:', user);
           this.obtenerCitas();
         } else {
-          console.error('No se encontró el usuario con ese UID');
+          console.error('No se encontró el usuario con ese correo electrónico');
         }
       },
       (error) => {
@@ -118,38 +84,33 @@ export class CitasComponent implements OnInit {
 
   abrirModal() {
     this.mostrarModal = true;
+    this.modoEdicion = false;
+    this.citaForm.reset({
+      estado: 'Pendiente'
+    });
   }
 
   cerrarModal() {
     this.mostrarModal = false;
-    this.resetNuevaCita();
+    this.citaForm.reset({
+      estado: 'Pendiente'
+    });
+    this.modoEdicion = false;
+    this.citaEnEdicion = null;
   }
 
   obtenerCitas() {
     this.citasService.listarCitas().subscribe({
       next: (response) => {
         if (response && response.status === 'success' && Array.isArray(response.data)) {
-          console.log('Citas obtenidas:', response.data);
-
           this.citas = response.data
-            .filter((cita: any) => cita.idPaciente === this.userId || cita.idPsicologo === this.userId)
-            .map((cita: any) => {
-              return {
-                idCita: cita.idCita,
-                idPaciente: cita.idPaciente,
-                idPsicologo: cita.idPsicologo || null,
-                ubicacion: cita.ubicacion,
-                estado: cita.estado,
-                fecha: cita.fecha,
-                horaInicio: cita.horaInicio,
-                horaFin: cita.horaFin,
-                comentarios: cita.comentarios,
-                nombrePaciente: this.getNombreUsuario(cita.idPaciente),
-                nombrePsicologo: this.getNombreUsuario(cita.idPsicologo)
-              };
-            });
-
-          console.log('Citas filtradas:', this.citas);
+            .filter((cita: any) => cita.idPsicologo === this.userId)
+            .map((cita: any) => ({
+              ...cita,
+              nombrePaciente: this.getNombreUsuario(cita.idPaciente),
+              fotoPaciente: this.getFotoPaciente(cita.idPaciente) // Obtener la foto del paciente
+            }));
+          this.filteredCitas = [...this.citas]; // Inicializamos filteredCitas con todas las citas
         } else {
           console.error('La respuesta no es válida:', response);
         }
@@ -160,9 +121,19 @@ export class CitasComponent implements OnInit {
       }
     });
   }
+  
+  getFotoPaciente(idPaciente: number): string {
+    const paciente = this.pacientes.find(p => p.idUsuario === idPaciente);
+    if (paciente && paciente.email) {
+      const sanitizedEmail = paciente.email.replace(/@/g, '_').replace(/\./g, '_');
+      return `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/fotoPerfil%2F${encodeURIComponent(sanitizedEmail)}?alt=media`;
+    }
+    return './assets/profiles/default.png'; // Imagen predeterminada si no hay foto
+  }
+  
 
   getNombreUsuario(id: number): string {
-    const usuario = this.psicologos.find(p => p.idUsuario === id) || this.pacientes.find(p => p.idUsuario === id);
+    const usuario = this.pacientes.find(p => p.idUsuario === id);
     return usuario ? usuario.nombre : 'Desconocido';
   }
 
@@ -170,8 +141,6 @@ export class CitasComponent implements OnInit {
     this.usersService.listarUsuarios().subscribe(
       (response: any) => {
         if (response && response.data) {
-          console.log('Usuarios cargados:', response);
-          this.psicologos = response.data.filter((user: { perfil: string }) => user.perfil === 'psicologo');
           this.pacientes = response.data.filter((user: { perfil: string }) => user.perfil === 'paciente');
         } else {
           console.error('No se encontraron usuarios');
@@ -184,29 +153,75 @@ export class CitasComponent implements OnInit {
   }
 
   guardarCita() {
-    if (this.citaForm.valid) {
-      const nuevaCita: Cita = this.citaForm.value;
-      this.citasService.registrarCita(nuevaCita).subscribe({
-        next: (response: Cita) => {
-          console.log('Cita registrada con éxito', response);
-          this.cerrarModal();
+    if (this.citaForm.valid && this.userId) {
+      const nuevaCita: Cita = {
+        ...this.citaForm.value,
+        idPsicologo: this.userId,
+        idCita: this.citaEnEdicion ? this.citaEnEdicion.idCita : 0,
+        nombrePaciente: ''
+      };
+
+      if (this.modoEdicion && this.citaEnEdicion) {
+        this.citasService.actualizarCita(nuevaCita).subscribe({
+          next: () => {
+            this.cerrarModal();
+            this.obtenerCitas();
+          },
+          error: (error: any) => {
+            console.error('Error al actualizar la cita', error);
+            this.errorMessage = 'Ocurrió un error al intentar actualizar la cita. Por favor, inténtalo de nuevo.';
+          }
+        });
+      } else {
+        this.citasService.registrarCita(nuevaCita).subscribe({
+          next: () => {
+            this.cerrarModal();
+            this.obtenerCitas();
+          },
+          error: (error: any) => {
+            console.error('Error al registrar la cita', error);
+            this.errorMessage = 'Ocurrió un error al intentar registrar la cita. Por favor, inténtalo de nuevo.';
+          }
+        });
+      }
+    }
+  }
+
+  editarCita(cita: Cita) {
+    this.modoEdicion = true;
+    this.citaEnEdicion = cita;
+    this.mostrarModal = true;
+    this.citaForm.patchValue({
+      idPaciente: cita.idPaciente,
+      fecha: cita.fecha,
+      horaInicio: cita.horaInicio,
+      horaFin: cita.horaFin,
+      ubicacion: cita.ubicacion,
+      comentarios: cita.comentarios,
+      estado: cita.estado
+    });
+  }
+
+  eliminarCita(idCita: number) {
+    if (confirm('¿Estás seguro de que deseas eliminar esta cita?')) {
+      this.citasService.eliminarCita(idCita).subscribe({
+        next: () => {
           this.obtenerCitas();
         },
         error: (error: any) => {
-          console.error('Error al registrar la cita', error);
-          this.errorMessage = 'Ocurrió un error al intentar registrar la cita. Por favor, inténtalo de nuevo.';
+          console.error('Error al eliminar la cita', error);
+          this.errorMessage = 'Ocurrió un error al intentar eliminar la cita. Por favor, inténtalo de nuevo.';
         }
       });
     }
   }
 
-  private resetNuevaCita() {
-    this.citaForm.reset({
-      idUsuario: '',
-      fechaHora: '',
-      estado: 'Pendiente',
-      ubicacion: '',
-      comentarios: ''
-    });
+  // Barra de búsqueda para filtrar citas
+  onSearch(event: any) {
+    const query = event.target.value.toLowerCase();
+    this.filteredCitas = this.citas.filter((cita) =>
+      cita.nombrePaciente.toLowerCase().includes(query) ||
+      cita.fecha.toLowerCase().includes(query)
+    );
   }
 }
