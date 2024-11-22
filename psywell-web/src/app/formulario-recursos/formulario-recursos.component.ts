@@ -160,6 +160,10 @@ export class FormularioRecursosComponent implements OnInit {
   }
 
   guardarRecurso(): void {
+    if (this.tipoRecurso === 'videos' && this.videoUrl) {
+      this.recursoUrl = this.transformYoutubeUrl(this.videoUrl);
+    }
+  
     const nuevoRecurso: Recurso = {
       titulo: this.titulo,
       descripcion: this.descripcion,
@@ -172,13 +176,14 @@ export class FormularioRecursosComponent implements OnInit {
       url: this.recursoUrl,
       portada: this.tipoRecurso === 'libros' ? this.portadaUrl : null
     };
-
+  
     const collectionName =
       this.tipoRecurso === 'libros'
         ? 'libros'
         : this.tipoRecurso === 'audios'
         ? 'audios'
         : 'recursos-materiales';
+  
     this.firestore
       .collection(collectionName)
       .add(nuevoRecurso)
@@ -191,6 +196,15 @@ export class FormularioRecursosComponent implements OnInit {
         this.mostrarAlerta('Error', 'No se pudo guardar el recurso.', 'error');
       });
   }
+  
+  // Transformar URL de YouTube al formato embed
+  transformYoutubeUrl(url: string): string {
+    const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})/;
+    const match = url.match(regex);
+    return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+  }
+  
+  
 
   resetForm(): void {
     this.titulo = '';
