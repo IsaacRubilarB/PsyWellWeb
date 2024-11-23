@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Chart, registerables, ChartConfiguration, ChartDataset } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { NavbarComponent } from 'app/navbar/navbar.component';
-import { RegistroService } from './../services/registroService';
+import { RegistroService  } from './../services/registroService';
 import {jsPDF} from 'jspdf';
 
 import autoTable from 'jspdf-autotable'
