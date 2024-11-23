@@ -54,11 +54,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private afs: AngularFirestore
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     console.log('Iniciando ngOnInit...');
-    
-    this.afAuth.authState.subscribe(
-      (user) => {
+  
+    this.afAuth.authState.subscribe({
+      next: (user) => {
         if (!user?.email) {
           console.error('No se detectó un usuario autenticado. Verifica el estado de autenticación.');
           return;
@@ -66,12 +66,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   
         console.log('Usuario autenticado:', user.email);
   
-        this.usersService.listarUsuarios().subscribe(
-          (response: any) => {
-            console.log('Respuesta de listarUsuarios:', response);
-  
-            if (!response?.data) {
-              console.error('No se encontraron usuarios en la respuesta.');
+        this.usersService.listarUsuarios().subscribe({
+          next: (response: any) => {
+            if (!response?.data || !Array.isArray(response.data)) {
+              console.error('La respuesta de listarUsuarios no contiene datos válidos.');
               return;
             }
   
@@ -87,67 +85,109 @@ export class DashboardComponent implements OnInit, OnDestroy {
             // Asignar datos del psicólogo
             this.psicologoName = psicologo.nombre;
             this.genero = psicologo.genero || 'indefinido';
-            this.userId = psicologo.id;
+            this.userId = psicologo.idUsuario; // <-- Cambiado de "id" a "idUsuario"
             this.correoUsuario = psicologo.email;
   
-            // Cargar imágenes del psicólogo
-            console.log('Cargando imágenes para el psicólogo...');
+            // Cargar imágenes y citas
             this.cargarImagenes(psicologo.email);
-  
-            // Cargar citas del psicólogo
-            console.log('Cargando citas para el psicólogo con ID:', psicologo.id);
-            this.cargarCitas(psicologo.id);
+            this.cargarCitas(psicologo.idUsuario); // <-- Cambiado de "id" a "idUsuario"
           },
-          (error) => {
+          error: (error) => {
             console.error('Error al listar usuarios:', error);
-          }
-        );
+          },
+        });
       },
-      (error) => {
+      error: (error) => {
         console.error('Error al verificar el estado de autenticación:', error);
-      }
-    );
+      },
+    });
   }
+  
   
 
   cargarCitas(idPsicologo: number): void {
     console.log('Cargando citas para el psicólogo con ID:', idPsicologo);
   
-    this.citasService.listarCitas().subscribe(
-      async (response: any) => {
-        console.log('Respuesta de listarCitas:', response);
+    this.citasService.listarCitas().subscribe({
+      next: async (response: any) => {
+        console.log('Respuesta del backend al listarCitas:', response);
   
-        if (!response?.data) {
-          console.warn('No se encontraron citas en la respuesta.');
+        if (!response?.data || !Array.isArray(response.data)) {
+          console.warn('La respuesta no contiene datos válidos.');
+          this.recordatorios = [];
           return;
         }
   
-        const citasPsicologo = response.data.filter((cita: any) => cita.id_psicologo === idPsicologo);
-        console.log('Citas filtradas para el psicólogo:', citasPsicologo);
+        // Filtrar citas asociadas al psicólogo autenticado
+        const citasPsicologo = response.data.filter((cita: any) => cita.idPsicologo === idPsicologo);
   
-        this.recordatorios = await Promise.all(
-          citasPsicologo.map(async (cita: any) => {
-            const pacienteNombre = await this.obtenerNombrePaciente(cita.id_paciente);
-            const horaFormateada = this.formatearHora(cita.horaInicio);
-            return {
-              ...cita,
-              pacienteNombre: pacienteNombre || 'Paciente Desconocido',
-              horaInicio: horaFormateada,
-            };
-          })
-        );
+        // Obtener pacientes para las citas
+        const pacientes = await this.obtenerTodosLosUsuarios();
   
-        console.log('Recordatorios cargados:', this.recordatorios);
+        // Mapear las citas con los nombres de los pacientes
+        this.recordatorios = citasPsicologo.map((cita: any) => {
+          const paciente = pacientes.find((p: any) => p.idUsuario === cita.idPaciente);
+          return {
+            ...cita,
+            pacienteNombre: paciente?.nombre || 'Paciente Desconocido',
+            horaInicio: this.formatearHora(cita.horaInicio),
+          };
+        });
+  
+        console.log('Citas cargadas y procesadas:', this.recordatorios);
       },
-      (error) => {
+      error: (error) => {
         console.error('Error al cargar citas:', error);
-      }
-    );
+        this.recordatorios = [];
+      },
+    });
   }
   
 
 
-// Método para formatear la hora y quitar los segundos
+
+async obtenerPacientePorId(idPaciente: number): Promise<any> {
+  console.log(`Buscando información del paciente con ID: ${idPaciente}`);
+
+  try {
+    const response = await this.usersService.listarUsuarios().toPromise();
+    if (response?.data && Array.isArray(response.data)) {
+      const paciente = response.data.find((user: any) => user.id === idPaciente);
+      console.log(`Paciente encontrado: ${paciente?.nombre || 'No encontrado'}`);
+      return paciente || null;
+    } else {
+      console.warn('La respuesta de listarUsuarios no contiene datos válidos.');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error al listar usuarios:', error);
+    return null;
+  }
+}
+
+
+
+
+
+async obtenerTodosLosUsuarios(): Promise<any[]> {
+  try {
+    const response = await this.usersService.listarUsuarios().toPromise();
+    if (response?.data && Array.isArray(response.data)) {
+      console.log('Usuarios obtenidos:', response.data);
+      return response.data;
+    } else {
+      console.warn('La respuesta de listarUsuarios no contiene datos válidos.');
+      return [];
+    }
+  } catch (error) {
+    console.error('Error al listar usuarios:', error);
+    return [];
+  }
+}
+
+
+
+// Método para formatear la hora
 formatearHora(hora: string): string {
     if (!hora) return 'Hora no disponible';
     return hora.substring(0, 5); // Extraer solo los primeros 5 caracteres (HH:mm)
@@ -155,78 +195,31 @@ formatearHora(hora: string): string {
 
 
 
-  obtenerNombrePaciente(idPaciente: number): Promise<string> {
-    console.log(`Obteniendo nombre para el paciente con ID: ${idPaciente}`);
-  
-    return new Promise((resolve, reject) => {
-      this.usersService.listarUsuarios().subscribe(
-        (response: any) => {
-          console.log('Respuesta de listarUsuarios:', response);
-  
-          const paciente = response.data.find((user: any) => user.id === idPaciente);
-  
-          if (paciente) {
-            console.log(`Paciente encontrado: ${paciente.nombre}`);
-            resolve(paciente.nombre); // Retorna el nombre del paciente
-          } else {
-            console.warn(`Paciente con ID ${idPaciente} no encontrado.`);
-            resolve('Paciente Desconocido'); // Fallback si no se encuentra
-          }
-        },
-        (error) => {
-          console.error('Error al listar usuarios:', error);
-          reject('Error al obtener paciente'); // Manejo de errores
-        }
-      );
-    });
-  }
-  
-  
-  obtenerNombrePacienteSync(idPaciente: number): string {
-    let pacienteNombre = 'Paciente Desconocido';
-  
-    this.usersService.listarUsuarios().subscribe(
-      (response: any) => {
-        console.log('Respuesta de listarUsuarios:', response);
-  
-        const paciente = response.data.find((user: any) => user.id === idPaciente);
-        if (paciente) {
-          pacienteNombre = paciente.nombre;
-          console.log(`Paciente encontrado: ${pacienteNombre}`);
-        } else {
-          console.warn(`Paciente con ID ${idPaciente} no encontrado.`);
-        }
-      },
-      (error) => {
-        console.error('Error al listar usuarios:', error);
-      }
-    );
-  
-    return pacienteNombre; // Devuelve temporalmente el nombre conocido o un fallback
-  }
-  
-  
-  cargarImagenes(email: string): void {
-    console.log('Cargando imágenes para el correo:', email);
-  
-    if (!email) {
+
+
+
+
+cargarImagenes(email: string): void {
+  console.log('Cargando imágenes para el correo:', email);
+
+  if (!email) {
       console.warn('El correo está vacío o no es válido.');
       return;
-    }
-  
-    const perfilPath = `fotoPerfil/${email}`;
-    const portadaPath = `fotoPortada/${email}`;
-  
-    const perfilUrl = `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/${encodeURIComponent(perfilPath)}?alt=media`;
-    const portadaUrl = `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/${encodeURIComponent(portadaPath)}?alt=media`;
-  
-    console.log('URL esperada para foto de perfil:', perfilUrl);
-    console.log('URL esperada para foto de portada:', portadaUrl);
-  
-    this.fotoPerfil = perfilUrl;
-    this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle(`url(${portadaUrl})`);
   }
-  
+
+  const perfilPath = `fotoPerfil/${email}`;
+  const portadaPath = `fotoPortada/${email}`;
+
+  const perfilUrl = `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/${encodeURIComponent(perfilPath)}?alt=media`;
+  const portadaUrl = `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/${encodeURIComponent(portadaPath)}?alt=media`;
+
+  console.log('URL esperada para foto de perfil:', perfilUrl);
+  console.log('URL esperada para foto de portada:', portadaUrl);
+
+  this.fotoPerfil = perfilUrl;
+  this.fondoPerfil = this.sanitizer.bypassSecurityTrustStyle(`url(${portadaUrl})`);
+}
+
 
 
 
@@ -312,14 +305,6 @@ formatearHora(hora: string): string {
   
   
 
-  
-  
-  
-  
-  
-  
-  
-  
 
   ngOnDestroy() {
     if (this.carouselInterval) {
