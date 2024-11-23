@@ -5,6 +5,10 @@ import lottie from 'lottie-web';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FichaPacienteComponent } from '../ficha-paciente/ficha-paciente.component';
+import { RegistroService } from 'app/services/registroService';
+import {jsPDF} from 'jspdf';
+
+import autoTable from 'jspdf-autotable'
 
 @Component({
   selector: 'app-patient-details',
@@ -36,7 +40,8 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private usersService: UsersService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private registroService: RegistroService
   ) {}
 
   ngOnInit(): void {
@@ -210,7 +215,52 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
   }
 
   generateReport() {
-    this.router.navigate(['/reports']);
+    this.registroService.listarRegistroByUser(this.patientId).subscribe(res =>  {
+      let data = res.data
+      console.log(data);
+
+    //const data = JSON.parse(json);
+    if(data.length==0 || data==null){
+      alert("no se encontraron datos para exportar")
+      return;
+    }
+    const columns = this.getColumns(data);
+    const rows = this.getRows(data, columns);
+    const doc = new jsPDF();
+
+    autoTable(doc, {
+      head: [columns],
+      body: rows,
+     // did: (data) => { },
+  });
+  doc.save('data.pdf');
+
+
+  });
+  }
+
+  getColumns(data: any[]): string[] {
+    const columns: string[] = [];
+    data.forEach(row => {
+      Object.keys(row).forEach(col => {
+        if (!columns.includes(col)) {
+          columns.push(col);
+        }
+      });
+    });
+    return columns;
+  }
+
+  getRows(data: any[], columns: string[]): any[] {
+    const rows: any[] = [];
+    data.forEach(row => {
+      const values: any[] = [];
+      columns.forEach(col => {
+        values.push(row[col] || '');
+      });
+      rows.push(values);
+    });
+    return rows;
   }
 
   openFichaPacienteModal() {
