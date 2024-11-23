@@ -128,6 +128,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
   
+  
+  
+  
+  
 
   estadoEmocionalEmojis: { [key: string]: string } = {
     "Muy enojado": "😡",

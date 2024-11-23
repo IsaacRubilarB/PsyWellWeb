@@ -41,8 +41,8 @@ export class CitasService {
     return this.http.delete<any>(`${this.eliminarCitaUrl}/${idCita}`);
   }
 
-  obtenerRegistrosPorPaciente(idUsuario: number): Observable<any> {
-    const url = `http://localhost:8082/listarRegistro?idUsuario=${idUsuario}`;
+  obtenerRegistrosPorPaciente(idUsuario: string): Observable<any> {
+    const url = `http://localhost:8082/listarRegistro?id_usuario=${idUsuario}`;
     return this.http.get<any>(url).pipe(
       map((response: any) => {
         if (response?.data) {
@@ -52,7 +52,5 @@ export class CitasService {
       })
     );
   }
-  
-  
   
 }

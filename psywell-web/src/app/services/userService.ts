@@ -33,4 +33,6 @@ export class UsersService {
   verificarUsuario(email: string): Observable<any> {
     return this.http.post<any>(this.verificarUsuarioUrl, { email });
   }
+
+  
 }
