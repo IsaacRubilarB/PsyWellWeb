@@ -4,6 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { Chart, registerables, ChartConfiguration, ChartDataset } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { NavbarComponent } from 'app/navbar/navbar.component';
+import { RegistroService } from './../services/registroService';
+import {jsPDF} from 'jspdf';
+
+import autoTable from 'jspdf-autotable'
+
+
+
 
 Chart.register(...registerables, ChartDataLabels);
 
@@ -30,6 +37,70 @@ interface Patient {
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class ReportsComponent implements AfterViewInit {
+
+  
+  constructor(private registroService: RegistroService ) {}
+
+
+  donwload() {
+    this.registroService.listarRegistro().subscribe(res =>  {
+      let data = res.data
+      console.log(data);
+
+    //const data = JSON.parse(json);
+    const columns = this.getColumns(data);
+    const rows = this.getRows(data, columns);
+    const doc = new jsPDF();
+
+    autoTable(doc, {
+      head: [columns],
+      body: rows,
+     // did: (data) => { },
+  });
+  doc.save('data.pdf');
+
+
+  });
+  }
+
+  getColumns(data: any[]): string[] {
+    const columns: string[] = [];
+    data.forEach(row => {
+      Object.keys(row).forEach(col => {
+        if (!columns.includes(col)) {
+          columns.push(col);
+        }
+      });
+    });
+    return columns;
+  }
+
+  getRows(data: any[], columns: string[]): any[] {
+    const rows: any[] = [];
+    data.forEach(row => {
+      const values: any[] = [];
+      columns.forEach(col => {
+        values.push(row[col] || '');
+      });
+      rows.push(values);
+    });
+    return rows;
+  }
+
+ 
+  downloadFile(data: string, filename: string, type: string) {
+    const blob = new Blob([data], { type: type });
+  
+      const link = document.createElement('a');
+      link.setAttribute('href', URL.createObjectURL(blob));
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+   
+  }
+
   @ViewChild('chartCanvas', { static: false }) chartCanvas!: ElementRef<HTMLCanvasElement>;
   chart!: Chart;
   timeRange = '7';

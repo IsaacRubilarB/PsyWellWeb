@@ -29,6 +29,8 @@
     "dotenv": "^16.4.5",
     "firebase": "^10.14.1",
     "interactjs": "^1.10.27",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
     "lottie-web": "^5.12.2",
     "ngx-lottie": "^12.0.0",
     "pdfjs-dist": "^4.7.76",
