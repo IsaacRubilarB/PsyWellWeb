@@ -85,7 +85,7 @@
       <!-- Carrusel de Emociones -->
       <div class="emociones-section">
         <h2>Emociones Registradas</h2>
-        <div class="carousel-container">
+        <div *ngIf="emocionesPaciente && emocionesPaciente.length > 0; else noEmociones" class="carousel-container">
           <button class="prev-button" (click)="prevSlide()">‹</button>
           <div class="carousel-wrapper">
             <div
@@ -99,13 +99,17 @@
                 <span class="emocion-fecha">{{ emocion.fecha | date: 'dd/MM/yyyy' }}</span>
               </div>
               <!-- Contenedor para los comentarios -->
-              <p class="emocion-comentarios">📝 Comentarios: {{ emocion.comentarios }}</p>
+              <p class="emocion-comentarios">📝 {{ emocion.comentarios }}</p>
             </div>
           </div>
           <button class="next-button" (click)="nextSlide()">›</button>
         </div>
+        <ng-template #noEmociones>
+          <p class="placeholder">Haz clic en un paciente para ver sus emociones registradas.</p>
+        </ng-template>
       </div>
-      
     </div>
   </div>
+
+  <app-notas></app-notas>
 </div>

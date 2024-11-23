@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Cita, ListaCitasResponse } from '../models/cita.model';
 import { map } from 'rxjs/operators';
+import { catchError, of } from 'rxjs';
 
 
 @Injectable({
@@ -41,16 +42,26 @@ export class CitasService {
     return this.http.delete<any>(`${this.eliminarCitaUrl}/${idCita}`);
   }
 
-  obtenerRegistrosPorPaciente(idUsuario: string): Observable<any> {
-    const url = `http://localhost:8082/listarRegistro?id_usuario=${idUsuario}`;
+  obtenerRegistrosPorPaciente(idUsuario: number): Observable<any> {
+    // Calcula la fecha de hace 7 días
+    const fechaLimite = new Date();
+    fechaLimite.setDate(fechaLimite.getDate() - 7);
+    const fechaDesde = fechaLimite.toISOString(); // Convierte la fecha a ISO 8601
+  
+    const url = `http://localhost:8082/listarRegistroPorUsuario/${idUsuario}?fechaDesde=${fechaDesde}`;
     return this.http.get<any>(url).pipe(
       map((response: any) => {
         if (response?.data) {
-          return response.data; // Retorna los registros directamente
+          return response.data; // Retorna solo los registros filtrados
         }
         return [];
+      }),
+      catchError((error) => {
+        console.error('Error al obtener registros:', error);
+        return of([]); // Devuelve un array vacío en caso de error
       })
     );
   }
+
   
 }

@@ -261,7 +261,6 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         border: 1px solid #ffffff; /* Borde blanco de 1px */
       }
-      
     
       .carousel-wrapper {
         display: flex;
@@ -274,7 +273,7 @@
         flex: 1;
         text-align: left;
         background: #293b57;
-        padding: 15px;
+        padding: 20px;
         border-radius: 10px;
         display: none;
         transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
@@ -283,8 +282,8 @@
         &.active {
           display: flex;
           flex-direction: column;
-          justify-content: flex-start; /* Aseguramos que el contenido inicie desde arriba */
-          gap: 10px; /* Espacio entre elementos internos */
+          justify-content: flex-start; /* Inicia desde arriba */
+          gap: 15px; /* Espacio entre elementos */
           box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
     
@@ -297,42 +296,52 @@
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 10px;
+          margin-bottom: 15px;
     
           .emocion-emoji {
-            font-size: 40px; /* Tamaño grande para el emoji */
+            font-size: 50px; /* Más grande para destacar */
             color: #ffd966;
+            animation: bounce 1.5s infinite; /* Agrega un pequeño rebote animado */
           }
     
           .emocion-fecha {
-            font-size: 18px;
+            font-size: 20px; /* Más prominente */
             font-weight: bold;
-            color: #ffffff;
+            color: #ffd966;
+            background: #314766;
+            padding: 5px 10px;
+            border-radius: 8px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
           }
         }
     
         .emocion-comentarios {
           font-size: 16px;
-          line-height: 1.5;
+          line-height: 1.6;
           color: #b3c2d1;
-          text-align: justify; /* Mejor alineación del texto */
+          text-align: justify;
+          background: #1e2a38;
+          padding: 10px;
+          border-radius: 8px;
+          box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.1);
         }
       }
     
       .prev-button,
       .next-button {
-        background: none; /* Sin fondo */
-        border: none; /* Sin borde */
-        color: #ffd966; /* Color amarillo */
-        font-size: 2rem; /* Tamaño más grande */
+        background: none;
+        border: none;
+        color: #ffd966;
+        font-size: 2rem;
         cursor: pointer;
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
-        transition: transform 0.3s;
+        transition: transform 0.3s, color 0.3s;
     
         &:hover {
-          transform: translateY(-50%) scale(1.2); /* Efecto de agrandamiento al pasar el mouse */
+          transform: translateY(-50%) scale(1.2);
+          color: #ffea8a; /* Un amarillo más claro */
         }
       }
     
@@ -343,7 +352,30 @@
       .next-button {
         right: -10px;
       }
+    
+      @keyframes bounce {
+        0%, 100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-5px);
+        }
+      }
     }
     
-    
   } 
+
+
+  .placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 1.2rem;
+    color: #b3c2d1;
+    padding: 20px;
+    background: #293b57;
+    border-radius: 10px;
+    height: 100%; /* Asegúrate de que ocupe todo el espacio del contenedor */
+  }
+  

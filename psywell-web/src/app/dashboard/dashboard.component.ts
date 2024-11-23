@@ -10,11 +10,12 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { finalize } from 'rxjs/operators';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { NotasComponent } from '../notas/notas.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, NotasComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -108,7 +109,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   seleccionarCita(cita: any): void {
     console.log('Cita seleccionada:', cita);
   
-    // Obtener registros del paciente seleccionado
+    // Llama al método para obtener registros de los últimos 7 días
     this.citasService.obtenerRegistrosPorPaciente(cita.idPaciente).subscribe({
       next: (registros: any[]) => {
         console.log('Registros del paciente:', registros);
@@ -127,6 +128,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
     });
   }
+  
+  
   
   
   
