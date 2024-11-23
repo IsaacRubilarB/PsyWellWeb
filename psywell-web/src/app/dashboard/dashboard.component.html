@@ -32,7 +32,6 @@
         </ng-template>
         Especialista en Salud Mental
       </p>
-      <p>Experiencia: {{ aniosExperiencia }} años</p>
     </div>
 
     <!-- Botón para Cambiar Portada -->
@@ -40,66 +39,50 @@
 
     <!-- Inputs Ocultos para Subida de Archivos -->
     <input
-      type="file"
-      accept="image/*"
-      (change)="onUpload($event, 'portada')"
-      class="file-input"
-      id="portada"
-      style="display: none"
-    />
-    <input
-      type="file"
-      accept="image/*"
-      (change)="onUpload($event, 'perfil')"
-      class="file-input"
-      id="perfil"
-      style="display: none"
-    />
+  type="file"
+  accept="image/*"
+  (change)="onUpload($event, 'portada')"
+  id="portada"
+  style="display: none"
+/>
+<input
+  type="file"
+  accept="image/*"
+  (change)="onUpload($event, 'perfil')"
+  id="perfil"
+  style="display: none"
+/>
+
   </div>
 
   
   <!-- Sección de Recordatorios y Estadísticas -->
   <div class="info-section">
-    <!-- Recordatorios -->
     <div class="reminder-section">
       <h2>Recordatorios</h2>
       <div class="reminder-list">
-        <div class="reminder-item">
-          <i class="fas fa-bell"></i>
-          <div class="reminder-text">
-            <p class="reminder-title">Revisar progreso de Cristopher Soto</p>
-            <span class="reminder-date">Fecha límite: 10/10/2024</span>
+        <div *ngIf="recordatorios.length > 0; else noRecordatorios">
+          <div *ngFor="let cita of recordatorios" class="reminder-item">
+            <div class="icon-container">
+              <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="reminder-text">
+              <p class="reminder-title"><i class="fas fa-user"></i> Sesión con: <span>{{ cita.pacienteNombre }}</span></p>
+              <p class="reminder-location"><i class="fas fa-map-marker-alt"></i> 🗺️ Ubicación: <span>{{ cita.ubicacion }}</span></p>
+              <p class="reminder-date">
+                <i class="fas fa-calendar"></i> 📅 Fecha: <span>{{ cita.fecha | date: 'dd/MM/yyyy' }}</span> 
+                - <i class="fas fa-clock"></i> ⌚ Hora: <span>{{ cita.horaInicio }}</span>
+              </p>
+            </div>
           </div>
         </div>
-        <div class="reminder-item">
-          <i class="fas fa-envelope"></i>
-          <div class="reminder-text">
-            <p class="reminder-title">Enviar informe mensual de María González</p>
-            <span class="reminder-date">Fecha límite: 30/10/2024</span>
-          </div>
-        </div>
+        <ng-template #noRecordatorios>
+          <p>No tienes citas programadas.</p>
+        </ng-template>
       </div>
     </div>
-
-    <!-- Estadísticas de Sesiones -->
-    <div class="session-stats">
-      <h2>Estadísticas de Sesiones</h2>
-      <div class="stat-card">
-        <i class="fas fa-user-clock"></i>
-        <p>Sesiones Hoy</p>
-        <strong>3</strong>
-      </div>
-      <div class="stat-card">
-        <i class="fas fa-calendar-week"></i>
-        <p>Sesiones de la Semana</p>
-        <strong>15</strong>
-      </div>
-      <div class="stat-card">
-        <i class="fas fa-user-friends"></i>
-        <p>Pacientes Activos</p>
-        <strong>10</strong>
-      </div>
-    </div>
+    
+    
   </div>
 
   <!-- Notas Rápidas -->
