@@ -1,0 +1,54 @@
+<div class="notas-container">
+    <h2 class="notas-titulo">Gestión de Notas</h2>
+    <div class="form-nueva-nota">
+      <label for="titulo">Título:</label>
+      <input
+        id="titulo"
+        type="text"
+        placeholder="Título de la nota"
+        [(ngModel)]="nuevaNota.titulo"
+      />
+  
+      <label for="contenido">Contenido:</label>
+      <textarea
+        id="contenido"
+        placeholder="Contenido de la nota"
+        [(ngModel)]="nuevaNota.contenido"
+      ></textarea>
+  
+      <label for="importante">
+        <input
+          id="importante"
+          type="checkbox"
+          [(ngModel)]="nuevaNota.esImportante"
+        />
+        Importante
+      </label>
+  
+      <button (click)="agregarNota()">Agregar Nota</button>
+    </div>
+  
+    <div class="notas-lista">
+      <div class="nota-item" *ngFor="let nota of notas">
+        <div class="nota-header">
+          <h3>{{ nota.titulo }}</h3>
+          <button class="btn-eliminar" (click)="eliminarNota(nota)">
+            🗑️
+          </button>
+        </div>
+        <p class="nota-contenido">{{ nota.contenido }}</p>
+        <div class="nota-footer">
+          <span class="fecha">
+            {{ nota.fechaCreacion | date: 'short' }}
+          </span>
+          <span class="importante" *ngIf="nota.esImportante">¡Importante!</span>
+        </div>
+      </div>
+    </div>
+  
+
+      
+      
+  
+  
+  

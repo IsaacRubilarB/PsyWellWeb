@@ -39,86 +39,77 @@
 
     <!-- Inputs Ocultos para Subida de Archivos -->
     <input
-  type="file"
-  accept="image/*"
-  (change)="onUpload($event, 'portada')"
-  id="portada"
-  style="display: none"
-/>
-<input
-  type="file"
-  accept="image/*"
-  (change)="onUpload($event, 'perfil')"
-  id="perfil"
-  style="display: none"
-/>
-
+      type="file"
+      accept="image/*"
+      (change)="onUpload($event, 'portada')"
+      id="portada"
+      style="display: none"
+    />
+    <input
+      type="file"
+      accept="image/*"
+      (change)="onUpload($event, 'perfil')"
+      id="perfil"
+      style="display: none"
+    />
   </div>
 
-  
-  <!-- Sección de Recordatorios y Estadísticas -->
+  <!-- Sección de Recordatorios y Emociones -->
   <div class="info-section">
-    <div class="reminder-section">
-      <h2>Recordatorios</h2>
-      <div class="reminder-list">
-        <div *ngIf="recordatorios.length > 0; else noRecordatorios">
-          <div *ngFor="let cita of recordatorios" class="reminder-item">
-            <div class="icon-container">
-              <i class="fas fa-user-circle"></i>
-            </div>
-            <div class="reminder-text">
-              <p class="reminder-title"><i class="fas fa-user"></i> Sesión con: <span>{{ cita.pacienteNombre }}</span></p>
-              <p class="reminder-location"><i class="fas fa-map-marker-alt"></i> 🗺️ Ubicación: <span>{{ cita.ubicacion }}</span></p>
-              <p class="reminder-date">
-                <i class="fas fa-calendar"></i> 📅 Fecha: <span>{{ cita.fecha | date: 'dd/MM/yyyy' }}</span> 
-                - <i class="fas fa-clock"></i> ⌚ Hora: <span>{{ cita.horaInicio }}</span>
-              </p>
+    <div class="recordatorios-emociones-container">
+      <!-- Recordatorios -->
+      <div class="reminder-section">
+        <h2>Recordatorios</h2>
+        <div class="reminder-list">
+          <div *ngIf="recordatorios.length > 0; else noRecordatorios">
+            <div *ngFor="let cita of recordatorios" class="reminder-item" (click)="seleccionarCita(cita)">
+              <div class="icon-container">
+                <i class="fas fa-user-circle"></i>
+              </div>
+              <div class="reminder-text">
+                <p class="reminder-title"><i class="fas fa-user"></i> Sesión con: <span>{{ cita.pacienteNombre }}</span></p>
+                <p class="reminder-location"><i class="fas fa-map-marker-alt"></i> 🗺️ Ubicación: <span>{{ cita.ubicacion }}</span></p>
+                <p class="reminder-date">
+                  <i class="fas fa-calendar"></i> 📅 Fecha: <span>{{ cita.fecha | date: 'dd/MM/yyyy' }}</span> 
+                  - <i class="fas fa-clock"></i> ⌚ Hora: <span>{{ cita.horaInicio }}</span>
+                </p>
+              </div>
             </div>
           </div>
+          <ng-template #noRecordatorios>
+            <p>No tienes citas programadas.</p>
+          </ng-template>
         </div>
-        <ng-template #noRecordatorios>
-          <p>No tienes citas programadas.</p>
+      </div>
+
+      <!-- Carrusel de Emociones -->
+      <div class="emociones-section">
+        <h2>Emociones Registradas</h2>
+        <div *ngIf="emocionesPaciente && emocionesPaciente.length > 0; else noEmociones" class="carousel-container">
+          <button class="prev-button" (click)="prevSlide()">‹</button>
+          <div class="carousel-wrapper">
+            <div
+              class="emocion-item"
+              *ngFor="let emocion of emocionesPaciente; let i = index"
+              [class.active]="i === currentSlide"
+            >
+              <!-- Contenedor para emoción y fecha -->
+              <div class="emocion-header">
+                <span class="emocion-emoji">{{ emocion.emoji }}</span>
+                <span class="emocion-fecha">{{ emocion.fecha | date: 'dd/MM/yyyy' }}</span>
+              </div>
+              <!-- Contenedor para los comentarios -->
+              <p class="emocion-comentarios">📝 {{ emocion.comentarios }}</p>
+            </div>
+          </div>
+          <button class="next-button" (click)="nextSlide()">›</button>
+        </div>
+        <ng-template #noEmociones>
+          <p class="placeholder">Haz clic en un paciente para ver sus emociones registradas.</p>
         </ng-template>
       </div>
     </div>
-    
-    
   </div>
 
-  <!-- Notas Rápidas -->
-  <div class="sticky-notes-container">
-    <h2>Notas Rápidas</h2>
-
-    <!-- Formulario para Añadir Notas -->
-    <div class="add-note-form">
-      <input type="text" [(ngModel)]="newNoteTitle" placeholder="Título de la nota" />
-      <textarea [(ngModel)]="newNoteContent" placeholder="Contenido de la nota"></textarea>
-      <button (click)="addStickyNote()">Añadir Nota</button>
-    </div>
-
-    <!-- Controles de Notas -->
-    <div class="note-controls">
-      <input type="text" placeholder="Buscar nota..." [(ngModel)]="searchQuery" (input)="filterNotes()" />
-      <button (click)="sortNotes()">Ordenar Alfabéticamente</button>
-    </div>
-
-    <!-- Carrusel de Notas -->
-    <div *ngIf="isCarouselActive" class="note-carousel">
-      <button class="prev" (click)="prevNote()">‹</button>
-      <div *ngFor="let note of filteredNotes; let i = index" class="sticky-note-carousel" [ngClass]="getCurrentNoteClass(i)">
-        <h3>{{ note.title }}</h3>
-        <p>{{ note.content }}</p>
-      </div>
-      <button class="next" (click)="nextNote()">›</button>
-    </div>
-
-    <!-- Lista de Notas -->
-    <div *ngIf="!isCarouselActive" class="sticky-notes-list">
-      <div *ngFor="let note of filteredNotes; let i = index" class="sticky-note-item">
-        <h3>{{ note.title }}</h3>
-        <p>{{ note.content }}</p>
-        <button (click)="removeStickyNote(i)">Eliminar</button>
-      </div>
-    </div>
-  </div>
+  <app-notas></app-notas>
 </div>
