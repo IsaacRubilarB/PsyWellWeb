@@ -4,10 +4,9 @@ import { Observable } from 'rxjs';
 import { Cita, ListaCitasResponse } from '../models/cita.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CitasService {
-
   private registroCitaUrl = 'http://localhost:8084/registrarCita';
   private listarCitaUrl = 'http://localhost:8084/listarCitas';
   private actualizarCitaUrl = 'http://localhost:8084/actualizarCita';
@@ -22,6 +21,12 @@ export class CitasService {
 
   listarCitas(): Observable<ListaCitasResponse> {
     return this.http.get<ListaCitasResponse>(this.listarCitaUrl);
+  }
+
+  // Nuevo método para listar citas por psicólogo
+  listarCitasPorPsicologo(idPsicologo: number): Observable<ListaCitasResponse> {
+    const url = `${this.listarCitaUrl}?idPsicologo=${idPsicologo}`;
+    return this.http.get<ListaCitasResponse>(url);
   }
 
   actualizarCita(citaData: Cita): Observable<any> {
