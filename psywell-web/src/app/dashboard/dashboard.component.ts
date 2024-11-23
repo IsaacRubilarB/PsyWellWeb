@@ -30,7 +30,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // Recordatorios (Citas del psicólogo)
   recordatorios: any[] = [];
+  emocionesPaciente: any[] = []; // Almacena las emociones del paciente seleccionado
 
+  
   stickyNotes: { title: string; content: string, position?: { x: number, y: number } }[] = [
     { title: 'Nota Rápida 1', content: 'Recordar preguntar sobre sueño a Manuel Fernández.', position: { x: 0, y: 0 } },
     { title: 'Nota Rápida 2', content: 'Preparar informe de progreso para Sofía Martínez.', position: { x: 0, y: 0 } },
@@ -102,6 +104,38 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
     });
   }
+  
+  seleccionarCita(cita: any): void {
+    console.log('Cita seleccionada:', cita);
+  
+    // Obtener registros del paciente seleccionado
+    this.citasService.obtenerRegistrosPorPaciente(cita.idPaciente).subscribe({
+      next: (registros: any[]) => {
+        console.log('Registros del paciente:', registros);
+        this.emocionesPaciente = registros.map((registro: any) => ({
+          ...registro,
+          emoji: this.estadoEmocionalEmojis[registro.estadoEmocional] || "🤔", // Mapear estado emocional a emoji
+        }));
+  
+        // Reinicia el carrusel después de cargar emociones
+        this.currentSlide = 0;
+        this.startCarousel();
+      },
+      error: (error) => {
+        console.error('Error al cargar registros del paciente:', error);
+        this.emocionesPaciente = [];
+      },
+    });
+  }
+  
+
+  estadoEmocionalEmojis: { [key: string]: string } = {
+    "Muy enojado": "😡",
+    "Molesto": "😠",
+    "Neutral": "😐",
+    "Feliz": "😊",
+    "Muy feliz": "😁",
+  };
   
   
 
@@ -175,6 +209,43 @@ async obtenerPacientePorId(idPaciente: number): Promise<any> {
     return null;
   }
 }
+
+
+
+
+currentSlide: number = 0; // Índice del slide actual
+
+
+startCarousel(): void {
+  this.carouselInterval = setInterval(() => {
+    this.nextSlide();
+  }, 2500); // Cambiar de slide cada 2.5 segundos
+}
+
+nextSlide(): void {
+  if (this.emocionesPaciente.length > 0) {
+    this.currentSlide = (this.currentSlide + 1) % this.emocionesPaciente.length; // Ir al siguiente slide
+  }
+}
+
+prevSlide(): void {
+  if (this.emocionesPaciente.length > 0) {
+    this.currentSlide =
+      (this.currentSlide - 1 + this.emocionesPaciente.length) % this.emocionesPaciente.length; // Ir al slide anterior
+  }
+}
+
+ngOnDestroy(): void {
+  if (this.carouselInterval) {
+    clearInterval(this.carouselInterval); // Detener el intervalo al destruir el componente
+  }
+}
+
+
+
+
+
+
 
 
 
@@ -312,101 +383,5 @@ cargarImagenes(email: string): void {
     } else {
       console.warn('No se seleccionó ningún archivo.');
     }
-  }
-  
-  
-
-
-  ngOnDestroy() {
-    if (this.carouselInterval) {
-      clearInterval(this.carouselInterval);
-    }
-  }
-
-  initializeDrag() {
-    interact('.sticky-note-item')
-      .draggable({
-        listeners: {
-          move: (event) => {
-            const target = event.target;
-            const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-            const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-
-            target.style.transform = `translate(${x}px, ${y}px)`;
-            target.setAttribute('data-x', x);
-            target.setAttribute('data-y', y);
-          }
-        }
-      });
-  }
-
-  addStickyNote() {
-    if (this.newNoteTitle && this.newNoteContent) {
-      const newNote = { title: this.newNoteTitle, content: this.newNoteContent, position: { x: 0, y: 0 } };
-      this.stickyNotes.push(newNote);
-      this.filteredNotes = [...this.stickyNotes];
-      this.newNoteTitle = '';
-      this.newNoteContent = '';
-      this.checkCarousel();
-      setTimeout(() => this.initializeDrag());
-    }
-  }
-
-  removeStickyNote(index: number) {
-    this.stickyNotes.splice(index, 1);
-    this.filterNotes();
-    this.checkCarousel();
-  }
-
-  filterNotes() {
-    const query = this.searchQuery.toLowerCase();
-    this.filteredNotes = this.stickyNotes.filter(note =>
-      note.title.toLowerCase().includes(query)
-    );
-  }
-
-  sortNotes() {
-    this.filteredNotes.sort((a, b) => a.title.localeCompare(b.title));
-  }
-
-  checkCarousel() {
-    this.isCarouselActive = this.filteredNotes.length > 3;
-    if (this.isCarouselActive) {
-      this.startCarousel();
-    } else {
-      this.clearCarouselInterval();
-    }
-  }
-
-  startCarousel() {
-    this.clearCarouselInterval();
-    this.carouselInterval = setInterval(() => {
-      this.nextNote();
-    }, 1500);
-  }
-
-  clearCarouselInterval() {
-    if (this.carouselInterval) {
-      clearInterval(this.carouselInterval);
-    }
-  }
-
-  nextNote() {
-    this.currentNoteIndex = (this.currentNoteIndex + 1) % this.filteredNotes.length;
-  }
-
-  prevNote() {
-    this.currentNoteIndex = (this.currentNoteIndex - 1 + this.filteredNotes.length) % this.filteredNotes.length;
-  }
-
-  getCurrentNoteClass(index: number) {
-    if (index === this.currentNoteIndex) {
-      return 'active';
-    } else if (index === (this.currentNoteIndex + 1) % this.filteredNotes.length) {
-      return 'next';
-    } else if (index === (this.currentNoteIndex - 1 + this.filteredNotes.length) % this.filteredNotes.length) {
-      return 'prev';
-    }
-    return '';
   }
 }
