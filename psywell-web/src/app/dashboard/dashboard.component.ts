@@ -124,17 +124,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
         // Obtener pacientes para las citas
         const pacientes = await this.obtenerTodosLosUsuarios();
   
-        // Mapear las citas con los nombres de los pacientes
-        this.recordatorios = citasPsicologo.map((cita: any) => {
-          const paciente = pacientes.find((p: any) => p.idUsuario === cita.idPaciente);
-          return {
-            ...cita,
-            pacienteNombre: paciente?.nombre || 'Paciente Desconocido',
-            horaInicio: this.formatearHora(cita.horaInicio),
-          };
-        });
+        // Obtener la fecha actual y el rango de los próximos 7 días
+        const hoy = new Date();
+        const fechaLimite = new Date();
+        fechaLimite.setDate(hoy.getDate() + 7);
   
-        console.log('Citas cargadas y procesadas:', this.recordatorios);
+        // Mapear y filtrar citas dentro del rango de 7 días
+        this.recordatorios = citasPsicologo
+          .filter((cita: any) => {
+            const fechaCita = new Date(cita.fecha); // Asegúrate de que cita.fecha sea una fecha válida
+            return fechaCita >= hoy && fechaCita <= fechaLimite;
+          })
+          .map((cita: any) => {
+            const paciente = pacientes.find((p: any) => p.idUsuario === cita.idPaciente);
+            return {
+              ...cita,
+              pacienteNombre: paciente?.nombre || 'Paciente Desconocido',
+              horaInicio: this.formatearHora(cita.horaInicio),
+            };
+          });
+  
+        console.log('Citas cargadas y filtradas para los próximos 7 días:', this.recordatorios);
       },
       error: (error) => {
         console.error('Error al cargar citas:', error);
@@ -142,6 +152,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
     });
   }
+  
   
 
 
