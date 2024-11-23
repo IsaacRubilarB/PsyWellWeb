@@ -10,7 +10,7 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { finalize } from 'rxjs/operators';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { NotasComponent } from '../notas/notas.component';
+import { NotasComponent } from '../notas/notas.component'; // Importa el componente de notas
 
 @Component({
   selector: 'app-dashboard',
