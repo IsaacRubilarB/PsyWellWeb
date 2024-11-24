@@ -24,10 +24,11 @@ export class UsersService {
     return this.http.get(this.listarUserUrl);
   }
 
-  // Método para obtener un usuario por su ID
   obtenerUsuarioPorId(id: string): Observable<any> {
-    return this.http.get(`${this.obtenerUsuarioPorIdUrl}/${id}`);
+    return this.http.get<any>(`${this.obtenerUsuarioPorIdUrl}/${id}`);
   }
+  
+  
 
   // Método para verificar si el usuario ya existe
   verificarUsuario(email: string): Observable<any> {

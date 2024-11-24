@@ -3,8 +3,9 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { getAuth } from 'firebase/auth';
 import Swal from 'sweetalert2';
+import { UsersService } from '../services/userService'; // Servicio para obtener datos del usuario
+import { getAuth } from 'firebase/auth'; // Importar getAuth para obtener el usuario autenticado
 
 @Component({
   selector: 'app-notas',
@@ -21,18 +22,24 @@ export class NotasComponent implements OnInit {
     esImportante: false,
     fechaCreacion: new Date(),
   };
-  psicologoId: string | null = null; // ID del psicólogo logueado
-  correoLogueado: string | null = null; // Correo del usuario logueado
+  psicologoId: string | null = null;
 
-  constructor(private firestore: AngularFirestore) {}
+  constructor(
+    private firestore: AngularFirestore,
+    private usersService: UsersService // Servicio para obtener usuarios
+  ) {}
 
   async ngOnInit(): Promise<void> {
-    // Asegúrate de obtener el psicólogo antes de cargar las notas
-    await this.obtenerPsicologoId();
-    if (this.psicologoId) {
-      this.obtenerNotas(); // Solo llama si tenemos el ID del psicólogo
-    } else {
-      console.error('No se pudo cargar el ID del psicólogo.');
+    try {
+      // Obtiene el ID del psicólogo autenticado
+      await this.obtenerPsicologoId();
+      if (this.psicologoId) {
+        this.obtenerNotas(); // Carga las notas asociadas al ID del psicólogo
+      } else {
+        console.error('No se pudo obtener el ID del psicólogo logueado.');
+      }
+    } catch (error) {
+      console.error('Error al inicializar el componente de notas:', error);
     }
   }
 
@@ -40,24 +47,16 @@ export class NotasComponent implements OnInit {
     try {
       const auth = getAuth(); // Obtenemos la instancia de Firebase Auth
       const user = auth.currentUser; // Usuario autenticado actualmente
+
       if (user?.email) {
-        this.correoLogueado = user.email; // Guardamos el correo del usuario logueado
-        console.log('Correo logueado:', this.correoLogueado);
+        // Busca el psicólogo correspondiente en la base de datos por correo
+        const response = await this.usersService.verificarUsuario(user.email).toPromise();
 
-        // Buscamos el psicólogo correspondiente en la colección 'usuarios'
-        const usuariosSnapshot = await this.firestore.collection('usuarios').get().toPromise();
-        const usuarios = usuariosSnapshot?.docs.map((doc) => {
-          const data = doc.data();
-          return { id: doc.id, ...(data as object) }; // Tratamos data como un objeto
-        });
-
-        const psicologo = usuarios?.find((usuario: any) => usuario.correo === this.correoLogueado);
-
-        if (psicologo) {
-          this.psicologoId = psicologo.id; // Guardamos el ID del psicólogo
-          console.log('Psicólogo logueado:', psicologo);
+        if (response?.data?.idUsuario) {
+          this.psicologoId = response.data.idUsuario; // Asigna el ID del psicólogo autenticado
+          console.log('Psicólogo autenticado encontrado:', this.psicologoId);
         } else {
-          console.warn('No se encontró un psicólogo con este correo.');
+          console.warn('No se encontró un psicólogo con el correo:', user.email);
         }
       } else {
         console.error('No hay un usuario autenticado.');
@@ -69,22 +68,21 @@ export class NotasComponent implements OnInit {
 
   obtenerNotas(): void {
     if (!this.psicologoId) {
-      console.error('El ID del psicólogo no está disponible.');
+      console.error('No se puede cargar las notas porque el ID del psicólogo no está disponible.');
       return;
     }
 
+    // Consulta Firestore para obtener las notas asociadas al psicólogo logueado
     this.firestore
       .collection('notas', (ref) => ref.where('psicologoId', '==', this.psicologoId))
       .valueChanges({ idField: 'id' })
       .subscribe((data: any[]) => {
-        this.notas = data.map((nota) => {
-          return {
-            ...nota,
-            fechaCreacion: nota.fechaCreacion?.toDate
-              ? nota.fechaCreacion.toDate()
-              : new Date(),
-          };
-        });
+        this.notas = data.map((nota) => ({
+          ...nota,
+          fechaCreacion: nota.fechaCreacion?.toDate
+            ? nota.fechaCreacion.toDate()
+            : new Date(),
+        }));
         console.log('Notas cargadas:', this.notas);
       });
   }
@@ -127,7 +125,7 @@ export class NotasComponent implements OnInit {
           esImportante: false,
           fechaCreacion: new Date(),
         };
-        this.obtenerNotas(); // Actualizar la lista de notas
+        this.obtenerNotas(); // Actualiza la lista de notas
       })
       .catch((error) => {
         Swal.fire({
@@ -161,7 +159,7 @@ export class NotasComponent implements OnInit {
               text: 'La nota se ha eliminado correctamente.',
               confirmButtonColor: '#3085d6',
             });
-            this.obtenerNotas(); // Actualizar la lista de notas
+            this.obtenerNotas(); // Actualiza la lista de notas
           })
           .catch((error) => {
             Swal.fire({
