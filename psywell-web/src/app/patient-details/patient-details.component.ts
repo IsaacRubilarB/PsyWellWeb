@@ -6,9 +6,9 @@ import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FichaPacienteComponent } from '../ficha-paciente/ficha-paciente.component';
 import { RegistroService } from 'app/services/registroService';
-import {jsPDF} from 'jspdf';
-
-import autoTable from 'jspdf-autotable'
+import { PatientDataService } from 'app/services/patient-data.service';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-patient-details',
@@ -16,22 +16,28 @@ import autoTable from 'jspdf-autotable'
   styleUrls: ['./patient-details.component.scss'],
   standalone: true,
   imports: [CommonModule, NavbarComponent, FichaPacienteComponent],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class PatientDetailsComponent implements AfterViewInit, OnInit {
   patientId: string | null = null;
+  animateFlip: boolean = false;
+
   patientDetails: any = {};
   bpm: number = 75;
-  sleepHours: number = 7;
-  stressLevel: number = 40;
+  saturationLevel: number = 95;
+  steps: number = 0;
+  calories: number = 0;
   isFichaPacienteModalOpen = false;
 
   medications: any[] = [];
   appointments: any[] = [];
 
+  isRealTime: boolean = true; // Estado para alternar entre data en vivo y semanal
+
   @ViewChild('heartAnimation') heartAnimationDiv!: ElementRef;
-  @ViewChild('sleepAnimation') sleepAnimationDiv!: ElementRef;
-  @ViewChild('stressAnimation') stressAnimationDiv!: ElementRef;
+  @ViewChild('saturationAnimation') saturationAnimationDiv!: ElementRef;
+  @ViewChild('stepsAnimation') stepsAnimationDiv!: ElementRef;
+  @ViewChild('caloriesAnimation') caloriesAnimationDiv!: ElementRef;
 
   @ViewChildren('pillBackground') pillBackgroundDivs!: QueryList<ElementRef>;
   @ViewChildren('calendarBackground') calendarBackgroundDivs!: QueryList<ElementRef>;
@@ -41,10 +47,11 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
     private router: Router,
     private usersService: UsersService,
     private cdr: ChangeDetectorRef,
-    private registroService: RegistroService
+    private registroService: RegistroService,
+    private patientDataService: PatientDataService
   ) {}
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.patientId = this.route.snapshot.paramMap.get('id');
     if (this.patientId) {
       this.obtenerDetallesPaciente(this.patientId);
@@ -53,23 +60,11 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
 
   obtenerDetallesPaciente(id: string) {
     this.usersService.obtenerUsuarioPorId(id).subscribe(
-      (response: any) => {
-        console.log("Datos recibidos del paciente:", response); // Verificación en consola
-
-        const data = response.data; // Accede a 'data' dentro de la respuesta
+      async (response: any) => {
+        const data = response.data;
         if (data) {
-          // Obtenemos el correo electrónico del paciente
           const email = data.correo || data.email || '';
-          if (!email) {
-            console.warn(`El paciente ${data.nombre} no tiene correo electrónico.`);
-          }
-
-          // Generamos la URL de la foto
           const photoUrl = email ? this.getFirebaseImageUrl(email, 'profile') : 'assets/patient.png';
-
-          // Agregamos logs para depuración
-          console.log(`Email del paciente: ${email}`);
-          console.log(`URL de la foto del paciente: ${photoUrl}`);
 
           this.patientDetails = {
             name: data.nombre || 'Nombre desconocido',
@@ -77,14 +72,15 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
             diagnosis: data.diagnosis || 'Sin diagnóstico',
             notes: data.notes || 'Sin notas',
             email: email,
-            photo: photoUrl
+            photo: photoUrl,
           };
 
-          // Aseguramos que `medications` y `appointments` se llenen si existen en la respuesta
           this.medications = data.medications || [];
           this.appointments = data.appointments || [];
-        } else {
-          console.warn("No se recibieron datos del paciente.");
+
+          if (email) {
+            await this.initializePatientData(email);
+          }
         }
       },
       (error: any) => {
@@ -93,44 +89,80 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
     );
   }
 
-  // Método para obtener el URL de la imagen desde Firebase Storage
   private getFirebaseImageUrl(email: string, tipo: 'profile' | 'banner'): string {
     const sanitizedEmail = email.replace(/@/g, '_').replace(/\./g, '_');
     const folder = tipo === 'profile' ? 'fotoPerfil' : 'fotoPortada';
-    const url = `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/${folder}%2F${encodeURIComponent(sanitizedEmail)}?alt=media`;
-
-    // Log para depuración
-    console.log(`Email sanitizado: ${sanitizedEmail}`);
-    console.log(`URL generada: ${url}`);
-
-    return url;
+    return `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/${folder}%2F${encodeURIComponent(
+      sanitizedEmail
+    )}?alt=media`;
   }
 
   calculateAge(fechaNacimiento: string): number {
-    if (!fechaNacimiento) {
-      return NaN; // Retorna NaN si fechaNacimiento es undefined o null
-    }
-
     const [day, month, year] = fechaNacimiento.split('/');
-    if (!day || !month || !year) return NaN; // Retorna NaN si el formato es incorrecto
-
     const birthDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDifference = today.getMonth() - birthDate.getMonth();
-
-    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+    if (
+      today.getMonth() < birthDate.getMonth() ||
+      (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())
+    ) {
       age--;
     }
     return age;
   }
 
+  async initializePatientData(email: string) {
+    if (this.isRealTime) {
+      await this.loadRealTimePatientData(email);
+    } else {
+      await this.loadWeeklyPatientData(email);
+    }
+  }
+
+
+  async loadRealTimePatientData(email: string) {
+    try {
+      console.log('Email usado para obtener datos en tiempo real:', email);
+      const realTimeData = await this.patientDataService.getRealTimeData(email);
+      if (realTimeData) {
+        this.bpm = Math.round(realTimeData.heartRate || this.bpm);
+        this.saturationLevel = Math.round(realTimeData.oxygenSaturation || this.saturationLevel);
+        this.steps = Math.round(realTimeData.steps || this.steps);
+        this.calories = Math.round(realTimeData.calories || this.calories);
+
+        console.log('Datos en tiempo real cargados:', realTimeData);
+        this.cdr.detectChanges();
+      } else {
+        console.warn('No se encontraron datos en tiempo real.');
+      }
+    } catch (error) {
+      console.error('Error al cargar datos en tiempo real desde Firebase:', error);
+    }
+  }
+
+  async loadWeeklyPatientData(email: string) {
+    try {
+      const weeklyData = await this.patientDataService.getWeeklyData(email);
+      if (weeklyData && weeklyData.length > 0) {
+        const lastWeekData = weeklyData[weeklyData.length - 1];
+        this.bpm = Math.round(lastWeekData.heartRate || this.bpm);
+        this.saturationLevel = Math.round(lastWeekData.oxygenSaturation || this.saturationLevel);
+        this.steps = Math.round(lastWeekData.steps || this.steps);
+        this.calories = Math.round(lastWeekData.calories || this.calories);
+
+        console.log('Datos semanales cargados:', lastWeekData);
+        this.cdr.detectChanges();
+      } else {
+        console.warn('No se encontraron datos semanales.');
+      }
+    } catch (error) {
+      console.error('Error al cargar datos semanales desde Firebase:', error);
+    }
+  }
+
   ngAfterViewInit(): void {
     this.cdr.detectChanges();
     this.loadAnimations();
-    this.simulateBpmChange();
-    this.simulateSleepHoursChange();
-    this.loadStressAnimation();
     this.loadPillAnimations();
     this.loadCalendarAnimations();
   }
@@ -141,50 +173,34 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
       renderer: 'svg',
       loop: true,
       autoplay: true,
-      path: '/assets/lottie/bpm.json'
+      path: '/assets/lottie/bpm.json',
     });
 
     lottie.loadAnimation({
-      container: this.sleepAnimationDiv.nativeElement,
+      container: this.saturationAnimationDiv.nativeElement,
       renderer: 'svg',
       loop: true,
       autoplay: true,
-      path: '/assets/lottie/sueno.json'
+      path: '/assets/lottie/saturation.json',
     });
-  }
 
-  simulateBpmChange() {
-    setInterval(() => {
-      this.bpm = Math.floor(Math.random() * (90 - 60 + 1) + 60);
-      this.cdr.detectChanges();
-    }, 2000);
-  }
-
-  simulateSleepHoursChange() {
-    setInterval(() => {
-      this.sleepHours = Math.floor(Math.random() * (9 - 5 + 1) + 5);
-      this.cdr.detectChanges();
-    }, 3000);
-  }
-
-  loadStressAnimation() {
-    const stressAnimation = lottie.loadAnimation({
-      container: this.stressAnimationDiv.nativeElement,
+    lottie.loadAnimation({
+      container: this.stepsAnimationDiv.nativeElement,
       renderer: 'svg',
-      loop: false,
+      loop: true,
       autoplay: true,
-      path: '/assets/lottie/stress.json'
+      path: '/assets/lottie/steps.json',
     });
 
-    setInterval(() => {
-      this.stressLevel = Math.floor(Math.random() * 100);
-      const frame = Math.round((this.stressLevel / 100) * (stressAnimation.totalFrames - 1));
-      stressAnimation.goToAndStop(frame, true);
-      this.cdr.detectChanges();
-    }, 2000);
+    lottie.loadAnimation({
+      container: this.caloriesAnimationDiv.nativeElement,
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: '/assets/lottie/calories.json',
+    });
   }
 
-  // Método para cargar la animación en los elementos de medicamento
   loadPillAnimations() {
     this.pillBackgroundDivs.forEach((pillBackgroundDiv) => {
       lottie.loadAnimation({
@@ -192,12 +208,11 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
         renderer: 'svg',
         loop: true,
         autoplay: true,
-        path: '/assets/lottie/pill.json'
+        path: '/assets/lottie/pill.json',
       });
     });
   }
 
-  // Método para cargar la animación en los elementos de citas
   loadCalendarAnimations() {
     this.calendarBackgroundDivs.forEach((calendarBackgroundDiv) => {
       lottie.loadAnimation({
@@ -205,7 +220,7 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
         renderer: 'svg',
         loop: true,
         autoplay: true,
-        path: '/assets/lottie/calendar.json'
+        path: '/assets/lottie/calendar.json',
       });
     });
   }
@@ -215,34 +230,24 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
   }
 
   generateReport() {
-    this.registroService.listarRegistroByUser(this.patientId).subscribe(res =>  {
-      let data = res.data
-      console.log(data);
-
-    //const data = JSON.parse(json);
-    if(data.length==0 || data==null){
-      alert("no se encontraron datos para exportar")
-      return;
-    }
-    const columns = this.getColumns(data);
-    const rows = this.getRows(data, columns);
-    const doc = new jsPDF();
-
-    autoTable(doc, {
-      head: [columns],
-      body: rows,
-     // did: (data) => { },
-  });
-  doc.save('data.pdf');
-
-
-  });
+    this.registroService.listarRegistroByUser(this.patientId).subscribe((res) => {
+      const data = res.data;
+      if (data.length === 0) {
+        alert('No se encontraron datos para exportar');
+        return;
+      }
+      const columns = this.getColumns(data);
+      const rows = this.getRows(data, columns);
+      const doc = new jsPDF();
+      autoTable(doc, { head: [columns], body: rows });
+      doc.save('data.pdf');
+    });
   }
 
   getColumns(data: any[]): string[] {
     const columns: string[] = [];
-    data.forEach(row => {
-      Object.keys(row).forEach(col => {
+    data.forEach((row) => {
+      Object.keys(row).forEach((col) => {
         if (!columns.includes(col)) {
           columns.push(col);
         }
@@ -253,9 +258,9 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
 
   getRows(data: any[], columns: string[]): any[] {
     const rows: any[] = [];
-    data.forEach(row => {
+    data.forEach((row) => {
       const values: any[] = [];
-      columns.forEach(col => {
+      columns.forEach((col) => {
         values.push(row[col] || '');
       });
       rows.push(values);
@@ -269,5 +274,24 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
 
   closeFichaPacienteModal() {
     this.isFichaPacienteModalOpen = false;
+  }
+
+
+
+   // Función para alternar entre datos y activar la animación
+   async toggleDataView(): Promise<void> {
+    this.isRealTime = !this.isRealTime;
+    this.animateFlip = true;
+
+    // Desactiva la animación después de que termine
+    setTimeout(() => {
+      this.animateFlip = false;
+    }, 600); // Tiempo en milisegundos que coincide con la transición en CSS
+
+    if (this.isRealTime) {
+      await this.loadRealTimePatientData(this.patientDetails.email);
+    } else {
+      await this.loadWeeklyPatientData(this.patientDetails.email);
+    }
   }
 }

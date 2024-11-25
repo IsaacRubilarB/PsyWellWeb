@@ -38,6 +38,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     { title: 'Nota Rápida 1', content: 'Recordar preguntar sobre sueño a Manuel Fernández.', position: { x: 0, y: 0 } },
     { title: 'Nota Rápida 2', content: 'Preparar informe de progreso para Sofía Martínez.', position: { x: 0, y: 0 } },
   ];
+
   filteredNotes = [...this.stickyNotes];
   newNoteTitle: string = '';
   newNoteContent: string = '';
@@ -51,7 +52,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private renderer: Renderer2,
     private el: ElementRef,
     private usersService: UsersService,
-    private citasService: CitasService, // Inyección corregida
+    private citasService: CitasService,
     private afAuth: AngularFireAuth,
     private storage: AngularFireStorage,
     private afs: AngularFirestore

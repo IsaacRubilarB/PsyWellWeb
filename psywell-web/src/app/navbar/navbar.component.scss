@@ -64,17 +64,51 @@
 
   /* Sección de perfil */
   .navbar-profile {
-    .profile-link {
-      color: #fff;
-      text-decoration: none;
-      font-size: 16px;
-      padding: 8px 12px;
-      border-radius: 5px;
+    display: flex;
+    align-items: center;
+
+    .btn-logout {
       background-color: #d9534f;
-      transition: background-color 0.3s ease;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 15px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
 
       &:hover {
         background-color: #c9302c;
+        box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3);
+        transform: translateY(-2px);
+      }
+
+      &:active {
+        background-color: #ac2925;
+        transform: translateY(0px);
+        box-shadow: 0px 3px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      &:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, #c9302c, #d9534f, #f0ad4e);
+        z-index: -1;
+        filter: blur(8px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      &:hover:before {
+        opacity: 1;
       }
     }
   }

@@ -33,26 +33,26 @@
         <div class="cita-info">
           <h3>{{ cita.nombrePaciente }}</h3>
           <p>
-            <i class="fas fa-info-circle"></i> 
+            <i class="fas fa-info-circle"></i>
             <strong>Estado:</strong> {{ cita.estado }}
           </p>
         </div>
       </div>
       <div class="cita-details">
         <p class="cita-date">
-          <i class="fas fa-calendar-alt"></i> 
+          <i class="fas fa-calendar-alt"></i>
           <strong>Fecha:</strong> {{ cita.fecha | date: 'dd/MM/yyyy' }}
         </p>
         <p class="cita-time">
-          <i class="fas fa-clock"></i> 
+          <i class="fas fa-clock"></i>
           <strong>Hora:</strong> {{ cita.horaInicio }} - {{ cita.horaFin }}
         </p>
         <p class="cita-location">
-          <i class="fas fa-map-marker-alt"></i> 
+          <i class="fas fa-map-marker-alt"></i>
           <strong>Ubicación:</strong> {{ cita.ubicacion }}
         </p>
         <p class="cita-comments">
-          <i class="fas fa-comment-alt"></i> 
+          <i class="fas fa-comment-alt"></i>
           <strong>Comentarios:</strong> {{ cita.comentarios || 'Sin comentarios' }}
         </p>
       </div>
@@ -68,76 +68,74 @@
   </div>
 
   <!-- Modal para agregar o editar una cita -->
-<div class="modal" *ngIf="mostrarModal">
-  <div class="modal-content">
-    <h2>{{ modoEdicion ? 'Editar Cita' : 'Agregar Cita' }}</h2>
-    <form [formGroup]="citaForm" (ngSubmit)="guardarCita()">
-      
-      <!-- Sección de selección de paciente -->
-      <div class="form-group">
-        <label for="idPaciente">Paciente</label>
-        <div class="input-with-icon">
-          <i class="fas fa-user"></i>
-          <select id="idPaciente" formControlName="idPaciente" required>
-            <option *ngFor="let paciente of pacientes" [value]="paciente.idUsuario">
-              {{ paciente.nombre }}
-            </option>
-          </select>
-        </div>
-      </div>
-      
-      <!-- Fecha y Hora -->
-      <div class="form-row">
+  <div class="modal" *ngIf="mostrarModal">
+    <div class="modal-content">
+      <h2>{{ modoEdicion ? 'Editar Cita' : 'Agregar Cita' }}</h2>
+      <form [formGroup]="citaForm" (ngSubmit)="guardarCita()">
+        <!-- Sección de selección de paciente -->
         <div class="form-group">
-          <label for="fecha">Fecha</label>
+          <label for="idPaciente">Paciente</label>
           <div class="input-with-icon">
-            <i class="fas fa-calendar-alt"></i>
-            <input type="date" id="fecha" formControlName="fecha" required />
+            <i class="fas fa-user"></i>
+            <select id="idPaciente" formControlName="idPaciente" required>
+              <option *ngFor="let paciente of pacientes" [value]="paciente.idUsuario">
+                {{ paciente.nombre }}
+              </option>
+            </select>
           </div>
         </div>
-        <div class="form-group">
-          <label for="horaInicio">Hora de Inicio</label>
-          <div class="input-with-icon">
-            <i class="fas fa-clock"></i>
-            <input type="time" id="horaInicio" formControlName="horaInicio" required />
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="horaFin">Hora de Fin</label>
-          <div class="input-with-icon">
-            <i class="fas fa-clock"></i>
-            <input type="time" id="horaFin" formControlName="horaFin" required />
-          </div>
-        </div>
-      </div>
-      
-      <!-- Ubicación y Comentarios -->
-      <div class="form-row">
-        <div class="form-group">
-          <label for="ubicacion">Ubicación</label>
-          <div class="input-with-icon">
-            <i class="fas fa-map-marker-alt"></i>
-            <input type="text" id="ubicacion" formControlName="ubicacion" required />
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="comentarios">Comentarios</label>
-          <div class="input-with-icon">
-            <i class="fas fa-comment-alt"></i>
-            <textarea id="comentarios" formControlName="comentarios"></textarea>
-          </div>
-        </div>
-      </div>
 
-      <!-- Botones de acción -->
-      <div class="modal-actions">
-        <button type="submit" [disabled]="!citaForm.valid" class="btn-primary">
-          {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
-        </button>
-        <button type="button" (click)="cerrarModal()" class="btn-secondary">Cancelar</button>
-      </div>
-    </form>
+        <!-- Fecha y Hora -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="fecha">Fecha</label>
+            <div class="input-with-icon">
+              <i class="fas fa-calendar-alt"></i>
+              <input type="date" id="fecha" formControlName="fecha" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="horaInicio">Hora de Inicio</label>
+            <div class="input-with-icon">
+              <i class="fas fa-clock"></i>
+              <input type="time" id="horaInicio" formControlName="horaInicio" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="horaFin">Hora de Fin</label>
+            <div class="input-with-icon">
+              <i class="fas fa-clock"></i>
+              <input type="time" id="horaFin" formControlName="horaFin" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- Ubicación y Comentarios -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ubicacion">Ubicación</label>
+            <div class="input-with-icon">
+              <i class="fas fa-map-marker-alt"></i>
+              <input type="text" id="ubicacion" formControlName="ubicacion" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="comentarios">Comentarios</label>
+            <div class="input-with-icon">
+              <i class="fas fa-comment-alt"></i>
+              <textarea id="comentarios" formControlName="comentarios"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="modal-actions">
+          <button type="submit" [disabled]="!citaForm.valid" class="btn-primary">
+            {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+          </button>
+          <button type="button" (click)="cerrarModal()" class="btn-secondary">Cancelar</button>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
-
 </div>

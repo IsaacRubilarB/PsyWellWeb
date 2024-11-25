@@ -76,7 +76,6 @@ h1 {
   }
 }
 
-/* Nuevo botón para abrir el modal de la ficha del paciente */
 .btn-ficha-paciente {
   position: absolute;
   top: 0;
@@ -132,7 +131,7 @@ p {
   color: #f0f0f0;
 }
 
-.bpm-display, .sleep-display, .stress-display {
+.bpm-display, .saturation-display, .steps-display, .calories-display {
   font-size: 50px;
   font-weight: bold;
   margin-bottom: 10px;
@@ -142,9 +141,25 @@ p {
   }
 }
 
-.bpm-display { color: #ff1744 !important; text-shadow: 0 0 8px #ff1744; }
-.sleep-display { color: #42a5f5 !important; text-shadow: 0 0 8px #42a5f5; }
-.stress-display { color: #ffca28 !important; text-shadow: 0 0 8px #ffca28; }
+.bpm-display { 
+  color: #ff1744 !important; 
+  text-shadow: 0 0 8px #ff1744; 
+}
+
+.saturation-display { 
+  color: #42a5f5 !important; 
+  text-shadow: 0 0 8px #42a5f5; 
+}
+
+.steps-display { 
+  color: #ffa726 !important; 
+  text-shadow: 0 0 8px #ffa726; 
+}
+
+.calories-display { 
+  color: #fb8c00 !important; 
+  text-shadow: 0 0 8px #fb8c00; 
+}
 
 .info-cards-container {
   display: flex;
@@ -222,6 +237,7 @@ button {
 .btn-back { background-color: #cea51f; }
 .btn-report { background-color: #47c228; }
 
+/* Responsive styles */
 @media (max-width: 768px) {
   .patient-details {
     padding: 15px;
@@ -260,7 +276,7 @@ button {
     height: 120px;
   }
 
-  .bpm-display, .sleep-display, .stress-display {
+  .bpm-display, .saturation-display, .steps-display, .calories-display {
     font-size: 35px;
   }
 
@@ -269,7 +285,6 @@ button {
     font-size: 12px;
   }
 }
-
 
 
 
@@ -316,13 +331,14 @@ button {
 }
 
 .btn-open-modal {
-  background-color: #ffcc80;
-  color: #212121;
+  background-color: #16bda1;
+  color: white;
   padding: 10px 20px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
+    font-weight: bold;
   margin-left: auto;
   transition: background-color 0.3s ease;
 
@@ -330,3 +346,51 @@ button {
     background-color: #0fdaf5;
   }
 }
+
+
+.data-filter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0; // Espaciado entre el título y el resto del contenido
+  text-align: center;
+
+  h2 {
+    text-align: center;
+    font-size: 38px; // Igual que el h1
+    color: #ffffff; // Mismo color que el h1
+    margin-bottom: 15px; // Espaciado con el botón
+    text-shadow: 0 0 10px #ffc107; // Mismo efecto que el h1
+    @media (max-width: 768px) {
+      font-size: 28px; // Ajuste para pantallas más pequeñas
+    }
+  }
+
+  .btn-toggle {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #4caf50; // Color del botón
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: #45a049; // Color en hover
+    }
+  }
+}
+
+.flip {
+  display: inline-block;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+
+  &.animate {
+    transform: rotateX(360deg);
+  }
+}
+
