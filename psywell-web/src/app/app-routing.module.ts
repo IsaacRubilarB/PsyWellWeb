@@ -10,6 +10,7 @@ import { RecursosMaterialesComponent } from './recursos-materiales/recursos-mate
 import { CitasComponent } from './citas/citas.component';
 import { FormularioRecursosComponent } from './formulario-recursos/formulario-recursos.component';
 import { AuthGuard } from './guards/auth.guard';
+import { GoogleMapsComponent } from './google-maps/google-maps.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginRegistroComponent },
@@ -20,12 +21,13 @@ export const routes: Routes = [
   { path: 'recursos-materiales', component: RecursosMaterialesComponent, canActivate: [AuthGuard] },
   { path: 'citas', component: CitasComponent, canActivate: [AuthGuard] },
   { path: 'formulario', component: FormularioRecursosComponent, canActivate: [AuthGuard] },
+  { path: 'mapa', component: GoogleMapsComponent, canActivate: [AuthGuard] },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: 'login' }, // La ruta comodín debe ir al final
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
 export class AppRoutingModule {}

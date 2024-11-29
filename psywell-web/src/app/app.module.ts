@@ -18,6 +18,9 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { NotasComponent } from './notas/notas.component';
+import { GoogleMapsComponent } from './google-maps/google-maps.component'; // Asegúrate de usar la ruta correcta
+
+
 
 @NgModule({
   imports: [
@@ -29,6 +32,8 @@ import { NotasComponent } from './notas/notas.component';
     RouterModule,
     NavbarComponent,
     NotasComponent,
+    GoogleMapsComponent, // Añadido aquí, como los demás componentes
+
 
     // Firebase initialization
     AngularFireModule.initializeApp(environment.firebaseConfig),

@@ -21,7 +21,9 @@
       "ES2022",
       "dom"
     ],
-    "baseUrl": "src"
+    "baseUrl": "src",
+    "typeRoots": ["node_modules/@types"],  // Busca tipos en esta carpeta
+    "types": ["google.maps"],                // Incluye explícitamente los tipos de Google Maps
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

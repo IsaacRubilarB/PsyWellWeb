@@ -1,0 +1,23 @@
+<div class="map-wrapper">
+  <div class="map-search">
+    <input
+      type="text"
+      id="searchBox"
+      placeholder="Buscar ubicación..."
+      (keyup.enter)="searchLocation()"
+    />
+    <!-- Botón para obtener la ubicación actual del usuario -->
+    <button type="button" class="btn-current-location" (click)="getCurrentLocation()">
+      📍 Mi ubicación
+    </button>
+  </div>
+
+  <!-- Contenedor del mapa -->
+  <div class="map-container" id="map"></div>
+
+  <!-- Mostrar la dirección seleccionada y permitir guardarla -->
+  <div class="selected-location">
+    <p><strong>Dirección seleccionada:</strong> {{ selectedAddress }}</p>
+    <button class="save-location-btn" (click)="saveLocation()">Guardar Dirección</button>
+  </div>
+</div>

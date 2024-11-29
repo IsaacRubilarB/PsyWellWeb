@@ -1,289 +1,196 @@
-import { Component, AfterViewInit, ElementRef, ViewChild, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Chart, registerables, ChartConfiguration, ChartDataset } from 'chart.js';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { NavbarComponent } from 'app/navbar/navbar.component';
-import { RegistroService  } from './../services/registroService';
-import {jsPDF} from 'jspdf';
+import { HttpClient } from '@angular/common/http';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { ReportsService } from '../services/reports.service';
+import { NavbarComponent } from '../navbar/navbar.component';
+import { UsersService } from '../services/userService';
+import { PatientDataService } from '../services/patient-data.service';
+import { SafeUrlPipe } from '../pipes/safe-url.pipe'; // Asegúrate de usar la ruta correcta
 
-import autoTable from 'jspdf-autotable'
-
-
-
-
-Chart.register(...registerables, ChartDataLabels);
-
-interface MoodDays {
-  mood: string;
-  days: number;
-  emoji: string;
-}
-
-interface Patient {
-  x: number; // Cantidad de sesiones
-  name: string;
-  moodHistory: { session: number, mood: string, moodLevel: number, emoji: string }[]; // Histórico de ánimo por sesión con emoji
-  imgUrl: string;
-  color: string;
-}
 
 @Component({
   selector: 'app-reports',
   standalone: true,
   templateUrl: './reports.component.html',
   styleUrls: ['./reports.component.scss'],
-  imports: [CommonModule, FormsModule, NavbarComponent],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  imports: [CommonModule, ReactiveFormsModule, NavbarComponent,SafeUrlPipe],
 })
-export class ReportsComponent implements AfterViewInit {
+export class ReportsComponent implements OnInit {
+  reportForm: FormGroup;
+  data: any[] = [];
+  pacientes: any[] = [];
+  selectedPaciente: any = null;
+  citas: any[] = [];
+  emociones: any[] = [];
+  emocionesFiltradas: any[] = [];
+  citasFiltradas: any[] = [];
+  realTimeData: any = null;
+  googleMapsUrl: string = '';
+  loading = false;
+  emotionDetailsMap: { [key: string]: any } = {}; // Store preloaded emotion details
 
+  constructor(
+    private fb: FormBuilder,
+    private reportsService: ReportsService,
+    private usersService: UsersService,
+    private patientDataService: PatientDataService,
+    private http: HttpClient
+  ) {
+    this.reportForm = this.fb.group({
+      paciente: [''],
+      emocion: [''],
+      rangoFechas: [''],
+    });
+  }
+
+  ngOnInit(): void {
+    this.loadPacientes();
+    this.fetchCitas();
+    this.fetchEmociones();
+    this.preloadEmotionDetails(); // Preload emotion details
+  }
+
+  fetchCitas(): void {
+    this.reportsService.getAllCitas().subscribe({
+      next: (response) => {
+        this.citas = response?.data || [];
+      },
+      error: (err) => {
+        console.error('Error al cargar citas:', err);
+      },
+    });
+  }
+
+  fetchEmociones(): void {
+    this.reportsService.getAllEmociones().subscribe({
+      next: (response) => {
+        this.emociones = response?.data || [];
+      },
+      error: (err) => {
+        console.error('Error al cargar emociones:', err);
+      },
+    });
+  }
+
+  loadPacientes(): void {
+    this.usersService.listarUsuarios().subscribe({
+      next: (response) => {
+        this.pacientes = response.data.filter((user: any) => user.perfil !== 'psicologo');
+      },
+      error: (err) => {
+        console.error('Error al cargar pacientes:', err);
+      },
+    });
+  }
+
+  async loadPacienteData(): Promise<void> {
+    const pacienteId = this.reportForm.value.paciente;
+    const paciente = this.pacientes.find((p) => p.idUsuario === pacienteId);
+
+    if (paciente?.email) {
+      try {
+        this.realTimeData = await this.patientDataService.getRealTimeData(paciente.email);
+        const weeklyData = await this.patientDataService.getWeeklyData(paciente.email);
+        this.selectedPaciente = { ...paciente, realTimeData: this.realTimeData, weeklyData };
+      } catch (error) {
+        console.error('Error al cargar datos del paciente:', error);
+      }
+    }
+  }
+
+  applyFilters(): void {
+    const { paciente, emocion, rangoFechas } = this.reportForm.value;
+
+    if (paciente) {
+      this.selectedPaciente = this.pacientes.find((p) => p.idUsuario === paciente);
+
+      this.googleMapsUrl = this.generateGoogleMapsUrl(this.selectedPaciente?.ubicacion);
+
+      this.emocionesFiltradas = this.emociones.filter(
+        (em) => em.idUsuario === paciente && (!emocion || em.estadoEmocional === emocion)
+      );
+
+      this.citasFiltradas = this.citas.filter(
+        (cita) =>
+          cita.idPaciente === paciente &&
+          (!rangoFechas || this.isDateInRange(cita.fecha, rangoFechas))
+      );
+    }
+  }
+
+  preloadEmotionDetails(): void {
+    const emotionFiles: { [key: string]: string } = {
+      'Muy Feliz!': 'assets/lottie/feliz.json',
+      Feliz: 'assets/lottie/feliz.json',
+      neutral: 'assets/lottie/neutral.json',
+      Molesto: 'assets/lottie/triste.json',
+      'Muy enojado': 'assets/lottie/angry.json',
+    };
   
-  constructor(private registroService: RegistroService ) {}
+    Object.entries(emotionFiles).forEach(([emotion, path]) => {
+      this.http.get(path).subscribe({
+        next: (data) => {
+          this.emotionDetailsMap[emotion] = data;
+        },
+        error: (err) => {
+          console.error(`Error al cargar detalles de emoción "${emotion}":`, err);
+        },
+      });
+    });
+  }
+  
 
+  getEmotionDetails(emotion: string): any {
+    return this.emotionDetailsMap[emotion] || { title: 'Desconocido', description: 'Sin descripción' };
+  }
 
-  donwload() {
-    this.registroService.listarRegistro().subscribe(res =>  {
-      let data = res.data
-      console.log(data);
+  generateGoogleMapsUrl(ubicacion: string): string {
+    const baseUrl = 'https://www.google.com/maps/embed/v1/place';
+    const apiKey = 'YOUR_GOOGLE_MAPS_API_KEY';
+    return `${baseUrl}?key=${apiKey}&q=${encodeURIComponent(ubicacion)}`;
+  }
 
-    //const data = JSON.parse(json);
-    const columns = this.getColumns(data);
-    const rows = this.getRows(data, columns);
+  isDateInRange(fecha: string, rango: string): boolean {
+    const date = new Date(fecha);
+    const now = new Date();
+
+    if (rango === 'week') {
+      const weekAgo = new Date(now);
+      weekAgo.setDate(now.getDate() - 7);
+      return date >= weekAgo && date <= now;
+    } else if (rango === 'month') {
+      const monthAgo = new Date(now);
+      monthAgo.setMonth(now.getMonth() - 1);
+      return date >= monthAgo && date <= now;
+    } else if (rango === 'quarter') {
+      const quarterAgo = new Date(now);
+      quarterAgo.setMonth(now.getMonth() - 3);
+      return date >= quarterAgo && date <= now;
+    } else if (rango === 'semester') {
+      const semesterAgo = new Date(now);
+      semesterAgo.setMonth(now.getMonth() - 6);
+      return date >= semesterAgo && date <= now;
+    } else if (rango === 'year') {
+      const yearAgo = new Date(now);
+      yearAgo.setFullYear(now.getFullYear() - 1);
+      return date >= yearAgo && date <= now;
+    }
+    return true;
+  }
+
+  exportToExcel(): void {
+    const worksheet = XLSX.utils.json_to_sheet(this.citasFiltradas);
+    const workbook = { Sheets: { data: worksheet }, SheetNames: ['data'] };
+    XLSX.writeFile(workbook, 'reportes.xlsx');
+  }
+
+  exportToPDF(): void {
     const doc = new jsPDF();
-
-    autoTable(doc, {
-      head: [columns],
-      body: rows,
-     // did: (data) => { },
-  });
-  doc.save('data.pdf');
-
-
-  });
-  }
-
-  getColumns(data: any[]): string[] {
-    const columns: string[] = [];
-    data.forEach(row => {
-      Object.keys(row).forEach(col => {
-        if (!columns.includes(col)) {
-          columns.push(col);
-        }
-      });
-    });
-    return columns;
-  }
-
-  getRows(data: any[], columns: string[]): any[] {
-    const rows: any[] = [];
-    data.forEach(row => {
-      const values: any[] = [];
-      columns.forEach(col => {
-        values.push(row[col] || '');
-      });
-      rows.push(values);
-    });
-    return rows;
-  }
-
- 
-  downloadFile(data: string, filename: string, type: string) {
-    const blob = new Blob([data], { type: type });
-  
-      const link = document.createElement('a');
-      link.setAttribute('href', URL.createObjectURL(blob));
-      link.setAttribute('download', filename);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-   
-  }
-
-  @ViewChild('chartCanvas', { static: false }) chartCanvas!: ElementRef<HTMLCanvasElement>;
-  chart!: Chart;
-  timeRange = '7';
-  
-  patients: Patient[] = [
-    {
-      x: 4,
-      name: 'Juan',
-      moodHistory: [
-        { session: 1, mood: 'Triste', moodLevel: 1, emoji: '😢' },
-        { session: 2, mood: 'Feliz', moodLevel: 3, emoji: '😊' },
-        { session: 3, mood: 'Normal', moodLevel: 2, emoji: '🙂' },
-        { session: 4, mood: 'Maravilloso', moodLevel: 4, emoji: '😁' },
-      ],
-      imgUrl: 'assets/profiles/juan.png',
-      color: '#FF6384'
-    },
-    {
-      x: 3,
-      name: 'Maria',
-      moodHistory: [
-        { session: 1, mood: 'Normal', moodLevel: 2, emoji: '🙂' },
-        { session: 2, mood: 'Triste', moodLevel: 1, emoji: '😢' },
-        { session: 3, mood: 'Feliz', moodLevel: 3, emoji: '😊' }
-      ],
-      imgUrl: 'assets/profiles/maria.png',
-      color: '#36A2EB'
-    },
-    {
-      x: 3,
-      name: 'Carlos',
-      moodHistory: [
-        { session: 1, mood: 'Enojado', moodLevel: 0, emoji: '😠' },
-        { session: 2, mood: 'Normal', moodLevel: 2, emoji: '🙂' },
-        { session: 3, mood: 'Triste', moodLevel: 1, emoji: '😢' }
-      ],
-      imgUrl: 'assets/profiles/carlos.png',
-      color: '#FFCE56'
-    },
-    {
-      x: 4,
-      name: 'Ana',
-      moodHistory: [
-        { session: 1, mood: 'Feliz', moodLevel: 3, emoji: '😊' },
-        { session: 2, mood: 'Feliz', moodLevel: 3, emoji: '😊' },
-        { session: 3, mood: 'Maravilloso', moodLevel: 4, emoji: '😁' },
-        { session: 4, mood: 'Normal', moodLevel: 2, emoji: '🙂' }
-      ],
-      imgUrl: 'assets/profiles/ana.png',
-      color: '#4BC0C0'
-    }
-  ];
-  
-  selectedPatient: Patient | null = null;
-
-  ngAfterViewInit(): void {
-    if (this.chartCanvas) {
-      this.createChart();
-    }
-  }
-
-  createChart() {
-    const scatterDataset: ChartDataset<'scatter'> = {
-      type: 'scatter',
-      label: 'Estado de Ánimo',
-      data: this.patients.map((p) => ({ x: p.x, y: p.moodHistory[p.moodHistory.length - 1].moodLevel })),
-      backgroundColor: this.patients.map((p) => p.color),
-      pointRadius: 50,
-      pointHoverRadius: 60
-    };
-
-    const lineDatasets: ChartDataset<'line'>[] = this.patients.map((patient) => {
-      const progressData = patient.moodHistory.map(moodEntry => ({
-        x: moodEntry.session,
-        y: moodEntry.moodLevel
-      }));
-
-      return {
-        type: 'line',
-        label: `${patient.name} - Progreso`,
-        data: progressData,
-        borderColor: patient.color,
-        backgroundColor: 'transparent',
-        borderWidth: 2,
-        fill: false,
-        tension: 0.4, // Curvatura de la línea
-        datalabels: { display: false } // Ocultar etiquetas de datos en la línea
-      };
-    });
-
-    const config: ChartConfiguration<'scatter' | 'line'> = {
-      type: 'scatter',
-      data: {
-        datasets: [scatterDataset, ...lineDatasets]
-      },
-      options: {
-        plugins: {
-          datalabels: {
-            align: 'top',
-            font: {
-              size: 14,
-              weight: 'bold'
-            },
-            color: '#FFD966',
-            formatter: (value, context) => this.patients[context.dataIndex]?.name
-          }
-        },
-        onClick: (e, elements) => {
-          if (elements.length > 0) {
-            const index = elements[0].index;
-            this.selectedPatient = this.patients[index];
-          }
-        },
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: 'Número de Sesiones'
-            },
-            min: 1, // Comienza en la sesión 1
-            max: 5, // Ajusta según el número de sesiones máximo
-            grid: {
-              color: '#FFD966'  // Amarillo para las líneas de la cuadrícula
-            }
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'Estado de Ánimo'
-            },
-            min: 0,
-            max: 4, // Ajusta para 5 niveles de ánimo
-            ticks: {
-              callback: (value) => {
-                const moods = ['Enojado', 'Triste', 'Normal', 'Feliz', 'Maravilloso'];
-                return moods[Number(value)] || '';
-              }
-            },
-            grid: {
-              color: '#FFD966'
-            }
-          }
-        },
-        responsive: true
-      },
-      plugins: [{
-        id: 'customImagePlugin',
-        afterDatasetDraw: (chart) => {
-          const { ctx } = chart;
-          const datasetMeta = chart.getDatasetMeta(0);
-
-          datasetMeta.data.forEach((point, index) => {
-            const data = this.patients[index];
-            if (data.imgUrl && ctx) {
-              const img = new Image();
-              img.src = data.imgUrl;
-              img.onload = () => {
-                const size = 100;
-                ctx.drawImage(
-                  img,
-                  point.x - size / 2,
-                  point.y - size / 2,
-                  size,
-                  size
-                );
-                // Muestra el emoji en lugar de texto de estado
-                ctx.font = '24px Arial';
-                ctx.fillText(data.moodHistory[data.moodHistory.length - 1].emoji, point.x + size / 3, point.y - size / 3);
-              };
-            }
-          });
-        }
-      }]
-    };
-
-    this.chart = new Chart(this.chartCanvas.nativeElement, config);
-  }
-
-  closeDetails() {
-    this.selectedPatient = null;
-  }
-
-  updateTimeRange() {
-    // Logic to update the chart data based on the selected time range
+    autoTable(doc, { html: '#report-table' });
+    doc.save('reportes.pdf');
   }
 }

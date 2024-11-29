@@ -35,7 +35,9 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [
+  "src/assets/google-maps-api.js"
+]
           },
           "configurations": {
             "production": {
@@ -62,22 +64,21 @@
           "defaultConfiguration": "production"
         },
         "serve": {
-  "builder": "@angular-devkit/build-angular:dev-server",
-  "options": {
-    "proxyConfig": "src/proxy.conf.json"
-  },
-  "configurations": {
-    "production": {
-      "buildTarget": "psywell-web:build:production"
-    },
-    "development": {
-      "buildTarget": "psywell-web:build:development",
-      "proxyConfig": "src/proxy.conf.json"
-    }
-  },
-  "defaultConfiguration": "development"
-}
-,
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "src/proxy.conf.json"
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "psywell-web:build:production"
+            },
+            "development": {
+              "buildTarget": "psywell-web:build:development",
+              "proxyConfig": "src/proxy.conf.json"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n"
         },

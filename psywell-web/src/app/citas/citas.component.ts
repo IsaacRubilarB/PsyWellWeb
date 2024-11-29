@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { UsersService } from '../services/userService';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import Swal from 'sweetalert2'; // Importación de SweetAlert
+import { GoogleMapsComponent } from 'app/google-maps/google-maps.component';
 
 export interface Cita {
   idCita: number;
@@ -26,13 +27,14 @@ export interface Cita {
   standalone: true,
   templateUrl: './citas.component.html',
   styleUrls: ['./citas.component.scss'],
-  imports: [NavbarComponent, CommonModule, ReactiveFormsModule],
+  imports: [NavbarComponent, CommonModule, ReactiveFormsModule, GoogleMapsComponent],
 })
 export class CitasComponent implements OnInit {
   citas: Cita[] = [];
   filteredCitas: Cita[] = [];
   pacientes: any[] = [];
   mostrarModal = false;
+  mostrarMapaModal: boolean = false;  // Esta propiedad controla la visibilidad del modal
   citaForm: FormGroup;
   errorMessage: string | null = null;
   userId: number | null = null;
@@ -55,7 +57,7 @@ export class CitasComponent implements OnInit {
       estado: ['Pendiente', Validators.required],
     });
   }
-
+  
   ngOnInit() {
     this.obtenerUsuarios();
     this.afAuth.authState.subscribe((user) => {
@@ -64,7 +66,7 @@ export class CitasComponent implements OnInit {
       }
     });
   }
-
+  
   cargarPsicologo(email: string) {
     this.usersService.listarUsuarios().subscribe(
       (response: any) => {
@@ -238,5 +240,26 @@ export class CitasComponent implements OnInit {
         cita.nombrePaciente.toLowerCase().includes(query) ||
         cita.fecha.toLowerCase().includes(query)
     );
+  }
+
+  // Methods for Google Maps
+
+
+
+  abrirMapaModal() {
+    this.mostrarMapaModal = true;  // Setea a true para mostrar el modal
+  }
+  
+
+  // Method to close the Google Maps modal
+  cerrarMapaModal() {
+    this.mostrarMapaModal = false;  // Set to false to hide the modal
+  }
+
+  ubicacionSeleccionada(direccion: string) {
+    this.citaForm.patchValue({
+      ubicacion: direccion,
+    });
+    this.cerrarMapaModal();  // Close the map modal after selecting the location
   }
 }

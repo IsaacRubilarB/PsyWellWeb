@@ -1,38 +1,111 @@
 <app-navbar></app-navbar>
 
-<div class="reports-container">
-  <h1>Estado Anímico de los Pacientes</h1>
+<div class="dashboard-container">
+  <h1>Dashboard de Reportes</h1>
 
+  <!-- Filtros -->
+  <form [formGroup]="reportForm" (ngSubmit)="applyFilters()" class="filter-form">
+    <div class="filter-row">
+      <label>
+        Paciente:
+        <select formControlName="paciente">
+          <option value="">Todos</option>
+          <option *ngFor="let paciente of pacientes" [value]="paciente.idUsuario">
+            {{ paciente.nombre }}
+          </option>
+        </select>
+      </label>
+      <label>
+        Emoción:
+        <select formControlName="emocion">
+          <option value="">Todos</option>
+          <option value="Muy Feliz!">Muy Feliz!</option>
+          <option value="Feliz">Feliz</option>
+          <option value="neutral">Neutral</option>
+          <option value="Molesto">Molesto</option>
+          <option value="Muy enojado">Muy enojado</option>
+        </select>
+      </label>
+      <label>
+        Rango de Fechas:
+        <select formControlName="rangoFechas">
+          <option value="">Todos</option>
+          <option value="week">Última semana</option>
+          <option value="month">Último mes</option>
+          <option value="quarter">Último trimestre</option>
+          <option value="semester">Último semestre</option>
+          <option value="year">Último año</option>
+        </select>
+      </label>
+      <button type="submit" class="btn-filter">Aplicar Filtros</button>
+    </div>
+  </form>
 
-  <!-- Información del paciente seleccionado -->
-  <div *ngIf="selectedPatient" class="patient-details">
-    <button class="close-btn" (click)="closeDetails()">×</button>
-    <h3>{{ selectedPatient.name }}</h3>
-    <div class="mood-days">
-      <div *ngFor="let mood of selectedPatient.moodHistory" class="mood-day">
-        <span [class]="'mood-icon ' + mood.mood.toLowerCase()"></span> Sesión {{ mood.session }}
+  <!-- Datos del Paciente -->
+  <div class="data-section" *ngIf="selectedPaciente">
+    <h2>Datos del Paciente</h2>
+    <p><strong>Nombre:</strong> {{ selectedPaciente.nombre }}</p>
+    <p><strong>Email:</strong> {{ selectedPaciente.email }}</p>
+    <div *ngIf="realTimeData">
+      <p><strong>Frecuencia Cardíaca:</strong> {{ realTimeData.heartRate }}</p>
+      <p><strong>Nivel de Oxígeno:</strong> {{ realTimeData.oxygenLevel }}</p>
+    </div>
+  </div>
+  <p *ngIf="!selectedPaciente">Selecciona un paciente para ver sus datos.</p>
+
+  <!-- Ubicación en Mapa -->
+  <div class="map-section" *ngIf="googleMapsUrl">
+    <h2>Ubicación</h2>
+    <iframe
+      width="100%"
+      height="400"
+      frameborder="0"
+      style="border:0; border-radius: 10px"
+      [src]="googleMapsUrl | safeUrl"
+      allowfullscreen
+    ></iframe>
+  </div>
+
+  <!-- Emociones -->
+  <div class="emotions-section" *ngIf="emocionesFiltradas?.length">
+    <h2>Emociones Registradas</h2>
+    <div class="emotions-grid">
+      <div class="emotion-card" *ngFor="let emocion of emocionesFiltradas">
+        <div class="emotion-content">
+          <h3>{{ emocion.detalle?.title }}</h3>
+          <p>{{ emocion.detalle?.description }}</p>
+        </div>
+        <p class="comment">
+          {{ emocion.comentarios | slice: 0:50 }}
+          <span *ngIf="emocion.comentarios.length > 50">...</span>
+        </p>
       </div>
-      
-      
     </div>
   </div>
 
-  <!-- Listado de informes -->
-  <div class="report-list">
-    <div class="report-item">
-      <div class="report-content">
-        <h2>Informe de Salud Mental</h2>
-        <p>Este informe cubre el seguimiento de los aspectos emocionales y psicológicos del paciente.</p>
-        <button (click)="donwload()" class="btn-view-report">Descargar Informe <img src="assets/pdf.png" alt="PDF Icon"></button>
-      </div>
-    </div>
-
-    <div class="report-item">
-      <div class="report-content">
-        <h2>Informe de Salud Fisiológica</h2>
-        <p>Este informe detalla las métricas fisiológicas, incluyendo frecuencia cardíaca, horas de sueño y niveles de estrés.</p>
-        <button class="btn-view-report">Descargar Informe <img src="assets/pdf.png" alt="PDF Icon"></button>
-      </div>
-    </div>
+  <!-- Citas Programadas -->
+  <div class="appointments-section" *ngIf="citasFiltradas?.length">
+    <h2>Citas Programadas</h2>
+    <table class="appointments-table">
+      <thead>
+        <tr>
+          <th>Psicólogo</th>
+          <th>Ubicación</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cita of citasFiltradas">
+          <td>{{ cita.psicologo }}</td>
+          <td>{{ cita.ubicacion }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
+  <p *ngIf="!citasFiltradas?.length">No hay citas programadas para el paciente seleccionado.</p>
+</div>
+
+<!-- Export Buttons -->
+<div class="export-buttons">
+  <button class="btn-excel" (click)="exportToExcel()">Exportar a Excel</button>
+  <button class="btn-pdf" (click)="exportToPDF()">Exportar a PDF</button>
 </div>

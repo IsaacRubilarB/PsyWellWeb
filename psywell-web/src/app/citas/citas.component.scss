@@ -195,123 +195,150 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    padding: 10px;
+    padding: 20px;
+    transition: all 0.3s ease-out;
   
     .modal-content {
       background-color: #1e3a5f;
       padding: 2rem;
       border-radius: 15px;
       width: 90%;
-      max-width: 700px;
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+      max-width: 800px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
       color: #e5e5e5;
       border: 2px solid #ffffff;
       animation: slideIn 0.5s ease-out;
-  
+      display: grid;
+      gap: 1rem;
+    
       h2 {
         text-align: center;
         color: #ffc107;
-        font-size: 1.8rem;
+        font-size: 2rem;
         margin-bottom: 1.5rem;
+        font-weight: bold;
+      }
+    }
+  
+    .map-container-small {
+      width: 100%;
+      height: 150px; /* Tamaño pequeño inicial */
+      background-color: #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+      margin-bottom: 1rem;
+    }
+  
+    .map-container-big {
+      width: 100%;
+      height: 400px; /* Tamaño grande del mapa */
+      background-color: #e0e0e0;
+      border-radius: 8px;
+      transition: all 0.3s ease-in-out;
+      margin-bottom: 1rem;
+    }
+  
+    .form-group {
+      margin-bottom: 1rem;
+      position: relative;
+  
+      label {
+        font-weight: bold;
+        color: #b0c4de;
+        display: block;
+        margin-bottom: 5px;
       }
   
-      .form-group {
-        margin-bottom: 1rem;
-        position: relative;
-  
-        label {
-          font-weight: bold;
-          color: #b0c4de;
-          display: block;
-          margin-bottom: 5px;
-        }
-  
-        .input-with-icon {
-          display: flex;
-          align-items: center;
-          background-color: #2e4964;
-          border: 1px solid #b0c4de;
-          border-radius: 5px;
-          padding: 0.5rem;
-          
-          i {
-            color: #ffc107;
-            margin-right: 10px;
-          }
-  
-          input,
-          select,
-          textarea {
-            flex: 1;
-            border: none;
-            background: transparent;
-            color: #ffffff;
-            font-size: 14px;
-            outline: none;
-          }
-  
-          textarea {
-            resize: vertical;
-          }
-        }
-      }
-  
-      .form-row {
+      .input-with-icon {
         display: flex;
-        gap: 20px;
+        align-items: center;
+        background-color: #2e4964;
+        border: 1px solid #b0c4de;
+        border-radius: 5px;
+        padding: 0.5rem;
+        transition: transform 0.2s ease;
   
-        .form-group {
+        &:hover {
+          transform: scale(1.02);
+        }
+  
+        i {
+          color: #ffc107;
+          margin-right: 10px;
+        }
+  
+        input,
+        select,
+        textarea {
           flex: 1;
-        }
-      }
-  
-      .modal-actions {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 20px;
-  
-        .btn-primary {
-          background-color: #ffc107;
-          color: #212121;
-          padding: 10px 20px;
           border: none;
-          border-radius: 8px;
-          font-weight: bold;
-          cursor: pointer;
-          transition: background-color 0.3s ease;
-  
-          &:hover {
-            background-color: #f5b700;
-          }
+          background: transparent;
+          color: #ffffff;
+          font-size: 14px;
+          outline: none;
         }
   
-        .btn-secondary {
-          background-color: #555;
-          color: #fff;
-          padding: 10px 20px;
-          border: none;
-          border-radius: 8px;
-          font-weight: bold;
-          cursor: pointer;
-          transition: background-color 0.3s ease;
-  
-          &:hover {
-            background-color: #777;
-          }
+        textarea {
+          resize: vertical;
         }
       }
     }
   
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+  
+    .modal-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+  
+      .btn-primary {
+        background-color: #ffc107;
+        color: #212121;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+  
+        &:hover {
+          background-color: #f5b700;
+          transform: scale(1.05);
+        }
       }
-      to {
-        opacity: 1;
-        transform: translateY(0);
+  
+      .btn-secondary {
+        background-color: #555;
+        color: #fff;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+  
+        &:hover {
+          background-color: #777;
+          transform: scale(1.05);
+        }
       }
     }
   }
   
+  // Animación de entrada
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
