@@ -8,7 +8,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { HttpClient } from '@angular/common/http'; 
-import { GoogleAuthProvider } from '@angular/fire/auth'; 
+import { GoogleAuthProvider } from '@angular/fire/auth';
+import { environment } from 'environments/environments';
+
 
 @Component({
   selector: 'app-login-registro',
@@ -89,7 +91,7 @@ export class LoginRegistroComponent {
       console.log('Datos para PostgreSQL:', userInput);
   
       // Registrar en PostgreSQL
-      const response = await this.http.post<any>('http://localhost:8081/agregarUsuario', userInput).toPromise();
+      const response = await this.http.post<any>(environment.apiUsuario+'agregarUsuario', userInput).toPromise();
       if (response && response.status === 'success') {
         console.log('Usuario registrado en PostgreSQL:', response);
   
@@ -153,7 +155,7 @@ async signInWithGoogle() {
 
 checkIfUserExists(email: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    this.http.post<any>('http://localhost:8081/verificarOGuardarUsuario', { email })
+    this.http.post<any>(environment.apiUsuario+'verificarOGuardarUsuario', { email })
       .subscribe(response => {
         console.log('Respuesta del servidor:', response); 
 

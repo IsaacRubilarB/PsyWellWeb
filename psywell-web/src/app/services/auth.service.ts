@@ -7,6 +7,8 @@ import { lastValueFrom } from 'rxjs';
 import { GoogleAuthProvider } from '@angular/fire/auth';
 import { map, Observable } from 'rxjs'; 
 import { UsersService } from './userService'; 
+import { environment } from 'environments/environments';
+
 
 @Injectable({
   providedIn: 'root',
@@ -137,7 +139,7 @@ export class AuthService {
   
   private async saveUserToPostgres(uid: string, nombre: string, email: string, contrasena: string, fechaNacimiento: string, genero: string, perfil: string): Promise<any> {
     try {
-      const response = await lastValueFrom(this.http.post<any>('http://localhost:8081/agregarUsuario', {
+      const response = await lastValueFrom(this.http.post<any>(environment.apiUsuario+'agregarUsuario', {
         uid,
         nombre,
         email,

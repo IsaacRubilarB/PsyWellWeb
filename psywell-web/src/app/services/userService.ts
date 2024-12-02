@@ -1,15 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from 'environments/environments';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class UsersService {
-  private registroUserUrl = '/api/agregarUsuario';
-  private listarUserUrl = '/api/ListarUsuarios';
-  private obtenerUsuarioPorIdUrl = '/api/ListarUsuariosById';
-  private verificarUsuarioUrl = '/api/verificarOGuardarUsuario'; 
+  private registroUserUrl = environment.apiUsuario+'agregarUsuario';
+  private listarUserUrl = environment.apiUsuario+'ListarUsuarios';
+  private obtenerUsuarioPorIdUrl = environment.apiUsuario+'ListarUsuariosById';
+  private verificarUsuarioUrl = environment.apiUsuario+'verificarOGuardarUsuario'; 
 
   constructor(private http: HttpClient) {}
 
