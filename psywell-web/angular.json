@@ -70,8 +70,7 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "psywell-web:build:production",
-              "proxyConfig": "src/proxy.conf.json"
+              "buildTarget": "psywell-web:build:production"
             },
             "development": {
               "buildTarget": "psywell-web:build:development",
