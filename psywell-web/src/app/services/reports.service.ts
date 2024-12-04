@@ -22,7 +22,11 @@ export class ReportsService {
   getAllEmociones(): Observable<any> {
     return this.http.get(`${this.apiEmocionesUrl}`);
   }
-
+  
+  deleteCita(citaId: number): Observable<any> {
+    return this.http.delete(`/api/citas/${citaId}`);
+  }
+  
   // Obtener emociones registradas por usuario
   getEmocionesByUsuario(userId: string): Observable<any> {
     return this.http.get(`${this.apiEmocionesByUsuarioUrl}${userId}`);

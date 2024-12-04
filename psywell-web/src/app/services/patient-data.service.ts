@@ -5,6 +5,9 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
   providedIn: 'root',
 })
 export class PatientDataService {
+  getPatientData() {
+    throw new Error('Method not implemented.');
+  }
   constructor(private firestore: AngularFirestore) {}
 
   private encodeEmail(email: string): string {

@@ -3,14 +3,15 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { UsersService } from 'app/services/userService';
+import { CitasService } from 'app/services/citasService';
 
 interface User {
   idUsuario: number;
   nombre: string;
   fechaNacimiento: string;
   perfil: string;
-  correo?: string; // Aseguramos que el campo 'correo' esté disponible
-  email?: string;  // En caso de que el campo sea 'email'
+  correo?: string; 
+  email?: string;  
   diagnosis?: string;
   emotionalStatus?: string;
   photo?: string;
@@ -48,75 +49,101 @@ export class PatientsListComponent implements OnInit {
   selectedPatient: Patient | null = null; // Paciente seleccionado
   isModalOpen: boolean = false; // Estado del modal
 
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private citasService: CitasService // Asegúrate de inyectar el servicio correctamente
+  ) {}
+
 
   ngOnInit(): void {
     this.cargarPacientes();
   }
 
-  // Lógica para cargar pacientes
-  cargarPacientes() {
-    this.usersService.listarUsuarios().subscribe(
-      (response: any) => {
-        // Agregamos un log para ver la respuesta completa
-        console.log('Respuesta del servicio:', response);
 
-        const usuarios = Array.isArray(response.data) ? response.data : [];
-        this.patients = usuarios
-          .filter((user: User) => user.perfil === 'paciente')
-          .map((user: User): Patient => {
-            // Obtenemos el correo electrónico del usuario
-            const email = user.correo || user.email || '';
-            if (!email) {
-              console.warn(`El usuario ${user.nombre} no tiene correo electrónico.`);
-            }
 
-            // Generamos la URL de la foto
-            const photoUrl = email ? this.getFirebaseImageUrl(email, 'profile') : './assets/profiles/default.png';
-
-            // Agregamos logs para depuración
-            console.log(`Usuario: ${user.nombre}`);
-            console.log(`Email original: ${email}`);
-            console.log(`Foto URL generada: ${photoUrl}`);
-
-            return {
-              id: user.idUsuario.toString(),
-              name: user.nombre,
-              age: this.calculateAge(user.fechaNacimiento),
-              diagnosis: user.diagnosis || 'Sin diagnóstico',
-              emotionalStatus: user.emotionalStatus || 'Sin estado',
-              photo: photoUrl,
-              lastSession: this.formatDate(user.lastSession),
-              nextAppointment: this.formatDate(user.nextAppointment),
-              riskLevel: user.riskLevel || 'Sin riesgo',
-              progress: user.progress || 0,
-              email: email
-            };
-          });
+  async cargarPacientes() {
+    try {
+      // Obtener todos los usuarios
+      const response: any = await this.usersService.listarUsuarios().toPromise();
+      if (response && Array.isArray(response.data)) {
+        console.log('Usuarios obtenidos:', response.data);
+  
+        // Mapear pacientes
+        this.patients = await Promise.all(
+          response.data
+            .filter((user: any) => user.perfil === 'paciente')
+            .map(async (user: any) => {
+              console.log(`Procesando paciente: ${user.nombre} (ID: ${user.idUsuario})`);
+              
+              // Obtener la próxima cita
+              const proximaCita = await this.obtenerProximaCita(user.idUsuario);
+              console.log(`Próxima cita para ${user.nombre}:`, proximaCita);
+  
+              // Construir el objeto paciente
+              return {
+                id: user.idUsuario.toString(),
+                name: user.nombre,
+                age: this.calculateAge(user.fechaNacimiento),
+                diagnosis: user.diagnosis || 'Sin diagnóstico',
+                emotionalStatus: user.emotionalStatus || 'Sin estado',
+                photo: this.getFirebaseImageUrl(user.correo || user.email || '', 'profile'),
+                lastSession: this.formatDate(user.lastSession),
+                nextAppointment: proximaCita ? this.formatDate(proximaCita.fecha) : 'No disponible',
+                riskLevel: user.riskLevel || 'Sin riesgo',
+                progress: user.progress || 0,
+                email: user.correo || user.email || '',
+              };
+            })
+        );
+  
+        console.log('Pacientes procesados:', this.patients);
         this.filteredPatients = [...this.patients];
-      },
-      (error: any) => {
-        console.error('Error al cargar pacientes:', error);
+      } else {
+        console.error('Respuesta no válida al listar usuarios', response);
       }
-    );
+    } catch (error) {
+      console.error('Error al cargar pacientes:', error);
+    }
   }
+  
+  async obtenerProximaCita(idPaciente: number): Promise<any> {
+    try {
+      console.log(`Buscando próxima cita para el paciente ID: ${idPaciente}`);
+      
+      const response = await this.citasService.listarCitas().toPromise();
+      if (response && response.status === 'success' && Array.isArray(response.data)) {
+        console.log('Citas obtenidas del servicio:', response.data);
+  
+        // Filtrar citas del paciente
+        const citasPaciente = response.data
+          .filter((cita: any) => cita.idPaciente === idPaciente && new Date(cita.fecha) >= new Date())
+          .sort((a: any, b: any) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+  
+        console.log(`Citas filtradas para el paciente ${idPaciente}:`, citasPaciente);
+  
+        return citasPaciente.length > 0 ? citasPaciente[0] : null;
+      }
+      return null;
+    } catch (error) {
+      console.error(`Error al obtener la próxima cita para el paciente ${idPaciente}:`, error);
+      return null;
+    }
+  }
+  
+  
+  
+  
+  
 
-  // Método para obtener el URL de la imagen desde Firebase Storage
-  private getFirebaseImageUrl(email: string, tipo: 'profile' | 'banner'): string {
+
+  getFirebaseImageUrl(email: string, tipo: 'profile' | 'banner'): string {
     const sanitizedEmail = email.replace(/@/g, '_').replace(/\./g, '_');
     const folder = tipo === 'profile' ? 'fotoPerfil' : 'fotoPortada';
-
-    // Actualizamos el dominio a 'firebasestorage.app' en lugar de 'appspot.com'
-    const url = `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/${folder}%2F${encodeURIComponent(sanitizedEmail)}?alt=media`;
-
-    // Agregamos logs para depuración
-    console.log(`Email sanitizado: ${sanitizedEmail}`);
-    console.log(`URL de la imagen generada: ${url}`);
-
-    return url;
+    return `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/${folder}%2F${encodeURIComponent(
+      sanitizedEmail
+    )}?alt=media`;
   }
 
-  // Método para calcular la edad
   calculateAge(fechaNacimiento: string): number | string {
     if (!fechaNacimiento) return 'Edad desconocida';
     const birthDate = new Date(fechaNacimiento);
@@ -130,6 +157,7 @@ export class PatientsListComponent implements OnInit {
     return isNaN(age) ? 'Edad desconocida' : age;
   }
 
+  
   // Método para formatear fechas
   formatDate(dateStr: string | undefined): string {
     if (!dateStr) return 'No disponible';

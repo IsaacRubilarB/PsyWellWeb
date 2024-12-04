@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { AngularFirestore } from '@angular/fire/compat/firestore'; 
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { GoogleAuthProvider } from '@angular/fire/auth';
-import { map, Observable } from 'rxjs'; 
-import { UsersService } from './userService'; 
+import { map, Observable } from 'rxjs';
+import { UsersService } from './userService';
 
 @Injectable({
   providedIn: 'root',
@@ -16,8 +16,8 @@ export class AuthService {
     private afAuth: AngularFireAuth,
     private http: HttpClient,
     private router: Router,
-    private firestore: AngularFirestore, 
-    private usersService: UsersService 
+    private firestore: AngularFirestore,
+    private usersService: UsersService
   ) {}
 
   getAuth() {
@@ -29,9 +29,9 @@ export class AuthService {
     try {
       await this.afAuth.signInWithEmailAndPassword(email, password);
       this.router.navigate(['/dashboard']);
-    } catch (error: any) { 
+    } catch (error: any) {
       console.error('Error al iniciar sesión:', error);
-      throw new Error('Error al iniciar sesión: ' + error.message); 
+      throw new Error('Error al iniciar sesión: ' + error.message);
     }
   }
 
@@ -42,63 +42,40 @@ export class AuthService {
       const userCredential = await this.afAuth.signInWithPopup(provider);
       const user = userCredential.user;
 
-      if (user) {
-        const providerData = user.providerData[0];
-
+      if (user && user.email) {
+        const email = user.email;
         const displayName = user.displayName || 'Usuario';
-        const email = user.email || '';
-        const gender = 'otro';  
-        const birthdate = null;  
+        const uid = user.uid;
 
-        const isUserExisting = await this.checkIfUserExists(email);
+        const userExists = await this.checkIfUserExists(email);
 
-        if (isUserExisting) {
-          // Si el usuario ya existe, redirigir al dashboard
-          this.router.navigate(['/dashboard']);
-        } else {
-          // Si no existe, proceder con el registro
-          const usuarioInput = {
-            email,
-            nombre: displayName,
-            genero: gender,
-            fechaNacimiento: birthdate || "",  
-            perfil: 'psicologo',
-            contrasena: '',  
-            estado: true
-          };
-
-          await this.register(usuarioInput.email, usuarioInput.contrasena, usuarioInput.nombre, usuarioInput.fechaNacimiento, usuarioInput.genero, usuarioInput.perfil);
+        if (!userExists) {
+          console.log('Usuario no encontrado. Registrando en PostgreSQL y Firebase...');
+          await this.register(email, '', displayName, '', 'otro', 'paciente');
         }
+
+        this.router.navigate(['/dashboard']);
       } else {
         throw new Error('No se pudo obtener información del usuario');
       }
     } catch (error) {
       console.error('Error al iniciar sesión con Google:', error);
-      throw new Error('No se pudo iniciar sesión con Google.');
+      throw new Error('Error al iniciar sesión con Google.');
     }
   }
 
-  // Verificar si el usuario ya existe en la base de datos utilizando UsersService
+  // Verificar si el usuario ya existe en la base de datos
   async checkIfUserExists(email: string): Promise<boolean> {
     try {
       const response = await lastValueFrom(this.usersService.verificarUsuario(email));
       return response && response.postgresId ? true : false;
     } catch (error) {
       console.error('Error al verificar usuario:', error);
-      return false; 
+      return false;
     }
   }
 
-  async logout() {
-    try {
-      await this.afAuth.signOut();
-      this.router.navigate(['/login']);
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-    }
-  }
-
-  // Método de registro (cuando el usuario es nuevo)
+  // Método para registrar un usuario (sin sobrescribir credenciales existentes)
   async register(email: string, password: string, nombre: string, fechaNacimiento: string, genero: string, perfil: string) {
     console.log('Registrando usuario...', { email, password, nombre, fechaNacimiento, genero, perfil });
 
@@ -119,6 +96,7 @@ export class AuthService {
     }
   }
 
+  // Guardar usuario en Firestore
   public async saveUserToFirestore(uid: string, nombre: string, email: string, postgresId: string) {
     const userRef = this.firestore.collection('usuarios').doc(uid);
     try {
@@ -134,7 +112,8 @@ export class AuthService {
       throw new Error('Error al guardar usuario en Firestore');
     }
   }
-  
+
+  // Guardar usuario en PostgreSQL
   private async saveUserToPostgres(uid: string, nombre: string, email: string, contrasena: string, fechaNacimiento: string, genero: string, perfil: string): Promise<any> {
     try {
       const response = await lastValueFrom(this.http.post<any>('http://localhost:8081/agregarUsuario', {
@@ -144,7 +123,7 @@ export class AuthService {
         contrasena,
         fechaNacimiento,
         genero,
-        perfil
+        perfil,
       }));
       console.log('Response from PostgreSQL:', response);
       if (!response.postgresId) {
@@ -158,8 +137,17 @@ export class AuthService {
     }
   }
 
-  // Método para verificar si el usuario está autenticado
+  // Verificar si el usuario está autenticado
   isAuthenticated(): Observable<boolean> {
-    return this.afAuth.authState.pipe(map(user => !!user)); 
+    return this.afAuth.authState.pipe(map(user => !!user));
+  }
+
+  async logout() {
+    try {
+      await this.afAuth.signOut();
+      this.router.navigate(['/login']);
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
   }
 }

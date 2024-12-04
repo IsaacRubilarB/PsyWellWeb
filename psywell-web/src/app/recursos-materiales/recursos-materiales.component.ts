@@ -42,7 +42,6 @@ export class RecursosMaterialesComponent {
     { titulo: 'Videos terapéuticos', icono: 'video_library', tipo: 'videos' },
     { titulo: 'Libros terapéuticos', icono: 'menu_book', tipo: 'libros' },
     { titulo: 'Audios terapéuticos', icono: 'audiotrack', tipo: 'audios' },
-    { titulo: 'Foros y comunidades de apoyo', icono: 'forum', tipo: 'foros' }
   ];
 
   constructor(

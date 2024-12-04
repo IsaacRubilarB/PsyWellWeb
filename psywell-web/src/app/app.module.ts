@@ -19,6 +19,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { NotasComponent } from './notas/notas.component';
 import { GoogleMapsComponent } from './google-maps/google-maps.component'; // Asegúrate de usar la ruta correcta
+import { SafeUrlPipe } from './pipes/safe-url.pipe';  // Importa el pipe aquí
 
 
 
@@ -32,7 +33,8 @@ import { GoogleMapsComponent } from './google-maps/google-maps.component'; // As
     RouterModule,
     NavbarComponent,
     NotasComponent,
-    GoogleMapsComponent, // Añadido aquí, como los demás componentes
+    GoogleMapsComponent,
+    SafeUrlPipe  , // Añadido aquí, como los demás componentes
 
 
     // Firebase initialization

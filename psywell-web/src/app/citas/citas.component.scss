@@ -184,13 +184,15 @@
   }
 
 
+
+
   .modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -199,7 +201,7 @@
     transition: all 0.3s ease-out;
   
     .modal-content {
-      background-color: #1e3a5f;
+      background-color: #1e3a5f; /* Fondo del modal */
       padding: 2rem;
       border-radius: 15px;
       width: 90%;
@@ -209,86 +211,99 @@
       border: 2px solid #ffffff;
       animation: slideIn 0.5s ease-out;
       display: grid;
-      gap: 1rem;
-    
+      gap: 1.5rem;
+  
       h2 {
         text-align: center;
-        color: #ffc107;
+        color: #ffc107; /* Color del título */
         font-size: 2rem;
         margin-bottom: 1.5rem;
         font-weight: bold;
       }
-    }
   
-    .map-container-small {
-      width: 100%;
-      height: 150px; /* Tamaño pequeño inicial */
-      background-color: #e0e0e0;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease-in-out;
-      margin-bottom: 1rem;
-    }
+      .form-group {
+        margin-bottom: 1rem;
+        position: relative;
   
-    .map-container-big {
-      width: 100%;
-      height: 400px; /* Tamaño grande del mapa */
-      background-color: #e0e0e0;
-      border-radius: 8px;
-      transition: all 0.3s ease-in-out;
-      margin-bottom: 1rem;
-    }
+        label {
+          font-weight: bold;
+          color: #b0c4de; /* Color del label */
+          display: block;
+          margin-bottom: 5px;
+        }
   
-    .form-group {
-      margin-bottom: 1rem;
-      position: relative;
+        .input-with-icon {
+          display: flex;
+          align-items: center;
+          background-color: #2e4964; /* Fondo del input */
+          border: 1px solid #b0c4de;
+          border-radius: 5px;
+          padding: 0.5rem;
+          transition: transform 0.2s ease;
   
-      label {
-        font-weight: bold;
-        color: #b0c4de;
-        display: block;
-        margin-bottom: 5px;
+          &:hover {
+            transform: scale(1.02);
+          }
+  
+          i {
+            color: #ffc107; /* Color del ícono */
+            margin-right: 10px;
+          }
+  
+          input,
+          select,
+          textarea {
+            flex: 1;
+            border: none;
+            background: transparent; /* Fondo transparente */
+            color: #ffffff; /* Color del texto */
+            font-size: 14px;
+            outline: none;
+  
+            &::placeholder {
+              color: #b0c4de; /* Color del placeholder */
+              opacity: 0.8;
+            }
+          }
+  
+          select {
+            appearance: none; /* Eliminar estilo nativo del navegador */
+            background: #2e4964; /* Fondo del select */
+            color: #ffffff; /* Color del texto */
+            font-size: 14px;
+            padding: 0.5rem;
+  
+            option {
+              background-color: #2e4964; /* Fondo de las opciones */
+              color: #ffffff; /* Color del texto */
+            }
+          }
+  
+          textarea {
+            resize: vertical;
+          }
+        }
       }
   
-      .input-with-icon {
-        display: flex;
-        align-items: center;
-        background-color: #2e4964;
-        border: 1px solid #b0c4de;
-        border-radius: 5px;
-        padding: 0.5rem;
-        transition: transform 0.2s ease;
+      /* Organizar fecha y horas en una sola fila */
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 2fr; /* Fecha más pequeña que las horas */
+        gap: 20px;
   
-        &:hover {
-          transform: scale(1.02);
-        }
+        .form-group {
+          margin-bottom: 0;
   
-        i {
-          color: #ffc107;
-          margin-right: 10px;
-        }
+          &:first-child {
+            grid-column: span 1; /* Fecha ocupa la primera columna */
+          }
   
-        input,
-        select,
-        textarea {
-          flex: 1;
-          border: none;
-          background: transparent;
-          color: #ffffff;
-          font-size: 14px;
-          outline: none;
-        }
-  
-        textarea {
-          resize: vertical;
+          &:nth-child(2),
+          &:nth-child(3) {
+            grid-column: span 1; /* Hora inicio y fin comparten la fila */
+          }
         }
       }
-    }
-  
-    .form-row {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
     }
   
     .modal-actions {
@@ -341,4 +356,6 @@
       transform: translateY(0);
     }
   }
+
+
 }

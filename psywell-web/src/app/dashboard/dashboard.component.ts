@@ -160,21 +160,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
           return;
         }
   
-        // Filtrar citas asociadas al psicólogo autenticado
         const citasPsicologo = response.data.filter((cita: any) => cita.idPsicologo === idPsicologo);
   
-        // Obtener pacientes para las citas
+        if (citasPsicologo.length === 0) {
+          console.warn('No se encontraron citas asociadas al psicólogo con el ID:', idPsicologo);
+          this.recordatorios = [];
+          return;
+        }
+  
         const pacientes = await this.obtenerTodosLosUsuarios();
   
-        // Obtener la fecha actual y el rango de los próximos 7 días
-        const hoy = new Date();
+        const hoy = new Date(); // Fecha actual
         const fechaLimite = new Date();
-        fechaLimite.setDate(hoy.getDate() + 7);
+        fechaLimite.setDate(hoy.getDate() + 7); // Rango de 7 días
   
-        // Mapear y filtrar citas dentro del rango de 7 días
         this.recordatorios = citasPsicologo
           .filter((cita: any) => {
-            const fechaCita = new Date(cita.fecha); // Asegúrate de que cita.fecha sea una fecha válida
+            const fechaCita = this.parseFecha(cita.fecha);
+            if (!fechaCita) {
+              console.warn(`Fecha inválida para la cita con ID: ${cita.idCita}`);
+              return false;
+            }
             return fechaCita >= hoy && fechaCita <= fechaLimite;
           })
           .map((cita: any) => {
@@ -194,6 +200,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
     });
   }
+  
+  
+  
+  private parseFecha(fecha: string): Date | null {
+    if (!fecha) return null;
+  
+    // Verificar si el formato es yyyy-MM-dd
+    const regex = /^\d{4}-\d{2}-\d{2}$/; // Formato ISO básico
+    if (regex.test(fecha)) {
+      const [year, month, day] = fecha.split('-').map(Number);
+      return new Date(year, month - 1, day); // Restamos 1 al mes porque Date usa índices 0-11 para los meses
+    }
+  
+    console.warn('Formato de fecha no reconocido:', fecha);
+    return null;
+  }
+  
+  
   
   
 
