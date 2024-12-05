@@ -1,15 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from 'environments/environments';
+
 
 @Injectable({
   providedIn: 'root',
 })
 export class ReportsService {
-  private apiCitasUrl = 'http://localhost:8084/listarCitas'; // Endpoint para listar citas
-  private apiEmocionesUrl = 'http://localhost:8082/listarRegistro'; // Endpoint para listar emociones
-  private apiEmocionesByUsuarioUrl = 'http://localhost:8082/listarRegistroPorUsuario/'; // Emociones por usuario
-  private apiUsuariosUrl = '/api/ListarUsuarios'; // Endpoint para listar usuarios
+  private apiCitasUrl = environment.apiCalendario+'listarCitas'; // Endpoint para listar citas
+  private apiEmocionesUrl = environment.apiRegistroEmocional+'listarRegistro'; // Endpoint para listar emociones
+  private apiEmocionesByUsuarioUrl = environment.apiRegistroEmocional+'listarRegistroPorUsuario/'; // Emociones por usuario
+  private apiUsuariosUrl = environment.apiUsuario+'ListarUsuarios'; // Endpoint para listar usuarios
 
   constructor(private http: HttpClient) {}
 

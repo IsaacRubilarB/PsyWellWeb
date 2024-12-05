@@ -25,12 +25,12 @@
       "Access-Control-Allow-Credentials": "true"
     }
   },
-  "/api": {
-    "target": "http://localhost:8081",
+  "/apiusuario": {
+    "target": "https://enigmatic-temple-94296-2f035ff18512.herokuapp.com",
     "secure": false,
     "changeOrigin": true,
     "pathRewrite": {
-      "^/api": ""
+      "^/apiusuario": "https://enigmatic-temple-94296-2f035ff18512.herokuapp.com"
     },
     "logLevel": "debug"
   }
