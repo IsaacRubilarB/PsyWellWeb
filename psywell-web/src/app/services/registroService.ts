@@ -9,8 +9,8 @@ import { environment } from 'environments/environments';
   providedIn: 'root'
 })
 export class RegistroService {
-  private apiListarRegistro = environment.apiRegistroEmocional+'listarRegistro'; 
-  private apiListarRegistroByUser = environment.apiRegistroEmocional+'listarRegistroPorUsuario/'; 
+  private apiListarRegistro = 'http://localhost:8082/listarRegistro'; 
+  private apiListarRegistroByUser = 'http://localhost:8082/listarRegistroPorUsuario/';
 
 
   constructor(private http: HttpClient) {}

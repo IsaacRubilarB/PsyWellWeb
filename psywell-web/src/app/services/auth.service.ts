@@ -118,7 +118,7 @@ export class AuthService {
   // Guardar usuario en PostgreSQL
   private async saveUserToPostgres(uid: string, nombre: string, email: string, contrasena: string, fechaNacimiento: string, genero: string, perfil: string): Promise<any> {
     try {
-      const response = await lastValueFrom(this.http.post<any>(environment.apiUsuario+'agregarUsuario', {
+      const response = await lastValueFrom(this.http.post<any>('http://localhost:8081/agregarUsuario', {
         uid,
         nombre,
         email,

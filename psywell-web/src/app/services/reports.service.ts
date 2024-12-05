@@ -8,10 +8,10 @@ import { environment } from 'environments/environments';
   providedIn: 'root',
 })
 export class ReportsService {
-  private apiCitasUrl = environment.apiCalendario+'listarCitas'; // Endpoint para listar citas
-  private apiEmocionesUrl = environment.apiRegistroEmocional+'listarRegistro'; // Endpoint para listar emociones
-  private apiEmocionesByUsuarioUrl = environment.apiRegistroEmocional+'listarRegistroPorUsuario/'; // Emociones por usuario
-  private apiUsuariosUrl = environment.apiUsuario+'ListarUsuarios'; // Endpoint para listar usuarios
+  private apiCitasUrl = 'http://localhost:8084/listarCitas'; // Endpoint para listar citas
+  private apiEmocionesUrl = 'http://localhost:8082/listarRegistro'; // Endpoint para listar emociones
+  private apiEmocionesByUsuarioUrl = 'http://localhost:8082/listarRegistroPorUsuario/'; // Emociones por usuario
+  private apiUsuariosUrl = '/api/ListarUsuarios'; // Endpoint para listar usuarios
 
   constructor(private http: HttpClient) {}
 

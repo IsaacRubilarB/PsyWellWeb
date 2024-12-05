@@ -12,11 +12,11 @@ import { environment } from 'environments/environments';
   providedIn: 'root',
 })
 export class CitasService {
-  private registroCitaUrl = environment.apiCalendario+'registrarCita';
-  private listarCitaUrl = environment.apiCalendario+'listarCitas';
-  private actualizarCitaUrl = environment.apiCalendario+'actualizarCita';
-  private eliminarCitaUrl = environment.apiCalendario+'eliminarCita';
-  private baseUrl = environment.apiRegistroEmocional+'listarRegistro'; 
+  private registroCitaUrl = 'http://localhost:8084/registrarCita';
+  private listarCitaUrl = 'http://localhost:8084/listarCitas';
+  private actualizarCitaUrl = 'http://localhost:8084/actualizarCita';
+  private eliminarCitaUrl = 'http://localhost:8084/eliminarCita';
+  private baseUrl = 'http://localhost:8082/listarRegistro'; 
 
   constructor(private http: HttpClient) {}
 
@@ -50,8 +50,8 @@ export class CitasService {
     fechaLimite.setDate(fechaLimite.getDate() - 7);
     const fechaDesde = fechaLimite.toISOString(); // Convierte la fecha a ISO 8601
   
-    const url = environment.apiRegistroEmocional+`listarRegistroPorUsuario/${idUsuario}?fechaDesde=${fechaDesde}`;
-    return this.http.get<any>(url).pipe(
+    const url = `http://localhost:8082/listarRegistroPorUsuario/${idUsuario}?fechaDesde=${fechaDesde}`;
+        return this.http.get<any>(url).pipe(
       map((response: any) => {
         if (response?.data) {
           return response.data; // Retorna solo los registros filtrados
