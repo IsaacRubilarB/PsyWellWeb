@@ -11,6 +11,7 @@ import { CitasComponent } from './citas/citas.component';
 import { FormularioRecursosComponent } from './formulario-recursos/formulario-recursos.component';
 import { AuthGuard } from './guards/auth.guard';
 //import { GoogleMapsComponent } from './google-maps/google-maps.component';
+import { BibliotecaComponent } from './biblioteca/biblioteca.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginRegistroComponent },
@@ -21,6 +22,7 @@ export const routes: Routes = [
   { path: 'recursos-materiales', component: RecursosMaterialesComponent, canActivate: [AuthGuard] },
   { path: 'citas', component: CitasComponent, canActivate: [AuthGuard] },
   { path: 'formulario', component: FormularioRecursosComponent, canActivate: [AuthGuard] },
+  { path: 'bibliotecas', component: BibliotecaComponent, canActivate: [AuthGuard] },
   //{ path: 'mapa', component: GoogleMapsComponent, canActivate: [AuthGuard] },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' }, // La ruta comodín debe ir al final

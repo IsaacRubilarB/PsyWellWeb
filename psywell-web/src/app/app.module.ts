@@ -20,6 +20,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { NotasComponent } from './notas/notas.component';
 import { GoogleMapsComponent } from './google-maps/google-maps.component'; // Asegúrate de usar la ruta correcta
 import { SafeUrlPipe } from './pipes/safe-url.pipe';  // Importa el pipe aquí
+import { BibliotecaComponent } from './biblioteca/biblioteca.component';
 
 
 
@@ -35,6 +36,7 @@ import { SafeUrlPipe } from './pipes/safe-url.pipe';  // Importa el pipe aquí
     NotasComponent,
     GoogleMapsComponent,
     SafeUrlPipe  , // Añadido aquí, como los demás componentes
+    BibliotecaComponent,
 
 
     // Firebase initialization
