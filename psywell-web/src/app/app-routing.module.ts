@@ -22,7 +22,7 @@ export const routes: Routes = [
   { path: 'recursos-materiales', component: RecursosMaterialesComponent, canActivate: [AuthGuard] },
   { path: 'citas', component: CitasComponent, canActivate: [AuthGuard] },
   { path: 'formulario', component: FormularioRecursosComponent, canActivate: [AuthGuard] },
-  { path: 'bibliotecas', component: BibliotecaComponent, canActivate: [AuthGuard] },
+  { path: 'biblioteca', component: BibliotecaComponent, canActivate: [AuthGuard] },
   //{ path: 'mapa', component: GoogleMapsComponent, canActivate: [AuthGuard] },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' }, // La ruta comodín debe ir al final

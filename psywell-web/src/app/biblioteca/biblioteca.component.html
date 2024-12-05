@@ -1,1 +1,57 @@
-<p>biblioteca works!</p>
+<app-navbar></app-navbar>
+
+<div class="resources-container">
+  <h1>Biblioteca</h1>
+
+  <!-- Contenedor para Libros -->
+  <div class="files-section">
+    <h2>Libros</h2>
+    <div class="controls">
+      <label for="itemsPerPageLibros">Elementos por página:</label>
+      <select id="itemsPerPageLibros" [(ngModel)]="itemsPerPageLibros" (change)="actualizarPaginacion('libros')">
+        <option *ngFor="let option of itemsPerPageOptions" [value]="option">{{ option }}</option>
+      </select>
+    </div>
+    <div class="file-grid books">
+      <div class="file-card" *ngFor="let libro of librosPaginados">
+        <img [src]="'https://via.placeholder.com/150'" alt="Portada del libro" />
+        <h4>{{ libro.name }}</h4>
+        <div class="actions">
+          <a [href]="libro.webViewLink" target="_blank">Ver</a>
+          <button (click)="descargarArchivo(libro.webContentLink)">Descargar</button>
+        </div>
+      </div>
+    </div>
+    <div class="pagination">
+      <button (click)="cambiarPagina('libros', -1)" [disabled]="paginaActualLibros === 1">Anterior</button>
+      <span>Página {{ paginaActualLibros }} de {{ totalPaginasLibros }}</span>
+      <button (click)="cambiarPagina('libros', 1)" [disabled]="paginaActualLibros === totalPaginasLibros">Siguiente</button>
+    </div>
+  </div>
+
+  <!-- Contenedor para Material para Psicólogos -->
+  <div class="files-section">
+    <h2>Material para Psicólogos</h2>
+    <div class="controls">
+      <label for="itemsPerPageMaterial">Elementos por página:</label>
+      <select id="itemsPerPageMaterial" [(ngModel)]="itemsPerPageMaterial" (change)="actualizarPaginacion('material')">
+        <option *ngFor="let option of itemsPerPageOptions" [value]="option">{{ option }}</option>
+      </select>
+    </div>
+    <div class="file-grid documents">
+      <div class="file-card" *ngFor="let material of materialPaginados">
+        <img [src]="'https://via.placeholder.com/150'" alt="Portada del material" />
+        <h4>{{ material.name }}</h4>
+        <div class="actions">
+          <a [href]="material.webViewLink" target="_blank">Ver</a>
+          <button (click)="descargarArchivo(material.webContentLink)">Descargar</button>
+        </div>
+      </div>
+    </div>
+    <div class="pagination">
+      <button (click)="cambiarPagina('material', -1)" [disabled]="paginaActualMaterial === 1">Anterior</button>
+      <span>Página {{ paginaActualMaterial }} de {{ totalPaginasMaterial }}</span>
+      <button (click)="cambiarPagina('material', 1)" [disabled]="paginaActualMaterial === totalPaginasMaterial">Siguiente</button>
+    </div>
+  </div>
+</div>
