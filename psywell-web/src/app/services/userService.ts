@@ -11,6 +11,8 @@ export class UsersService {
   private obtenerUsuarioPorIdUrl = '/api/ListarUsuariosById';
   private verificarUsuarioUrl = '/api/verificarOGuardarUsuario'; 
 
+
+
   constructor(private http: HttpClient) {}
 
   // Método para registrar un nuevo usuario
