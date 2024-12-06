@@ -1,8 +1,6 @@
 <app-navbar></app-navbar>
 
 <div class="resources-container">
-  <h1>Biblioteca</h1>
-
   <!-- Contenedor para Libros -->
   <div class="files-section">
     <h2>Libros</h2>
@@ -14,7 +12,7 @@
     </div>
     <div class="file-grid books">
       <div class="file-card" *ngFor="let libro of librosPaginados">
-        <img [src]="'https://via.placeholder.com/150'" alt="Portada del libro" />
+        <img src="assets/biblioteca/Portada Biblioteca Psywell.png" alt="Portada del libro" />
         <h4>{{ libro.name }}</h4>
         <div class="actions">
           <a [href]="libro.webViewLink" target="_blank">Ver</a>
@@ -31,7 +29,7 @@
 
   <!-- Contenedor para Material para Psicólogos -->
   <div class="files-section">
-    <h2>Material para Psicólogos</h2>
+    <h2>Material complementario</h2>
     <div class="controls">
       <label for="itemsPerPageMaterial">Elementos por página:</label>
       <select id="itemsPerPageMaterial" [(ngModel)]="itemsPerPageMaterial" (change)="actualizarPaginacion('material')">
@@ -40,7 +38,7 @@
     </div>
     <div class="file-grid documents">
       <div class="file-card" *ngFor="let material of materialPaginados">
-        <img [src]="'https://via.placeholder.com/150'" alt="Portada del material" />
+        <img src="assets/biblioteca/Portada Biblioteca Psywell.png" alt="Portada del libro" />
         <h4>{{ material.name }}</h4>
         <div class="actions">
           <a [href]="material.webViewLink" target="_blank">Ver</a>
