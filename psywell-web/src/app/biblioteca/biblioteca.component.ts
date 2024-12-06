@@ -2,32 +2,50 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { NavbarComponent } from 'app/navbar/navbar.component';
-import { FormsModule } from '@angular/forms'; // Importa FormsModule para ngModel
+import { FormsModule } from '@angular/forms';
+
+interface Archivo {
+  id: string;
+  name: string;
+  webViewLink: string;
+  webContentLink: string;
+  portada: string; // Propiedad para la imagen de portada
+}
 
 @Component({
   selector: 'app-biblioteca',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FormsModule], // Añade FormsModule a los imports
+  imports: [CommonModule, NavbarComponent, FormsModule],
   templateUrl: './biblioteca.component.html',
-  styleUrls: ['./biblioteca.component.scss']
+  styleUrls: ['./biblioteca.component.scss'],
 })
 export class BibliotecaComponent implements OnInit {
-  libros: any[] = [];
-  materialPsicologos: any[] = [];
+  // Propiedades generales
+  libros: Archivo[] = [];
+  materialPsicologos: Archivo[] = [];
 
-  librosPaginados: any[] = [];
-  materialPaginados: any[] = [];
+  filtroLibros: string = '';
+  filtroMaterial: string = '';
 
-  itemsPerPageOptions = [10, 25, 50, 100];
-  itemsPerPageLibros = 10;
-  itemsPerPageMaterial = 10;
+  imagenesLibros = [
+    'assets/biblioteca/PortadaBiblioteca1.png',
+    'assets/biblioteca/PortadaBiblioteca2.png',
+    'assets/biblioteca/PortadaBiblioteca3.png',
+    'assets/biblioteca/PortadaBiblioteca4.png',
+    'assets/biblioteca/PortadaBiblioteca5.png',
+    'assets/biblioteca/PortadaBiblioteca6.png',
+  ];
 
-  paginaActualLibros = 1;
-  paginaActualMaterial = 1;
+  imagenesMaterial = [
+    'assets/biblioteca/PortadaBiblioteca1.png',
+    'assets/biblioteca/PortadaBiblioteca2.png',
+    'assets/biblioteca/PortadaBiblioteca3.png',
+    'assets/biblioteca/PortadaBiblioteca4.png',
+    'assets/biblioteca/PortadaBiblioteca5.png',
+    'assets/biblioteca/PortadaBiblioteca6.png',
+  ];
 
-  totalPaginasLibros = 1;
-  totalPaginasMaterial = 1;
-
+  // IDs de las carpetas
   apiKey = 'AIzaSyAFJUcrBDDLPM2SscMvi1x_jUv6Wlqnukg';
   folderIds = {
     libros: '1-FAVlVTJuBd7D5v0ndac9vfmKqN6mBfC',
@@ -37,10 +55,14 @@ export class BibliotecaComponent implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
+    // Cargar archivos al iniciar
     this.cargarArchivos('libros', this.folderIds.libros);
     this.cargarArchivos('material', this.folderIds.materialPsicologos);
   }
 
+  /**
+   * Carga los archivos de una carpeta específica y asigna portadas aleatorias.
+   */
   cargarArchivos(tipo: string, folderId: string) {
     const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&key=${this.apiKey}&fields=files(id,name,webViewLink,webContentLink)`;
 
@@ -48,11 +70,15 @@ export class BibliotecaComponent implements OnInit {
       next: (response) => {
         if (response.files) {
           if (tipo === 'libros') {
-            this.libros = response.files;
-            this.actualizarPaginacion('libros');
+            this.libros = response.files.map((libro: any) => ({
+              ...libro,
+              portada: this.obtenerImagenAleatoria(this.imagenesLibros),
+            }));
           } else if (tipo === 'material') {
-            this.materialPsicologos = response.files;
-            this.actualizarPaginacion('material');
+            this.materialPsicologos = response.files.map((material: any) => ({
+              ...material,
+              portada: this.obtenerImagenAleatoria(this.imagenesMaterial),
+            }));
           }
         }
       },
@@ -62,32 +88,35 @@ export class BibliotecaComponent implements OnInit {
     });
   }
 
-  actualizarPaginacion(tipo: string) {
-    if (tipo === 'libros') {
-      this.totalPaginasLibros = Math.ceil(this.libros.length / this.itemsPerPageLibros);
-      this.paginaActualLibros = Math.min(this.paginaActualLibros, this.totalPaginasLibros);
-      const start = (this.paginaActualLibros - 1) * this.itemsPerPageLibros;
-      const end = start + this.itemsPerPageLibros;
-      this.librosPaginados = this.libros.slice(start, end);
-    } else if (tipo === 'material') {
-      this.totalPaginasMaterial = Math.ceil(this.materialPsicologos.length / this.itemsPerPageMaterial);
-      this.paginaActualMaterial = Math.min(this.paginaActualMaterial, this.totalPaginasMaterial);
-      const start = (this.paginaActualMaterial - 1) * this.itemsPerPageMaterial;
-      const end = start + this.itemsPerPageMaterial;
-      this.materialPaginados = this.materialPsicologos.slice(start, end);
-    }
+  /**
+   * Selecciona una imagen aleatoria de una lista proporcionada.
+   */
+  obtenerImagenAleatoria(imagenes: string[]): string {
+    const indice = Math.floor(Math.random() * imagenes.length);
+    return imagenes[indice];
   }
 
-  cambiarPagina(tipo: string, direccion: number) {
-    if (tipo === 'libros') {
-      this.paginaActualLibros += direccion;
-      this.actualizarPaginacion('libros');
-    } else if (tipo === 'material') {
-      this.paginaActualMaterial += direccion;
-      this.actualizarPaginacion('material');
-    }
+  /**
+   * Filtra los libros según el texto ingresado.
+   */
+  filtrarLibros(): Archivo[] {
+    return this.libros.filter((libro) =>
+      libro.name.toLowerCase().includes(this.filtroLibros.toLowerCase())
+    );
   }
 
+  /**
+   * Filtra el material complementario según el texto ingresado.
+   */
+  filtrarMaterial(): Archivo[] {
+    return this.materialPsicologos.filter((material) =>
+      material.name.toLowerCase().includes(this.filtroMaterial.toLowerCase())
+    );
+  }
+
+  /**
+   * Descarga un archivo desde un enlace.
+   */
   descargarArchivo(link: string) {
     const a = document.createElement('a');
     a.href = link;

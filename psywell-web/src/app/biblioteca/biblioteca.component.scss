@@ -5,159 +5,120 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   max-width: 1200px;
   margin: 100px auto 80px;
-  border: 2px solid #FFD966;
   text-align: center;
 
-  h1 {
-    color: #fcfcfc;
-    font-size: 28px;
+  h2 {
+    color: #ffd966;
+    font-size: 20px;
     margin-bottom: 20px;
+    display: inline-block;
+    margin-right: 15px; /* Espaciado entre el título y la barra de búsqueda */
   }
 }
 
 .files-section {
-  margin-top: 20px;
-  padding: 20px;
-  background: #2E3A48;
-  border-radius: 15px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  margin-bottom: 40px;
 
-  h2 {
-    color: #FFD966;
-    text-align: left;
+  .controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+
+    label {
+      font-size: 16px;
+      color: #ffd966;
+    }
+
+    input {
+      padding: 8px 12px;
+      border: 1px solid #ffd966;
+      border-radius: 4px;
+      background-color: #34495e;
+      color: #ffffff;
+      outline: none;
+      transition: box-shadow 0.3s ease;
+      width: 100%;
+      max-width: 300px;
+
+      &:focus {
+        box-shadow: 0 0 6px rgba(255, 215, 0, 0.8);
+      }
+    }
   }
 
   .file-grid {
     display: grid;
-    grid-gap: 20px;
-    justify-content: center;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
 
-    &.books,
-    &.documents {
-      grid-template-columns: repeat(5, 1fr); /* 5 elementos por fila */
-      gap: 15px; /* Espaciado entre elementos */
-    }
-  }
-
-  .file-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 15px;
-    background: #34495e;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
-    text-align: center;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-
-    img {
-      width: 100px; /* Ajusta tamaño de la imagen */
-      height: 150px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin: 0 auto 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    h4 {
-      font-size: 14px;
-      color: #ffffff;
-      margin-bottom: 10px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .actions {
-      margin-top: auto;
+    .file-card {
+      background-color: #34495e;
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+      padding: 15px;
       display: flex;
-      justify-content: center;
-      gap: 10px;
+      flex-direction: column;
+      justify-content: space-between;
+      text-align: center;
+      transition: transform 0.3s;
 
-      a,
-      button {
-        padding: 8px 12px;
+      &:hover {
+        transform: scale(1.05);
+        box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.25);
+      }
+
+      img {
+        width: 100px;
+        height: 150px;
+        object-fit: cover;
+        margin: 0 auto 10px;
+        border-radius: 8px;
+      }
+
+      h4 {
+        color: #ffffff;
         font-size: 14px;
-        color: white;
-        background-color: #3498db;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        text-decoration: none;
-        transition: background-color 0.3s ease;
+        word-break: break-word;
+        margin-bottom: 10px;
+        min-height: 40px; /* Garantiza espacio uniforme para títulos */
       }
 
-      button {
-        background-color: #e74c3c;
+      .actions {
+        margin-top: auto; /* Asegura que los botones estén al final */
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+
+        a,
+        button {
+          padding: 8px 16px;
+          font-size: 14px;
+          background-color: #3498db;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: background-color 0.3s ease, transform 0.2s ease;
+          text-decoration: none;
+          display: inline-block;
+        }
+
+        button {
+          background-color: #e74c3c;
+        }
+
+        a:hover,
+        button:hover {
+          background-color: #2ecc71;
+          transform: scale(1.1); /* Añade un efecto de zoom */
+        }
+
+        button:hover {
+          background-color: #c0392b; /* Diferencia el color de botón */
+        }
       }
-
-      a:hover,
-      button:hover {
-        background-color: #2ecc71;
-      }
-    }
-  }
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  margin-top: 20px;
-
-  button {
-    padding: 8px 12px;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s ease;
-  }
-
-  button:disabled {
-    background-color: #95a5a6;
-    cursor: not-allowed;
-  }
-
-  span {
-    font-size: 14px;
-    color: #ffffff;
-  }
-
-  button:hover:not(:disabled) {
-    background-color: #2980b9;
-  }
-}
-
-.controls {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-
-  label {
-    font-size: 14px;
-    color: #FFD966;
-  }
-
-  select {
-    padding: 5px 10px;
-    font-size: 14px;
-    background-color: #34495e;
-    color: #ffffff;
-    border: 1px solid #FFD966;
-    border-radius: 4px;
-    outline: none;
-
-    &:focus {
-      border-color: #FFD966;
-      box-shadow: 0 0 6px rgba(255, 215, 0, 0.8);
     }
   }
 }
