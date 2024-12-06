@@ -20,7 +20,7 @@ import { NotasComponent } from '../notas/notas.component'; // Importa el compone
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  psicologoName: string = ''; 
+  psicologoName: string = '';
   especialidad: string = 'Psicóloga Especialista en Salud Mental';
   aniosExperiencia: number = 10;
   fondoPerfil: SafeStyle = '';
@@ -33,7 +33,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   recordatorios: any[] = [];
   emocionesPaciente: any[] = []; // Almacena las emociones del paciente seleccionado
 
-  
+
   stickyNotes: { title: string; content: string, position?: { x: number, y: number } }[] = [
     { title: 'Nota Rápida 1', content: 'Recordar preguntar sobre sueño a Manuel Fernández.', position: { x: 0, y: 0 } },
     { title: 'Nota Rápida 2', content: 'Preparar informe de progreso para Sofía Martínez.', position: { x: 0, y: 0 } },
@@ -60,38 +60,38 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     console.log('Iniciando ngOnInit...');
-  
+
     this.afAuth.authState.subscribe({
       next: (user) => {
         if (!user?.email) {
           console.error('No se detectó un usuario autenticado. Verifica el estado de autenticación.');
           return;
         }
-  
+
         console.log('Usuario autenticado:', user.email);
-  
+
         this.usersService.listarUsuarios().subscribe({
           next: (response: any) => {
             if (!response?.data || !Array.isArray(response.data)) {
               console.error('La respuesta de listarUsuarios no contiene datos válidos.');
               return;
             }
-  
+
             const psicologo = response.data.find((u: any) => u.email === user.email);
-  
+
             if (!psicologo) {
               console.warn('No se encontró ningún psicólogo con el correo:', user.email);
               return;
             }
-  
+
             console.log('Psicólogo encontrado:', psicologo);
-  
+
             // Asignar datos del psicólogo
             this.psicologoName = psicologo.nombre;
             this.genero = psicologo.genero || 'indefinido';
             this.userId = psicologo.idUsuario; // <-- Cambiado de "id" a "idUsuario"
             this.correoUsuario = psicologo.email;
-  
+
             // Cargar imágenes y citas
             this.cargarImagenes(psicologo.email);
             this.cargarCitas(psicologo.idUsuario); // <-- Cambiado de "id" a "idUsuario"
@@ -106,10 +106,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
     });
   }
-  
+
   seleccionarCita(cita: any): void {
     console.log('Cita seleccionada:', cita);
-  
+
     // Llama al método para obtener registros de los últimos 7 días
     this.citasService.obtenerRegistrosPorPaciente(cita.idPaciente).subscribe({
       next: (registros: any[]) => {
@@ -118,7 +118,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           ...registro,
           emoji: this.estadoEmocionalEmojis[registro.estadoEmocional] || "🤔", // Mapear estado emocional a emoji
         }));
-  
+
         // Reinicia el carrusel después de cargar emociones
         this.currentSlide = 0;
         this.startCarousel();
@@ -129,13 +129,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
     });
   }
-  
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
 
   estadoEmocionalEmojis: { [key: string]: string } = {
     "Muy enojado": "😡",
@@ -144,36 +144,36 @@ export class DashboardComponent implements OnInit, OnDestroy {
     "Feliz": "😊",
     "Muy feliz": "😁",
   };
-  
-  
+
+
 
   cargarCitas(idPsicologo: number): void {
     console.log('Cargando citas para el psicólogo con ID:', idPsicologo);
-  
+
     this.citasService.listarCitas().subscribe({
       next: async (response: any) => {
         console.log('Respuesta del backend al listarCitas:', response);
-  
+
         if (!response?.data || !Array.isArray(response.data)) {
           console.warn('La respuesta no contiene datos válidos.');
           this.recordatorios = [];
           return;
         }
-  
+
         const citasPsicologo = response.data.filter((cita: any) => cita.idPsicologo === idPsicologo);
-  
+
         if (citasPsicologo.length === 0) {
           console.warn('No se encontraron citas asociadas al psicólogo con el ID:', idPsicologo);
           this.recordatorios = [];
           return;
         }
-  
+
         const pacientes = await this.obtenerTodosLosUsuarios();
-  
+
         const hoy = new Date(); // Fecha actual
         const fechaLimite = new Date();
         fechaLimite.setDate(hoy.getDate() + 7); // Rango de 7 días
-  
+
         this.recordatorios = citasPsicologo
           .filter((cita: any) => {
             const fechaCita = this.parseFecha(cita.fecha);
@@ -191,7 +191,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
               horaInicio: this.formatearHora(cita.horaInicio),
             };
           });
-  
+
         console.log('Citas cargadas y filtradas para los próximos 7 días:', this.recordatorios);
       },
       error: (error) => {
@@ -200,26 +200,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
     });
   }
-  
-  
-  
+
+
+
   private parseFecha(fecha: string): Date | null {
     if (!fecha) return null;
-  
+
     // Verificar si el formato es yyyy-MM-dd
     const regex = /^\d{4}-\d{2}-\d{2}$/; // Formato ISO básico
     if (regex.test(fecha)) {
       const [year, month, day] = fecha.split('-').map(Number);
       return new Date(year, month - 1, day); // Restamos 1 al mes porque Date usa índices 0-11 para los meses
     }
-  
+
     console.warn('Formato de fecha no reconocido:', fecha);
     return null;
   }
-  
-  
-  
-  
+
+
+
+
 
 
 
@@ -349,40 +349,40 @@ cargarImagenes(email: string): void {
       console.error(`No se encontró el input para ${tipo}`);
     }
   }
-  
-  
+
+
 
 
 
 
   onUpload(event: Event, tipo: 'perfil' | 'portada'): void {
     console.log(`Método onUpload disparado para tipo: ${tipo}`);
-  
+
     const input = event.target as HTMLInputElement;
-  
+
     if (!input) {
       console.error('El evento no contiene un input válido.');
       return;
     }
-  
+
     if (input.files && input.files[0]) {
       const file = input.files[0];
       console.log(`Archivo detectado: ${file.name}, tamaño: ${file.size} bytes`);
-  
+
       if (!this.correoUsuario || this.correoUsuario.trim() === '') {
         console.error('El correo del usuario no está definido. Subida cancelada.');
         return;
       }
-  
-      const filePath = tipo === 'perfil' 
-        ? `fotoPerfil/${this.correoUsuario}` 
+
+      const filePath = tipo === 'perfil'
+        ? `fotoPerfil/${this.correoUsuario}`
         : `fotoPortada/${this.correoUsuario}`;
       const fileRef = this.storage.ref(filePath);
-  
+
       console.log(`Iniciando subida para ${tipo}. Ruta definida: ${filePath}`);
-  
+
       const uploadTask = this.storage.upload(filePath, file);
-  
+
       uploadTask.snapshotChanges().pipe(
         finalize(() => {
           console.log('Subida completada. Intentando obtener la URL...');

@@ -2,7 +2,7 @@
   <div class="navbar-container">
     <div class="navbar-brand">
       <a class="navbar-logo" routerLink="/dashboard">
-        <img src="assets/logo.png" alt="Logo">
+        <img src="assets/logo.png" alt="Logo" />
       </a>
       <span class="navbar-title">PsyWell</span>
     </div>
@@ -26,10 +26,7 @@
     </ul>
 
     <div class="navbar-profile">
-      <!-- Botón de Cerrar Sesión con diseño mejorado -->
-      <button class="btn-logout" (click)="logout()">
-        🔒 Cerrar sesión
-      </button>
+      <button class="btn-logout" (click)="logout()">🔒 Cerrar sesión</button>
     </div>
 
     <button class="hamburger" (click)="toggleMenu()">
@@ -37,5 +34,23 @@
       <span></span>
       <span></span>
     </button>
+  </div>
+
+  <!-- Notas con flechas -->
+  <div class="notas-postit-wrapper">
+    <div
+      *ngFor="let nota of notasImportantes; let i = index"
+      class="nota-desplegable"
+      [class.expand]="nota.isOpen"
+      (click)="toggleNota(i)"
+      [style.background-color]="getPostitColor(i)"
+    >
+      <div class="nota-header">
+        {{ nota.titulo }}
+      </div>
+      <div class="nota-contenido" *ngIf="nota.isOpen">
+        <p>{{ nota.contenido }}</p>
+      </div>
+    </div>
   </div>
 </nav>

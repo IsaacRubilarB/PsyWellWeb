@@ -4,8 +4,9 @@ import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
+import { getAuth } from 'firebase/auth';
+import { NotasService } from '../services/NotasService'; // Servicio para manejar notas importantes
 import { UsersService } from '../services/userService'; // Servicio para obtener datos del usuario
-import { getAuth } from 'firebase/auth'; // Importar getAuth para obtener el usuario autenticado
 
 @Component({
   selector: 'app-notas',
@@ -26,7 +27,8 @@ export class NotasComponent implements OnInit {
 
   constructor(
     private firestore: AngularFirestore,
-    private usersService: UsersService // Servicio para obtener usuarios
+    private usersService: UsersService,
+    private notasService: NotasService // Servicio para notas importantes
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -34,7 +36,8 @@ export class NotasComponent implements OnInit {
       // Obtiene el ID del psicólogo autenticado
       await this.obtenerPsicologoId();
       if (this.psicologoId) {
-        this.obtenerNotas(); // Carga las notas asociadas al ID del psicólogo
+        this.obtenerNotas(); // Carga todas las notas
+        this.notasService.obtenerNotasImportantes(this.psicologoId); // Actualiza las notas importantes
       } else {
         console.error('No se pudo obtener el ID del psicólogo logueado.');
       }
@@ -45,15 +48,14 @@ export class NotasComponent implements OnInit {
 
   async obtenerPsicologoId(): Promise<void> {
     try {
-      const auth = getAuth(); // Obtenemos la instancia de Firebase Auth
-      const user = auth.currentUser; // Usuario autenticado actualmente
+      const auth = getAuth();
+      const user = auth.currentUser;
 
       if (user?.email) {
-        // Busca el psicólogo correspondiente en la base de datos por correo
         const response = await this.usersService.verificarUsuario(user.email).toPromise();
 
         if (response?.data?.idUsuario) {
-          this.psicologoId = response.data.idUsuario; // Asigna el ID del psicólogo autenticado
+          this.psicologoId = response.data.idUsuario;
           console.log('Psicólogo autenticado encontrado:', this.psicologoId);
         } else {
           console.warn('No se encontró un psicólogo con el correo:', user.email);
@@ -72,7 +74,6 @@ export class NotasComponent implements OnInit {
       return;
     }
 
-    // Consulta Firestore para obtener las notas asociadas al psicólogo logueado
     this.firestore
       .collection('notas', (ref) => ref.where('psicologoId', '==', this.psicologoId))
       .valueChanges({ idField: 'id' })
@@ -106,13 +107,15 @@ export class NotasComponent implements OnInit {
       return;
     }
 
+    const nuevaNota = {
+      ...this.nuevaNota,
+      fechaCreacion: new Date(),
+      psicologoId: this.psicologoId,
+    };
+
     this.firestore
       .collection('notas')
-      .add({
-        ...this.nuevaNota,
-        fechaCreacion: new Date(),
-        psicologoId: this.psicologoId,
-      })
+      .add(nuevaNota)
       .then(() => {
         Swal.fire({
           icon: 'success',
@@ -125,7 +128,8 @@ export class NotasComponent implements OnInit {
           esImportante: false,
           fechaCreacion: new Date(),
         };
-        this.obtenerNotas(); // Actualiza la lista de notas
+        this.obtenerNotas(); // Actualiza todas las notas
+        this.notasService.obtenerNotasImportantes(this.psicologoId!); // Actualiza las notas importantes
       })
       .catch((error) => {
         Swal.fire({
@@ -159,7 +163,8 @@ export class NotasComponent implements OnInit {
               text: 'La nota se ha eliminado correctamente.',
               confirmButtonColor: '#3085d6',
             });
-            this.obtenerNotas(); // Actualiza la lista de notas
+            this.obtenerNotas(); // Actualiza todas las notas
+            this.notasService.obtenerNotasImportantes(this.psicologoId!); // Actualiza las notas importantes
           })
           .catch((error) => {
             Swal.fire({
