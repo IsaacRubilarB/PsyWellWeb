@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -23,6 +23,7 @@ export class ReportsComponent implements OnInit {
   @Input() patientDetails: any = {}; 
 
   timeFrame: 'weekly' | 'monthly' | 'quarterly' | 'yearly' = 'weekly';
+  @Input() psychologistId: string | number | null = null; // Añadido para recibir psychologistId
 
   psychologistName = 'Desconocido'; 
   emociones: any[] = [];
@@ -43,49 +44,93 @@ export class ReportsComponent implements OnInit {
 
 
   
+
   ngOnInit(): void {
-    console.log('ID del paciente recibido en ReportsComponent:', this.patientId);
-    
-    this.fetchLoggedPsychologist(); // Asegúrate de que se llama aquí
-    
-    if (this.patientId) {
-      this.cargarRegistrosEmocionales();
-    } else {
-      console.warn('El ID del paciente no fue recibido en ReportsComponent.');
+    console.log('[ReportsComponent] ngOnInit ejecutado');
+    this.verificarYProcesarDatos();
+  }
+  
+  ngOnChanges(changes: SimpleChanges): void {
+    console.log('[ReportsComponent] ngOnChanges detectado:', changes);
+    if (changes['patientId'] || changes['psychologistId']) {
+      this.verificarYProcesarDatos();
     }
   }
   
-cargarRegistrosEmocionales(): void {
-  if (!this.patientId) {
-    console.warn('No se proporcionó un ID de paciente.');
-    return;
+  verificarYProcesarDatos(): void {
+    console.log('[ReportsComponent] Verificando datos de entrada...');
+    if (this.patientId && this.psychologistId) {
+      console.log('[ReportsComponent] IDs válidos recibidos:', {
+        patientId: this.patientId,
+        psychologistId: this.psychologistId,
+      });
+      this.cargarRegistrosEmocionales();
+      this.fetchPatientDetails(this.patientId);
+      this.fetchPsychologistName(this.psychologistId); // Llamada para obtener el nombre del psicólogo
+    } else {
+      console.warn('[ReportsComponent] Faltan IDs de entrada:', {
+        patientId: this.patientId,
+        psychologistId: this.psychologistId,
+      });
+    }
   }
+  fetchPsychologistName(psychologistId: string | number): void {
+    console.log('[ReportsComponent] Iniciando fetchPsychologistName con ID:', psychologistId);
+    this.usersService.obtenerUsuarioPorId(psychologistId.toString()).subscribe(
+      (response: any) => {
+        console.log('[ReportsComponent] Detalles del psicólogo recibidos:', response);
+        if (response?.data?.nombre) {
+          this.psychologistName = response.data.nombre;
+          console.log('[ReportsComponent] Nombre del psicólogo asignado:', this.psychologistName);
+        } else {
+          console.warn('[ReportsComponent] No se encontró un psicólogo con el ID:', psychologistId);
+        }
+      },
+      (error) => {
+        console.error('[ReportsComponent] Error al obtener el nombre del psicólogo:', error);
+      }
+    );
+  }
+  
+  logPsychologistDetails(): void {
+    console.log('Detalles del psicólogo en ReportsComponent:', {
+      psychologistId: this.psychologistId,
+      psychologistName: this.psychologistName,
+    });
+  }
+  
 
-  const idAsString = this.patientId.toString(); // Convertir el ID a string
-
-  this.citasService.obtenerRegistrosPorPaciente(+idAsString).subscribe({
-    next: (response: any[]) => {
-      if (response && response.length > 0) {
-        this.emocionesPaciente = response
-          .filter((registro) => registro.idUsuario.toString() === idAsString)
-          .map((registro) => ({
+  
+  cargarRegistrosEmocionales(): void {
+    console.log('[ReportsComponent] Cargando registros emocionales...');
+    if (!this.patientId) {
+      console.warn('[ReportsComponent] No se proporcionó un ID de paciente.');
+      return;
+    }
+  
+    const idAsString = this.patientId.toString();
+    console.log('[ReportsComponent] ID del paciente utilizado:', idAsString);
+  
+    this.citasService.obtenerRegistrosPorPaciente(+idAsString).subscribe({
+      next: (response: any[]) => {
+        console.log('[ReportsComponent] Registros emocionales recibidos:', response);
+        if (response && response.length > 0) {
+          this.emocionesPaciente = response.map((registro) => ({
             emoji: this.mapEmotionToIcon(registro.estadoEmocional),
             estadoEmocional: registro.estadoEmocional,
             notas: registro.comentarios || 'Sin notas',
             fecha: new Date(registro.fecha).toLocaleDateString('es-ES'),
           }));
-        console.log('Registros emocionales cargados:', this.emocionesPaciente);
-      } else {
-        console.warn('No se encontraron registros emocionales.');
-        this.emocionesPaciente = [];
-      }
-    },
-    error: (error: any) => {
-      console.error('Error al cargar registros emocionales:', error);
-      this.emocionesPaciente = [];
-    },
-  });
-}
+        } else {
+          console.warn('[ReportsComponent] No se encontraron registros emocionales.');
+        }
+      },
+      error: (error: any) => {
+        console.error('[ReportsComponent] Error al cargar registros emocionales:', error);
+      },
+    });
+  }
+  
 
   
 
@@ -121,24 +166,30 @@ fetchLoggedPsychologist(): void {
   }
   
   fetchPatientDetails(patientId: string | number): void {
+    console.log('[ReportsComponent] Iniciando fetchPatientDetails con ID:', patientId);
     const idAsString = patientId.toString();
   
-    this.usersService.obtenerUsuarioPorId(idAsString).subscribe((response: any) => {
-      if (response?.data) {
-        this.patientDetails = {
-          name: response.data.nombre || 'Nombre desconocido',
-          age: response.data.fechaNacimiento
-            ? this.calculateAge(response.data.fechaNacimiento)
-            : 'Edad desconocida',
-          diagnosis:
-            response.data.diagnostico || 'Aún no se da la primera cita, en la cual se hace un primer diagnóstico por parte del profesional',
-        };
-        console.log('Detalles del paciente cargados:', this.patientDetails);
-      } else {
-        console.warn('No se encontraron datos para el paciente con ID:', patientId);
+    this.usersService.obtenerUsuarioPorId(idAsString).subscribe(
+      (response: any) => {
+        console.log('[ReportsComponent] Detalles del paciente recibidos:', response);
+        if (response?.data) {
+          this.patientDetails = {
+            name: response.data.nombre || 'Nombre desconocido',
+            age: response.data.fechaNacimiento
+              ? this.calculateAge(response.data.fechaNacimiento)
+              : 'Edad desconocida',
+            diagnosis: response.data.diagnostico || 'Sin diagnóstico',
+          };
+        } else {
+          console.warn('[ReportsComponent] No se encontraron detalles para el paciente.');
+        }
+      },
+      (error) => {
+        console.error('[ReportsComponent] Error al obtener detalles del paciente:', error);
       }
-    });
+    );
   }
+  
   
 
   fetchEmotions(): void {
