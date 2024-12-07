@@ -9,7 +9,9 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import * as XLSX from 'xlsx'; 
 import { CitasService } from '../services/citasService';
-
+import { PatientDataService } from 'app/services/patient-data.service';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 
 @Component({
   selector: 'app-reports',
@@ -39,7 +41,10 @@ export class ReportsComponent implements OnInit {
     private afAuth: AngularFireAuth,
     private usersService: UsersService,
     private reportsService: ReportsService,
-    private citasService: CitasService
+    private citasService: CitasService,
+    private patientDataService: PatientDataService,
+    private firestore: AngularFirestore // Inyecta AngularFirestore
+
   ) {}
 
 
@@ -58,40 +63,48 @@ export class ReportsComponent implements OnInit {
   }
   
   verificarYProcesarDatos(): void {
-    console.log('[ReportsComponent] Verificando datos de entrada...');
     if (this.patientId && this.psychologistId) {
-      console.log('[ReportsComponent] IDs válidos recibidos:', {
-        patientId: this.patientId,
-        psychologistId: this.psychologistId,
-      });
-      this.cargarRegistrosEmocionales();
       this.fetchPatientDetails(this.patientId);
       this.fetchPsychologistName(this.psychologistId);
-      this.fetchPatientFicha(this.patientId); // Llamar al método para obtener la ficha
-    } else {
-      console.warn('[ReportsComponent] Faltan IDs de entrada:', {
-        patientId: this.patientId,
-        psychologistId: this.psychologistId,
-      });
+      this.cargarRegistrosEmocionales();
+      setTimeout(() => {
+        if (this.patientDetails.email) {
+          this.fetchPhysiologicalData(this.patientDetails.email);
+        }
+      }, 1000);
     }
-}
+  }
+  
+
+  fetchPhysiologicalData(email: string): void {
+    if (!email) {
+      console.warn('No se puede obtener datos fisiológicos sin un correo.');
+      return;
+    }
+  
+    this.patientDataService.getPhysiologicalData(email).then((data: any) => {
+      if (data) {
+        console.log('Datos fisiológicos obtenidos:', data);
+        this.registrosFisiologicos = [
+          { parametro: 'Frecuencia Cardíaca', valor: `${data.bpm || 'N/A'} BPM` },
+          { parametro: 'Saturación de Oxígeno', valor: `${data.oxygen || 'N/A'}%` },
+          { parametro: 'Pasos', valor: `${data.steps || 'N/A'}` },
+          { parametro: 'Horas de Sueño', valor: `${data.sleep || 'N/A'} hrs` },
+        ];
+      } else {
+        console.warn('No se encontraron datos fisiológicos.');
+      }
+    }).catch((error: unknown) => { // Cambia 'unknown' si prefieres otro tipo
+      console.error('Error al obtener datos fisiológicos:', error);
+    });
+  }
+  
+  
 
   fetchPsychologistName(psychologistId: string | number): void {
-    console.log('[ReportsComponent] Iniciando fetchPsychologistName con ID:', psychologistId);
-    this.usersService.obtenerUsuarioPorId(psychologistId.toString()).subscribe(
-      (response: any) => {
-        console.log('[ReportsComponent] Detalles del psicólogo recibidos:', response);
-        if (response?.data?.nombre) {
-          this.psychologistName = response.data.nombre;
-          console.log('[ReportsComponent] Nombre del psicólogo asignado:', this.psychologistName);
-        } else {
-          console.warn('[ReportsComponent] No se encontró un psicólogo con el ID:', psychologistId);
-        }
-      },
-      (error) => {
-        console.error('[ReportsComponent] Error al obtener el nombre del psicólogo:', error);
-      }
-    );
+    this.usersService.obtenerUsuarioPorId(psychologistId.toString()).subscribe((response: any) => {
+      this.psychologistName = response?.data?.nombre || 'Desconocido';
+    });
   }
 
   logPsychologistDetails(): void {
@@ -104,31 +117,13 @@ export class ReportsComponent implements OnInit {
 
   
   cargarRegistrosEmocionales(): void {
-    console.log('[ReportsComponent] Cargando registros emocionales...');
-    if (!this.patientId) {
-      console.warn('[ReportsComponent] No se proporcionó un ID de paciente.');
-      return;
-    }
-  
-    const idAsString = this.patientId.toString();
-    console.log('[ReportsComponent] ID del paciente utilizado:', idAsString);
-  
-    this.citasService.obtenerRegistrosPorPaciente(+idAsString).subscribe({
+    this.citasService.obtenerRegistrosPorPaciente(+this.patientId!).subscribe({
       next: (response: any[]) => {
-        console.log('[ReportsComponent] Registros emocionales recibidos:', response);
-        if (response && response.length > 0) {
-          this.emocionesPaciente = response.map((registro) => ({
-            emoji: this.mapEmotionToIcon(registro.estadoEmocional),
-            estadoEmocional: registro.estadoEmocional,
-            notas: registro.comentarios || 'Sin notas',
-            fecha: new Date(registro.fecha).toLocaleDateString('es-ES'),
-          }));
-        } else {
-          console.warn('[ReportsComponent] No se encontraron registros emocionales.');
-        }
-      },
-      error: (error: any) => {
-        console.error('[ReportsComponent] Error al cargar registros emocionales:', error);
+        this.emocionesPaciente = response.map((registro) => ({
+          estadoEmocional: registro.estadoEmocional,
+          notas: registro.comentarios || 'Sin notas',
+          fecha: new Date(registro.fecha).toLocaleDateString('es-ES'),
+        }));
       },
     });
   }
@@ -188,30 +183,18 @@ fetchPatientFicha(patientId: string | number): void {
   }
   
   fetchPatientDetails(patientId: string | number): void {
-  console.log('[ReportsComponent] Iniciando fetchPatientDetails con ID:', patientId);
-  const idAsString = patientId.toString();
-
-  this.usersService.obtenerUsuarioPorId(idAsString).subscribe(
-    (response: any) => {
-      console.log('[ReportsComponent] Detalles del paciente recibidos:', response);
-      if (response?.data) {
-        this.patientDetails = {
-          name: response.data.nombre || 'Nombre desconocido',
-          age: response.data.fechaNacimiento
-            ? this.calculateAge(response.data.fechaNacimiento)
-            : 'Edad desconocida',
-          diagnosis: response.data.diagnostico || 'Sin diagnóstico', // Incluimos el diagnóstico
-        };
-        console.log('[ReportsComponent] Diagnóstico cargado:', this.patientDetails.diagnosis);
-      } else {
-        console.warn('[ReportsComponent] No se encontraron detalles para el paciente.');
-      }
-    },
-    (error) => {
-      console.error('[ReportsComponent] Error al obtener detalles del paciente:', error);
-    }
-  );
-}
+    this.usersService.obtenerUsuarioPorId(patientId.toString()).subscribe((response: any) => {
+      this.patientDetails = {
+        name: response?.data?.nombre || 'Desconocido',
+        age: response?.data?.fechaNacimiento
+          ? this.calculateAge(response.data.fechaNacimiento)
+          : 'Desconocida',
+        email: response?.data?.email || '',
+        diagnosis: response?.data?.diagnostico || 'Sin diagnóstico',
+      };
+    });
+  }
+  
 
   
 
@@ -243,17 +226,16 @@ fetchPatientFicha(patientId: string | number): void {
     return icons[emotion] || '🤔';
 }
 
-  calculateAge(fechaNacimiento: string): number | string {
-    const birthDate = new Date(fechaNacimiento);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age || 'Edad desconocida';
+calculateAge(fechaNacimiento: string): number | string {
+  const birthDate = new Date(fechaNacimiento);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
   }
-
+  return age;
+}
 
  
   emocionesPaciente: any[] = []; // Almacena los registros emocionales del paciente
@@ -261,169 +243,153 @@ fetchPatientFicha(patientId: string | number): void {
   isLoading: boolean = false;
 
  
+  exportPDF(): void {
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const currentDate = new Date().toLocaleDateString('es-ES');
 
-    exportPDF(): void {
-      if (!this.patientDetails.name) {
-        console.error('No se puede generar el reporte. Faltan datos del paciente.');
-        return;
-      }
-    
-      const doc = new jsPDF('p', 'mm', 'a4');
-      const currentDate = new Date().toLocaleDateString('es-ES');
-    
-      // Fondo claro
-      doc.setFillColor(240, 248, 255);
-      doc.rect(0, 0, 210, 297, 'F');
-    
-      // Logo
-      const logoPath = 'assets/logo.png';
-      doc.addImage(logoPath, 'PNG', 10, 10, 30, 30);
-    
-      // Título principal
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(22);
-      doc.setTextColor(33, 37, 41);
-      doc.text('Reporte del Paciente - PsyWell', 50, 25);
-    
-      // Línea decorativa
-      doc.setDrawColor(33, 37, 41);
-      doc.setLineWidth(0.5);
-      doc.line(10, 40, 200, 40);
-    
-      // Detalles del psicólogo
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Detalles del Psicólogo:', 10, 55);
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Nombre: ${this.psychologistName}`, 10, 65);
-      doc.text(`Fecha del Reporte: ${currentDate}`, 10, 75);
-    
-      // Línea de separación
-      doc.setDrawColor(33, 37, 41);
-      doc.line(10, 80, 200, 80);
-    
-      // Detalles del paciente
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Detalles del Paciente:', 10, 90);
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Nombre: ${this.patientDetails.name}`, 10, 100);
-      doc.text(`Edad: ${this.patientDetails.age} años`, 10, 110);
-    
-      // Diagnóstico
-      doc.setFont('helvetica', 'bold');
-      doc.text(`Diagnóstico:`, 10, 120);
-      const diagnosisText =
-        this.patientDetails.diagnosis || 
-        'Sin diagnóstico. Aún no se ha llevado a cabo la primera sesión con el profesional a cargo para determinar un diagnóstico inicial.';
-    
-      const diagnosisLines = doc.splitTextToSize(diagnosisText, 190);
-      doc.setFont('helvetica', 'normal');
-      doc.text(diagnosisLines, 10, 130);
-    
-      // Línea de separación
-      doc.setDrawColor(33, 37, 41);
-      doc.line(10, 140, 200, 140);
-    
-      // Rango de tiempo
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`Rango de Tiempo:`, 10, 150);
-      doc.setFont('helvetica', 'normal');
-      doc.text(this.translateTimeFrame(this.timeFrame), 10, 160);
-    
-      // Línea de separación
-      doc.setDrawColor(33, 37, 41);
-      doc.line(10, 165, 200, 165);
-    
-      // Registros emocionales
-      let currentY = 170;
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Registros Emocionales:', 10, currentY);
-    
-      if (this.emocionesPaciente && this.emocionesPaciente.length > 0) {
-        autoTable(doc, {
-          startY: currentY + 5,
-          head: [['Estado Emocional', 'Notas', 'Fecha']],
-          body: this.emocionesPaciente.map((emotion) => [
-            {
-              content: emotion.estadoEmocional,
-              styles: {
-                halign: 'center',
-                fillColor: this.getEmotionColor(emotion.estadoEmocional),
-                textColor: [0, 0, 0], // Texto negro para contraste
-                fontStyle: 'bold',
-              },
-            },
-            emotion.notas,
-            emotion.fecha,
-          ]),
-          theme: 'grid',
-          styles: {
-            fontSize: 10,
-            cellPadding: 5,
-          },
-          headStyles: {
-            fillColor: [76, 175, 80], // Verde estándar para encabezado
-            textColor: 255, // Blanco
-            fontStyle: 'bold',
-          },
-        });
-    
-        // Actualizar la posición Y al final de la tabla
-        currentY = (doc as any).lastAutoTable.finalY + 10;
-      } else {
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'italic');
-        doc.setTextColor(54, 69, 79);
-        doc.text('No se registraron emociones para este paciente.', 10, currentY + 15);
-        currentY += 20;
-      }
-    
-      // Nueva sección: Registros fisiológicos
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Registros Fisiológicos:', 10, currentY);
-    
+    // Márgenes
+    const marginX = 15; // Márgenes laterales
+    const marginY = 15; // Márgenes superior e inferior
+
+    // Fondo claro
+    doc.setFillColor(240, 248, 255);
+    doc.rect(0, 0, 210, 297, 'F');
+
+    // Logo
+    const logoPath = 'assets/logo.png'; // Ruta del logo de PsyWell
+    doc.addImage(logoPath, 'PNG', marginX, marginY, 30, 30);
+
+    // Título principal
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(33, 37, 41);
+    doc.text('Reporte del Paciente - PsyWell', marginX + 40, marginY + 15);
+
+    // Línea decorativa
+    doc.setDrawColor(33, 37, 41);
+    doc.setLineWidth(0.5);
+    doc.line(marginX, marginY + 25, 210 - marginX, marginY + 25);
+
+    // Detalles del psicólogo
+    let currentY = marginY + 35;
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Detalles del Psicólogo:', marginX, currentY);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Nombre: ${this.psychologistName}`, marginX, currentY + 10);
+    doc.text(`Fecha del Reporte: ${currentDate}`, marginX, currentY + 20);
+
+    // Línea separadora
+    currentY += 25;
+    doc.setDrawColor(33, 37, 41);
+    doc.line(marginX, currentY, 210 - marginX, currentY);
+
+    // Detalles del paciente
+    currentY += 10;
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Detalles del Paciente:', marginX, currentY);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Nombre: ${this.patientDetails.name}`, marginX, currentY + 10);
+    doc.text(`Edad: ${this.patientDetails.age} años`, marginX, currentY + 20);
+    doc.text(`Diagnóstico: ${this.patientDetails.diagnosis}`, marginX, currentY + 30);
+
+    // Línea separadora
+    currentY += 35;
+    doc.setDrawColor(33, 37, 41);
+    doc.line(marginX, currentY, 210 - marginX, currentY);
+
+    // Registros emocionales
+    currentY += 10;
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Registros Emocionales:', marginX, currentY);
+
+    if (this.emocionesPaciente.length > 0) {
       autoTable(doc, {
-        startY: currentY + 5,
+        startY: currentY + 10,
+        head: [['Estado Emocional', 'Notas', 'Fecha']],
+        body: this.emocionesPaciente.map((emotion) => [
+          emotion.estadoEmocional,
+          emotion.notas,
+          emotion.fecha,
+        ]),
+        theme: 'striped',
+        headStyles: {
+          fillColor: [76, 175, 80],
+          textColor: 255,
+          fontStyle: 'bold',
+        },
+        styles: {
+          fontSize: 10,
+          cellPadding: 5,
+        },
+        margin: { left: marginX, right: marginX }, // Añadimos márgenes laterales a las tablas
+      });
+      currentY = (doc as any).lastAutoTable.finalY + 10;
+    } else {
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'italic');
+      doc.text('No se registraron emociones.', marginX, currentY + 10);
+      currentY += 20;
+    }
+
+    // Línea separadora
+    doc.setDrawColor(33, 37, 41);
+    doc.line(marginX, currentY, 210 - marginX, currentY);
+    currentY += 5;
+
+    // Registros fisiológicos
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Registros Fisiológicos:', marginX, currentY);
+
+    if (this.registrosFisiologicos.length > 0) {
+      autoTable(doc, {
+        startY: currentY + 10,
         head: [['Parámetro', 'Valor']],
         body: this.registrosFisiologicos.map((registro) => [
           registro.parametro,
           registro.valor,
         ]),
-        theme: 'grid',
+        theme: 'striped',
+        headStyles: {
+          fillColor: [76, 175, 80],
+          textColor: 255,
+          fontStyle: 'bold',
+        },
         styles: {
           fontSize: 10,
           cellPadding: 5,
         },
-        headStyles: {
-          fillColor: [76, 175, 80], // Verde estándar para encabezado
-          textColor: 255, // Blanco
-          fontStyle: 'bold',
-        },
+        margin: { left: marginX, right: marginX }, // Márgenes laterales en la tabla
       });
-    
-      // Footer
-      const footerY = doc.internal.pageSize.height - 15;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(33, 37, 41);
-      doc.text(
-        'PsyWell - Monitoreo continuo de la salud mental | Contacto: psywellsolutions@gmail.com',
-        10,
-        footerY
-      );
-    
-      // Guardar PDF
-      doc.save(`Reporte_Paciente_${this.patientDetails.name}.pdf`);
+    } else {
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'italic');
+      doc.text('No se registraron datos fisiológicos.', marginX, currentY + 10);
     }
-  
 
-  
+    // Footer decorativo
+    const footerY = doc.internal.pageSize.height - marginY + 5;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(33, 37, 41);
+    doc.text(
+      'PsyWell - Monitoreo continuo de la salud mental | Contacto: psywellsolutions@gmail.com',
+      marginX,
+      footerY - 10
+    );
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.text('Todos los derechos reservados © PsyWell 2024', marginX, footerY);
+
+    // Guardar PDF
+    doc.save(`Reporte_Paciente_${this.patientDetails.name}.pdf`);
+  }
+
   
 
   getEmotionColor(emotion: string): [number, number, number] {
@@ -536,16 +502,19 @@ fetchPatientFicha(patientId: string | number): void {
 
 
 
-  getPhysiologicalStatus(param: string, value: string): string {
-    const numericValue = parseFloat(value.replace(/[^\d.-]/g, '')); // Extraer números
-    if (param === 'Frecuencia Cardíaca') {
-      if (numericValue < 60) return 'Bajo';
-      if (numericValue <= 100) return 'Normal';
-      return 'Alto';
-    }
-    // Agregar más lógica para otros parámetros
-    return 'Normal';
-  }
+getPhysiologicalData(email: string): Promise<any> {
+  return this.firestore
+    .collection('datos_fisiologicos')
+    .doc(email)
+    .ref.get()
+    .then((doc) => (doc.exists ? doc.data() : null))
+    .catch((error) => {
+      console.error('Error al obtener datos fisiológicos:', error);
+      throw error;
+    });
+}
+
+
   
 
 

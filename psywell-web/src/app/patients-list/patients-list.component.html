@@ -13,16 +13,7 @@
       </div>
     </div>
 
-    <!-- Panel de filtros avanzados -->
-    <div class="filters-panel">
 
-        Diagnóstico:
-        <select (change)="filterByDiagnosis($event)">
-          <option value="todos">Todos</option>
-          <option value="Depresión">Depresión</option>
-          <option value="Ansiedad">Ansiedad</option>
-          <option value="Depresión Severa">Depresión Severa</option>
-        </select>    </div>
 
     <!-- Lista de pacientes -->
     <div class="patients-list">
@@ -34,7 +25,6 @@
           <h3 class="patient-name">{{ patient.name }}</h3>
           <div class="patient-details">
             <p><i class="fas fa-user"></i> {{ patient.age }} Años</p>
-            <p><i class="fas fa-notes-medical"></i> {{ patient.diagnosis }}</p>
             <p><i class="fas fa-calendar-alt"></i> Próxima Cita: {{ patient.nextAppointment }}</p>
              
            
