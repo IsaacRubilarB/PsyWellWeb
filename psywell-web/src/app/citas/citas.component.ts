@@ -5,7 +5,7 @@ import { NavbarComponent } from 'app/navbar/navbar.component';
 import { CommonModule } from '@angular/common';
 import { UsersService } from '../services/userService';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import Swal from 'sweetalert2'; // Importación de SweetAlert
+import Swal from 'sweetalert2';
 import { GoogleMapsComponent } from 'app/google-maps/google-maps.component';
 
 export interface Cita {
@@ -34,7 +34,7 @@ export class CitasComponent implements OnInit {
   filteredCitas: Cita[] = [];
   pacientes: any[] = [];
   mostrarModal = false;
-  mostrarMapaModal: boolean = false;  // Esta propiedad controla la visibilidad del modal
+  mostrarMapaModal: boolean = false;
   citaForm: FormGroup;
   errorMessage: string | null = null;
   userId: number | null = null;
@@ -57,7 +57,7 @@ export class CitasComponent implements OnInit {
       estado: ['Pendiente', Validators.required],
     });
   }
-  
+
   ngOnInit() {
     this.obtenerUsuarios();
     this.afAuth.authState.subscribe((user) => {
@@ -66,7 +66,7 @@ export class CitasComponent implements OnInit {
       }
     });
   }
-  
+
   cargarPsicologo(email: string) {
     this.usersService.listarUsuarios().subscribe(
       (response: any) => {
@@ -242,24 +242,18 @@ export class CitasComponent implements OnInit {
     );
   }
 
-  // Methods for Google Maps
-
-
-
   abrirMapaModal() {
-    this.mostrarMapaModal = true;  // Setea a true para mostrar el modal
+    this.mostrarMapaModal = true;
   }
-  
 
-  // Method to close the Google Maps modal
   cerrarMapaModal() {
-    this.mostrarMapaModal = false;  // Set to false to hide the modal
+    this.mostrarMapaModal = false;
   }
 
   ubicacionSeleccionada(direccion: string) {
+    console.log('Ubicación seleccionada desde el mapa:', direccion);
     this.citaForm.patchValue({
       ubicacion: direccion,
     });
-    this.cerrarMapaModal();  // Close the map modal after selecting the location
   }
 }

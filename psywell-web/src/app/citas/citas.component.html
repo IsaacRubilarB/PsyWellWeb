@@ -114,34 +114,47 @@
           </div>
         </div>
 
-          <!-- Ubicación y Comentarios -->
-          <div class="form-row">
-            <div class="form-group">
-              <label for="ubicacion">Ubicación</label>
-              <div class="input-with-icon">
-                <i class="fas fa-map-marker-alt"></i>
-                <button type="button" class="btn-map" (click)="abrirMapaModal()">🗺️​</button>
-                <!-- Mostramos la ubicación seleccionada en el formulario -->
-                <span *ngIf="citaForm.get('ubicacion')?.value">{{ citaForm.get('ubicacion')?.value }}</span>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="comentarios">Comentarios</label>
-              <div class="input-with-icon">
-                <i class="fas fa-comment-alt"></i>
-                <textarea id="comentarios" formControlName="comentarios"></textarea>
-              </div>
-            </div>
-          </div>
-  
-         <!-- Google Maps modal -->
+        <!-- Ubicación y Comentarios -->
+<div class="form-row">
+  <div class="form-group">
+    <label for="ubicacion">Ubicación</label>
+    <div class="input-with-icon">
+      <i class="fas fa-map-marker-alt"></i>
+      <input
+        type="text"
+        id="ubicacion"
+        formControlName="ubicacion"
+        placeholder="Selecciona una ubicación"
+        readonly
+      />
+      <button type="button" class="btn-map" (click)="abrirMapaModal()">🗺️</button>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="comentarios">Comentarios</label>
+    <div class="input-with-icon">
+      <i class="fas fa-comment-alt"></i>
+      <textarea
+        id="comentarios"
+        formControlName="comentarios"
+        placeholder="Añade comentarios para la cita..."
+      ></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- Google Maps Modal -->
 <div class="modal" *ngIf="mostrarMapaModal">
   <div class="modal-content">
     <h2>Selecciona una Ubicación</h2>
     <app-google-maps (locationSelected)="ubicacionSeleccionada($event)"></app-google-maps>
-    <button (click)="cerrarMapaModal()" class="btn-secondary">Cerrar Mapa</button>
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="cerrarMapaModal()">Cerrar</button>
+    </div>
   </div>
 </div>
+
+        
         <!-- Botones de acción -->
         <div class="modal-actions">
           <button type="submit" [disabled]="!citaForm.valid" class="btn-primary">
