@@ -156,10 +156,36 @@ p {
   text-shadow: 0 0 8px #ffa726; 
 }
 
-.calories-display { 
+.sleep-display { 
   color: #fb8c00 !important; 
   text-shadow: 0 0 8px #fb8c00; 
 }
+
+.bpm-display, 
+.saturation-display, 
+.steps-display, 
+.calories-display, 
+.sleep-display { // Añadido sleep-display
+  font-size: 50px;
+  font-weight: bold;
+  margin-bottom: 10px;
+
+  @media (max-width: 768px) {
+    font-size: 40px;
+  }
+}
+.lottie-animation, .lottie-animation-sleep, .lottie-animation-stress {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+}
+
+
+.sleep-display { 
+  color: #7e57c2 !important; // Cambia este color según tu diseño
+  text-shadow: 0 0 8px #7e57c2; // Un efecto similar al de las otras métricas
+}
+
 
 .info-cards-container {
   display: flex;
@@ -276,7 +302,7 @@ button {
     height: 120px;
   }
 
-  .bpm-display, .saturation-display, .steps-display, .calories-display {
+  .bpm-display, .saturation-display, .steps-display, .sleep-display {
     font-size: 35px;
   }
 
@@ -393,4 +419,46 @@ button {
     transform: rotateX(360deg);
   }
 }
+
+.weekly-data-graph {
+  text-align: center;
+  margin: 40px 0;
+
+  h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #ffffff; // Color del título
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); // Añadir sombra para mejorar el contraste
+  }
+
+  canvas {
+    max-width: 100%;
+    height: 400px; // Altura fija
+    max-height: 400px;
+    margin: 0 auto;
+    display: block;
+    border: 2px solid #ffffff; // Borde blanco para destacar el gráfico
+    border-radius: 10px; // Bordes redondeados
+    background: rgba(50, 50, 50, 0.3); // Fondo semitransparente para el canvas
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); // Sombra para resaltar el gráfico
+  }
+
+  .chartjs-render-monitor {
+    font-family: 'Arial', sans-serif;
+    font-size: 14px;
+    color: #ffffff !important; // Color del texto de las etiquetas
+  }
+}
+.steps-summary {
+  text-align: center;
+  margin: 40px 0;
+
+  .steps-summary-text {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffa726;
+    margin-top: 20px;
+  }
+}
+
 

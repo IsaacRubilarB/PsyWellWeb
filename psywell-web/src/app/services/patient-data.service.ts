@@ -1,42 +1,50 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, query, where, collection, getDocs, Firestore } from 'firebase/firestore';
+import { environment } from '../../environments/environments';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PatientDataService {
-  getPatientData() {
-    throw new Error('Method not implemented.');
-  }
-  constructor(private firestore: AngularFirestore) {}
+  private db: Firestore;
 
-  private encodeEmail(email: string): string {
-    return btoa(email);
+  constructor() {
+    // Inicializa Firebase utilizando la configuración del entorno
+    const app = initializeApp(environment.firebaseConfig);
+    this.db = getFirestore(app);
   }
-  
-  async getRealTimeData(email: string): Promise<any> {
+
+
+  async getPhysiologicalData(email: string): Promise<any> {
     try {
-      const encodedEmail = this.encodeEmail(email); // Convierte el correo a Base64
-      const docRef = this.firestore.collection('real_time_data').doc(encodedEmail);
-      const doc = await docRef.get().toPromise();
-      return doc?.data() || null;
-    } catch (error) {
-      console.error('Error al obtener datos en tiempo real:', error);
-      throw error;
-    }
-  }
-  
-  // Obtener datos semanales del paciente
-  async getWeeklyData(email: string): Promise<any[]> {
-    try {
-      const collectionRef = this.firestore.collection('weekly_data', (ref) =>
-        ref.where('email', '==', email)
+      console.log('Buscando datos para el correo:', email);
+      
+      // Asegúrate de codificar el correo si es necesario
+      const q = query(
+        collection(this.db, 'datos_fisiologicos'),
+        where('mail', '==', email) // Busca por el correo exacto
       );
-      const snapshot = await collectionRef.get().toPromise();
-      return snapshot?.docs.map((doc) => doc.data()) || [];
+  
+      const querySnapshot = await getDocs(q);
+  
+      if (!querySnapshot.empty) {
+        const data = querySnapshot.docs[0].data();
+        console.log('Datos obtenidos desde Firebase:', data);
+        return data;
+      } else {
+        console.warn('No se encontraron datos para el correo:', email);
+        return null;
+      }
     } catch (error) {
-      console.error('Error al obtener datos semanales:', error);
+      console.error('Error al obtener datos fisiológicos desde Firebase:', error);
       throw error;
     }
   }
+  
+  
+  private encodeEmail(email: string): string {
+    return email.replace(/@/g, '_').replace(/\./g, '_');
+  }
+  
 }

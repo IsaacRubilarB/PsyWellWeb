@@ -7,7 +7,9 @@ import { NavbarComponent } from '../navbar/navbar.component';
 import { FichaPacienteComponent } from '../ficha-paciente/ficha-paciente.component';
 import { PatientDataService } from 'app/services/patient-data.service';
 import { ReportsComponent } from 'app/reports/reports.component';
-import { AngularFireAuth } from '@angular/fire/compat/auth'; // Asegúrate de importar AngularFireAuth
+import { AngularFireAuth } from '@angular/fire/compat/auth'; 
+import { FichaService } from 'app/services/ficha.service'; 
+import Chart from 'chart.js/auto';
 
 @Component({
   selector: 'app-patient-details',
@@ -20,25 +22,35 @@ import { AngularFireAuth } from '@angular/fire/compat/auth'; // Asegúrate de im
 export class PatientDetailsComponent implements AfterViewInit, OnInit {
   animateFlip: boolean = false;
   selectedPatientId: number | null = null;
-  patientId: number = 0; // ID del paciente
-  psychologistId: number | null = null; // ID del psicólogo logueado
+  patientId: number = 0; 
+  psychologistId: number | null = null; 
+ 
   patientDetails: any = {};
-  bpm: number = 75;
-  saturationLevel: number = 95;
-  steps: number = 0;
-  calories: number = 0;
-  isFichaPacienteModalOpen = false;
+  bpm: number = 0; 
+  saturationLevel: number = 0; 
+  steps: number = 0; 
+  sleep: number = 0; 
+  
+isFichaPacienteModalOpen = false;
+  
+bpmWeekly: number[] = []; 
+saturationLevelWeekly: number[] = []; 
+stepsWeekly: number[] = []; 
+sleepWeekly: number[] = []; 
+totalWeeklySteps: number = 0;
 
+  showWeekly: boolean = false; 
+  
   medications: any[] = [];
   appointments: any[] = [];
-  psychologistName: string = 'Desconocido'; // NUEVA PROPIEDAD
+  psychologistName: string = 'Desconocido'; 
 
   isRealTime: boolean = true;
 
   @ViewChild('heartAnimation') heartAnimationDiv!: ElementRef;
   @ViewChild('saturationAnimation') saturationAnimationDiv!: ElementRef;
   @ViewChild('stepsAnimation') stepsAnimationDiv!: ElementRef;
-  @ViewChild('caloriesAnimation') caloriesAnimationDiv!: ElementRef;
+  @ViewChild('sleepAnimation') sleepAnimationDiv!: ElementRef;
 
   @ViewChildren('pillBackground') pillBackgroundDivs!: QueryList<ElementRef>;
   @ViewChildren('calendarBackground') calendarBackgroundDivs!: QueryList<ElementRef>;
@@ -49,36 +61,28 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
     private usersService: UsersService,
     private cdr: ChangeDetectorRef,
     private patientDataService: PatientDataService,
-    private afAuth: AngularFireAuth // INYECCIÓN DEL SERVICIO
+    private afAuth: AngularFireAuth, 
+    private fichaService: FichaService 
+
   ) {}
 
 
-  
+
   async ngOnInit(): Promise<void> {
     try {
-      // Obtener el ID del psicólogo logueado
       this.psychologistId = await this.obtenerPsychologistId();
-      console.log(`[PatientDetailsComponent] Psychologist ID obtenido: ${this.psychologistId}`);
       
-      // Obtener el ID del paciente desde la ruta
       const idFromRoute = this.route.snapshot.paramMap.get('id');
       if (idFromRoute) {
-        this.patientId = parseInt(idFromRoute, 10); // Convertir a número
-        console.log(`[PatientDetailsComponent] Patient ID obtenido desde la ruta: ${this.patientId}`);
-      } else {
-        console.warn(`[PatientDetailsComponent] No se pudo obtener el ID del paciente desde la ruta.`);
+        this.patientId = parseInt(idFromRoute, 10);
       }
   
-      // Confirmar que ambos IDs se van a pasar a ReportsComponent
-      console.log(`[PatientDetailsComponent] Enviando IDs al componente Reports:`, {
-        patientId: this.patientId,
-        psychologistId: this.psychologistId,
-      });
-  
-      // Obtener detalles del paciente
       await this.obtenerDetallesPaciente(this.patientId.toString());
-      
-      // Forzar actualización de la vista para pasar los IDs al componente hijo
+  
+      if (this.patientDetails.email) {
+        await this.loadPhysiologicalData(this.patientDetails.email);
+      }
+  
       this.cdr.detectChanges();
     } catch (error) {
       console.error('[PatientDetailsComponent] Error en ngOnInit:', error);
@@ -86,8 +90,103 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
   }
   
 
-  
+  private chartInstance: Chart | null = null;
 
+  createMainWeeklyDataChart(): void {
+    const canvas = document.getElementById('weeklyDataChartMain') as HTMLCanvasElement | null;
+    if (!canvas) {
+      console.error('No se encontró el elemento canvas para el gráfico principal.');
+      return;
+    }
+  
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      console.error('No se pudo obtener el contexto 2D del canvas.');
+      return;
+    }
+  
+    if (this.chartInstance) {
+      this.chartInstance.destroy(); // Destruye el gráfico previo si existe
+    }
+  
+    this.chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
+        datasets: [
+          {
+            label: 'Frecuencia Cardíaca (BPM)',
+            data: this.bpmWeekly,
+            borderColor: '#ff1744',
+            backgroundColor: 'rgba(255, 23, 68, 0.2)',
+            borderWidth: 2,
+            tension: 0.3,
+          },
+          {
+            label: 'Saturación de Oxígeno (%)',
+            data: this.saturationLevelWeekly,
+            borderColor: '#42a5f5',
+            backgroundColor: 'rgba(66, 165, 245, 0.2)',
+            borderWidth: 2,
+            tension: 0.3,
+          },
+          {
+            label: 'Horas de Sueño',
+            data: this.sleepWeekly,
+            borderColor: '#66bb6a',
+            backgroundColor: 'rgba(102, 187, 106, 0.2)',
+            borderWidth: 2,
+            tension: 0.3,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: {
+              color: '#ffffff',
+              font: {
+                size: 14,
+              },
+            },
+          },
+          tooltip: {
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            titleColor: '#000000',
+            bodyColor: '#000000',
+          },
+        },
+        scales: {
+          x: {
+            grid: {
+              color: 'rgba(255, 255, 255, 0.2)',
+            },
+            ticks: {
+              color: '#ffffff',
+              font: {
+                size: 12,
+              },
+            },
+          },
+          y: {
+            grid: {
+              color: 'rgba(255, 255, 255, 0.2)',
+            },
+            ticks: {
+              color: '#ffffff',
+              font: {
+                size: 12,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+  
+  
 
 
 fetchLoggedPsychologistName(): void {
@@ -156,25 +255,43 @@ async obtenerDetallesPaciente(id: string): Promise<void> {
   try {
     const response: any = await this.usersService.obtenerUsuarioPorId(id).toPromise();
     const data = response?.data || {};
+    
+    // Establecer detalles básicos del paciente
     this.patientDetails = {
       id: id,
       name: data.nombre || 'Nombre desconocido',
       age: data.fechaNacimiento ? this.calculateAge(data.fechaNacimiento) : null,
-      diagnosis: data.diagnosis || 'Sin diagnóstico',
       notes: data.notes || 'Sin notas',
       email: data.email || '',
       photo: this.getFirebaseImageUrl(data.email || '', 'profile'),
+      diagnosis: 'Cargando...', // Inicializa el diagnóstico mientras se obtiene la ficha
     };
 
-    console.log('Detalles del paciente obtenidos:', this.patientDetails);
+    console.log('Detalles básicos del paciente obtenidos:', this.patientDetails);
 
-    if (this.patientDetails.email) {
-      await this.initializePatientData(this.patientDetails.email);
-    }
+    // Llamar al servicio para obtener la ficha del paciente
+    this.fichaService.obtenerFichaPorIdPaciente(Number(id)).subscribe(
+      (fichaResponse) => {
+        if (fichaResponse?.data?.diagnostico) {
+          this.patientDetails.diagnosis = fichaResponse.data.diagnostico;
+        } else {
+          this.patientDetails.diagnosis = 'Sin diagnóstico'; // Valor predeterminado
+        }
+        console.log('Diagnóstico obtenido de la ficha:', this.patientDetails.diagnosis);
+      },
+      (error) => {
+        console.error('Error al obtener la ficha del paciente:', error);
+        this.patientDetails.diagnosis = 'Error al cargar diagnóstico';
+      }
+    );
   } catch (error) {
     console.error('Error al obtener detalles del paciente:', error);
+    this.patientDetails.diagnosis = 'Error al cargar diagnóstico';
   }
 }
+
+
+
 
   
   getPatientDetails(): any {
@@ -226,53 +343,63 @@ async obtenerDetallesPaciente(id: string): Promise<void> {
   }
   
 
-  async initializePatientData(email: string) {
-    if (this.isRealTime) {
-      await this.loadRealTimePatientData(email);
-    } else {
-      await this.loadWeeklyPatientData(email);
-    }
-  }
-
-  async loadRealTimePatientData(email: string) {
+  async loadPhysiologicalData(email: string): Promise<void> {
     try {
-      console.log('Email usado para obtener datos en tiempo real:', email);
-      const realTimeData = await this.patientDataService.getRealTimeData(email);
-      if (realTimeData) {
-        this.bpm = Math.round(realTimeData.heartRate || this.bpm);
-        this.saturationLevel = Math.round(realTimeData.oxygenSaturation || this.saturationLevel);
-        this.steps = Math.round(realTimeData.steps || this.steps);
-        this.calories = Math.round(realTimeData.calories || this.calories);
-
-        console.log('Datos en tiempo real cargados:', realTimeData);
-        this.cdr.detectChanges();
+      console.log('Cargando datos fisiológicos para:', email);
+  
+      const physiologicalData = await this.patientDataService.getPhysiologicalData(email);
+  
+      if (physiologicalData) {
+        console.log('Datos fisiológicos obtenidos:', physiologicalData);
+  
+        // Validar y asignar los datos en vivo
+        this.bpm = parseInt(physiologicalData.bpm, 10) || 0;
+        this.saturationLevel = parseInt(physiologicalData.oxygen, 10) || 0;
+        this.steps = parseInt(physiologicalData.steps, 10) || 0;
+        this.sleep = parseInt(physiologicalData.sleep, 10) || 0;
+  
+        // Validar y asignar los datos semanales como arrays
+        this.bpmWeekly = Array.isArray(physiologicalData.bpmSemanal)
+          ? physiologicalData.bpmSemanal.map((value: string) => parseInt(value, 10) || 0)
+          : [parseInt(physiologicalData.bpmSemanal, 10) || 0];
+  
+        this.saturationLevelWeekly = Array.isArray(physiologicalData.oxygenSemanal)
+          ? physiologicalData.oxygenSemanal.map((value: string) => parseInt(value, 10) || 0)
+          : [parseInt(physiologicalData.oxygenSemanal, 10) || 0];
+  
+        this.stepsWeekly = Array.isArray(physiologicalData.stepsSemanal)
+          ? physiologicalData.stepsSemanal.map((value: string) => parseInt(value, 10) || 0)
+          : [parseInt(physiologicalData.stepsSemanal, 10) || 0];
+  
+        this.sleepWeekly = Array.isArray(physiologicalData.sleepSemanal)
+          ? physiologicalData.sleepSemanal.map((value: string) => parseInt(value, 10) || 0)
+          : [parseInt(physiologicalData.sleepSemanal, 10) || 0];
+  
+        // Calcular el total de pasos semanales
+        this.calculateTotalWeeklySteps();
+  
+        // Crear gráficos separados si hay datos disponibles
+        if (this.bpmWeekly.length > 0 || this.saturationLevelWeekly.length > 0 || this.sleepWeekly.length > 0) {
+          this.createMainWeeklyDataChart(); // Gráfico principal
+        }
       } else {
-        console.warn('No se encontraron datos en tiempo real.');
+        console.warn('No se encontraron datos fisiológicos para el correo proporcionado.');
       }
     } catch (error) {
-      console.error('Error al cargar datos en tiempo real desde Firebase:', error);
+      console.error('Error al cargar datos fisiológicos:', error);
     }
   }
-
-  async loadWeeklyPatientData(email: string) {
-    try {
-      const weeklyData = await this.patientDataService.getWeeklyData(email);
-      if (weeklyData && weeklyData.length > 0) {
-        const lastWeekData = weeklyData[weeklyData.length - 1];
-        this.bpm = Math.round(lastWeekData.heartRate || this.bpm);
-        this.saturationLevel = Math.round(lastWeekData.oxygenSaturation || this.saturationLevel);
-        this.steps = Math.round(lastWeekData.steps || this.steps);
-        this.calories = Math.round(lastWeekData.calories || this.calories);
-
-        console.log('Datos semanales cargados:', lastWeekData);
-        this.cdr.detectChanges();
-      } else {
-        console.warn('No se encontraron datos semanales.');
-      }
-    } catch (error) {
-      console.error('Error al cargar datos semanales desde Firebase:', error);
-    }
+  
+  calculateTotalWeeklySteps(): void {
+    this.totalWeeklySteps = this.stepsWeekly.reduce((total, steps) => total + steps, 0);
   }
+
+  
+  
+
+
+ 
+  
 
   ngAfterViewInit(): void {
     this.cdr.detectChanges();
@@ -307,11 +434,11 @@ async obtenerDetallesPaciente(id: string): Promise<void> {
     });
 
     lottie.loadAnimation({
-      container: this.caloriesAnimationDiv.nativeElement,
+      container: this.sleepAnimationDiv.nativeElement,
       renderer: 'svg',
       loop: true,
       autoplay: true,
-      path: '/assets/lottie/calories.json',
+      path: '/assets/lottie/sleep.json',
     });
   }
 
@@ -384,15 +511,17 @@ async obtenerDetallesPaciente(id: string): Promise<void> {
 
 
   async toggleDataView(): Promise<void> {
-    this.isRealTime = !this.isRealTime;
+    this.showWeekly = !this.showWeekly; // Alternar entre semanal y en vivo
     this.animateFlip = true;
-
+  
     setTimeout(() => {
       this.animateFlip = false;
     }, 600);
-
+  
     if (this.patientDetails.email) {
-      await this.initializePatientData(this.patientDetails.email);
+      await this.loadPhysiologicalData(this.patientDetails.email);
     }
   }
+  
+  
 }

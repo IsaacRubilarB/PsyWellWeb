@@ -10,6 +10,7 @@ export class UsersService {
   private listarUserUrl = '/api/ListarUsuarios';
   private obtenerUsuarioPorIdUrl = '/api/ListarUsuariosById';
   private verificarUsuarioUrl = '/api/verificarOGuardarUsuario'; 
+  httpClient: any;
 
 
 
@@ -30,6 +31,12 @@ export class UsersService {
     return this.http.get<any>(`${this.obtenerUsuarioPorIdUrl}/${id}`);
   }
   
+
+  obtenerFichaPorIdPaciente(patientId: string): Observable<any> {
+    const url = `http://localhost:8083/obtenerFichaPorIdPaciente/${patientId}`;
+    return this.httpClient.get(url);
+}
+
   obtenerUsuarioPorCorreo(email: string): Observable<any> {
     const url = 'http://localhost:8081/ListarUsuarios'; // Endpoint que devuelve todos los usuarios
     return new Observable((observer) => {

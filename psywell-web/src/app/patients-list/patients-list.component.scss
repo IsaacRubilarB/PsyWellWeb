@@ -290,3 +290,28 @@
   z-index: 1000;
   transition: opacity 0.3s ease;
 }
+
+
+.weekly-data-container {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.weekly-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+
+.weekly-data-table th,
+.weekly-data-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.weekly-data-table th {
+  background-color: #4CAF50;
+  color: white;
+}
+
