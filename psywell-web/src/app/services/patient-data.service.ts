@@ -10,44 +10,41 @@ export class PatientDataService {
   private db: Firestore;
 
   constructor() {
-    // Inicializa Firebase utilizando el entorno de configuración
+    // Inicializa Firebase utilizando la configuración del entorno
     const app = initializeApp(environment.firebaseConfig);
     this.db = getFirestore(app);
   }
 
-  /**
-   * Obtiene los datos fisiológicos de un paciente por su correo electrónico.
-   * @param email Correo electrónico del paciente
-   * @returns Promesa con los datos fisiológicos o `null` si no se encuentran.
-   */
+
   async getPhysiologicalData(email: string): Promise<any> {
     try {
-      const encodedEmail = this.encodeEmail(email);
+      console.log('Buscando datos para el correo:', email);
+      
+      // Asegúrate de codificar el correo si es necesario
       const q = query(
         collection(this.db, 'datos_fisiologicos'),
-        where('mail', '==', encodedEmail)
+        where('mail', '==', email) // Busca por el correo exacto
       );
-
+  
       const querySnapshot = await getDocs(q);
-
+  
       if (!querySnapshot.empty) {
-        return querySnapshot.docs[0].data();
+        const data = querySnapshot.docs[0].data();
+        console.log('Datos obtenidos desde Firebase:', data);
+        return data;
       } else {
-        console.warn('No se encontraron datos fisiológicos para el correo:', email);
+        console.warn('No se encontraron datos para el correo:', email);
         return null;
       }
     } catch (error) {
-      console.error('Error al obtener datos fisiológicos:', error);
+      console.error('Error al obtener datos fisiológicos desde Firebase:', error);
       throw error;
     }
   }
-
-  /**
-   * Codifica el correo electrónico para evitar problemas de formato.
-   * @param email Correo electrónico a codificar
-   * @returns Correo codificado
-   */
+  
+  
   private encodeEmail(email: string): string {
-    return email; // Si quieres codificar el correo, utiliza Base64 u otro método aquí
+    return email.replace(/@/g, '_').replace(/\./g, '_');
   }
+  
 }

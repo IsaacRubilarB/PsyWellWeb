@@ -9,54 +9,53 @@
       <h2>{{ patientDetails.name }}</h2>
       <p><strong>Edad:</strong> {{ patientDetails.age }} Años</p>
       <p><strong>Diagnóstico:</strong> {{ patientDetails.diagnosis }}</p>
-      <p><strong>Notas:</strong> {{ patientDetails.notes }}</p>
     </div>
 
     <button class="btn-open-modal" (click)="openFichaPacienteModal()">Abrir Ficha del Paciente</button>
   </div>
 
-  <!-- Filtro para alternar entre datos -->
-  <div class="data-filter">
-    <h2>{{ showWeekly ? 'Data Semanal' : 'Data en Vivo' }}</h2>
-    <button (click)="toggleDataView()" class="btn-toggle">
-      {{ showWeekly ? 'Ver Data en Vivo' : 'Ver Data Semanal' }}
-    </button>
-  </div>
-  
+  <!-- Sección de datos en vivo -->
   <div class="charts-container">
     <div class="chart-wrapper">
       <div #heartAnimation class="lottie-animation"></div>
-      <p class="bpm-display flip" [class.animate]="animateFlip">
-        {{ showWeekly ? bpmWeekly : bpm }} BPM
-      </p>
+      <p class="bpm-display">{{ bpm }} BPM</p>
       <p>Frecuencia Cardíaca</p>
     </div>
   
     <div class="chart-wrapper">
       <div #saturationAnimation class="lottie-animation"></div>
-      <p class="saturation-display flip" [class.animate]="animateFlip">
-        {{ showWeekly ? saturationLevelWeekly : saturationLevel }} %
-      </p>
+      <p class="saturation-display">{{ saturationLevel }} %</p>
       <p>Saturación de Oxígeno</p>
     </div>
   
     <div class="chart-wrapper">
       <div #stepsAnimation class="lottie-animation"></div>
-      <p class="steps-display flip" [class.animate]="animateFlip">
-        {{ showWeekly ? stepsWeekly : steps }}
-      </p>
+      <p class="steps-display">{{ steps }}</p>
       <p>Pasos</p>
     </div>
   
     <div class="chart-wrapper">
       <div #sleepAnimation class="lottie-animation"></div>
-      <p class="sleep-display flip" [class.animate]="animateFlip">
-        {{ showWeekly ? sleepWeekly : sleep }} hrs
-      </p>
+      <p class="sleep-display">{{ sleep }} hrs</p>
       <p>Horas de Sueño</p>
     </div>
   </div>
+
+  <div class="weekly-data-graph">
+    <h2>Resumen Semanal: Frecuencia Cardíaca, Saturación y Sueño</h2>
+    <canvas id="weeklyDataChartMain"></canvas>
+  </div>
   
+  <div class="steps-summary">
+    <h2>Resumen Semanal: Pasos</h2>
+    <p class="steps-summary-text">Total de pasos de la semana: <strong>{{ totalWeeklySteps }}</strong></p>
+  </div>
+  
+  
+  
+  
+  
+
   <app-reports
     [patientId]="patientId"
     [psychologistId]="psychologistId"

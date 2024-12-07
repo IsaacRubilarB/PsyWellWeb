@@ -420,3 +420,45 @@ button {
   }
 }
 
+.weekly-data-graph {
+  text-align: center;
+  margin: 40px 0;
+
+  h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #ffffff; // Color del título
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); // Añadir sombra para mejorar el contraste
+  }
+
+  canvas {
+    max-width: 100%;
+    height: 400px; // Altura fija
+    max-height: 400px;
+    margin: 0 auto;
+    display: block;
+    border: 2px solid #ffffff; // Borde blanco para destacar el gráfico
+    border-radius: 10px; // Bordes redondeados
+    background: rgba(50, 50, 50, 0.3); // Fondo semitransparente para el canvas
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); // Sombra para resaltar el gráfico
+  }
+
+  .chartjs-render-monitor {
+    font-family: 'Arial', sans-serif;
+    font-size: 14px;
+    color: #ffffff !important; // Color del texto de las etiquetas
+  }
+}
+.steps-summary {
+  text-align: center;
+  margin: 40px 0;
+
+  .steps-summary-text {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffa726;
+    margin-top: 20px;
+  }
+}
+
+
