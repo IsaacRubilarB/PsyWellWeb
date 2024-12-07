@@ -306,3 +306,42 @@
 }
 
 
+
+/* Estilos para el campo de Estado Civil */
+.input-group .input-item select#estadoCivil {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 0.25rem;
+  border: 1px solid #b0c4de;
+  border-radius: 5px;
+  background-color: #2e4964;
+  color: #fff;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+  cursor: pointer;
+  appearance: none;
+  transition: border-color 0.3s ease;
+
+  &:focus {
+    border-color: #ffc107;
+    background-color: #1f354d;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2);
+  }
+
+  &:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+  }
+
+  option {
+    background-color: #1e3a5f;
+    color: #fff;
+  }
+}
+
+.input-group .input-item label[for="estadoCivil"] {
+  font-weight: bold;
+  color: #b0c4de;
+  display: block;
+  margin-bottom: 5px;
+}

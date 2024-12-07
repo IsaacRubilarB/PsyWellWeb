@@ -18,10 +18,10 @@ import { AngularFireAuth } from '@angular/fire/compat/auth'; // Asegúrate de im
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class PatientDetailsComponent implements AfterViewInit, OnInit {
-  patientId: string | null = null;
   animateFlip: boolean = false;
   selectedPatientId: number | null = null;
-
+  patientId: number = 0; // ID del paciente
+  psychologistId: number | null = null; // ID del psicólogo logueado
   patientDetails: any = {};
   bpm: number = 75;
   saturationLevel: number = 95;
@@ -53,79 +53,113 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    // Obtener ID del paciente
-    const idFromRoute = this.route.snapshot.paramMap.get('id');
-    if (idFromRoute) {
-      this.patientId = idFromRoute;
-      this.selectedPatientId = +idFromRoute;
-      this.obtenerDetallesPaciente(idFromRoute);
-    } else {
-      console.warn('No se pudo obtener el ID del paciente de la ruta.');
-    }
-
-    // Obtener el nombre del psicólogo autenticado
-    this.fetchLoggedPsychologistName();
-  }
-  fetchLoggedPsychologistName(): void {
-    this.afAuth.authState.subscribe((user) => {
-      if (user?.email) {
-        this.usersService.listarUsuarios().subscribe((response: any) => {
-          const users = response?.data || [];
-          const psychologist = users.find((u: any) => u.email === user.email);
-          this.psychologistName = psychologist?.nombre || 'Desconocido';
-        });
-      } else {
-        console.warn('No hay un usuario autenticado.');
-        this.psychologistName = 'No se ha asignado un psicólogo.';
-      }
-    });
-  }
-  async obtenerPsychologistId(): Promise<string | null> {
     try {
-      const user = await this.afAuth.currentUser; // Obtener el usuario autenticado
-      return user?.uid || null; // Retorna el UID del usuario o null si no está autenticado
+      // Obtener el ID del psicólogo logueado
+      this.psychologistId = await this.obtenerPsychologistId();
+      console.log(`ID del psicólogo logueado: ${this.psychologistId}`);
+      
+      // Obtener el ID del paciente desde la ruta
+      const idFromRoute = this.route.snapshot.paramMap.get('id');
+      if (idFromRoute) {
+        this.patientId = parseInt(idFromRoute, 10); // Convertir a número
+        console.log(`ID del paciente obtenido desde la ruta: ${this.patientId}`);
+        
+        // Obtener detalles del paciente al inicializar
+        await this.obtenerDetallesPaciente(this.patientId.toString());
+      } else {
+        console.warn('No se pudo obtener el ID del paciente desde la ruta.');
+      }
     } catch (error) {
-      console.error('Error al obtener el ID del psicólogo autenticado:', error);
-      return null;
+      console.error('Error al inicializar datos en ngOnInit:', error);
     }
   }
 
-  async obtenerDetallesPaciente(id: string): Promise<void> {
-    this.usersService.obtenerUsuarioPorId(id).subscribe(
-      async (response: any) => {
-        const data = response.data;
-        if (data) {
-          const email = data.correo || data.email || '';
-          const photoUrl = email ? this.getFirebaseImageUrl(email, 'profile') : 'assets/patient.png';
-  
-          // Asignar detalles del paciente
-          this.patientDetails = {
-            id: id,
-            name: data.nombre || 'Nombre desconocido',
-            age: data.fechaNacimiento ? this.calculateAge(data.fechaNacimiento) : 'Edad desconocida',
-            diagnosis: data.diagnosis || 'Sin diagnóstico',
-            notes: data.notes || 'Sin notas',
-            email: email,
-            photo: photoUrl,
-          };
-  
-          // Asignar el ID del paciente para el componente de reportes
-          this.selectedPatientId = id ? parseInt(id, 10) : null; // Asegurarse de convertirlo a número si es necesario.
-  
-          // Datos adicionales
-          this.medications = data.medications || [];
-          this.appointments = data.appointments || [];
-  
-          if (email) {
-            await this.initializePatientData(email);
+
+
+fetchLoggedPsychologistName(): void {
+  this.afAuth.authState.subscribe((user) => {
+    if (user?.email) {
+      this.usersService.obtenerUsuarioPorCorreo(user.email).subscribe(
+        (usuario) => {
+          if (usuario) {
+            this.psychologistName = usuario.nombre || 'Desconocido';
+            console.log('ID del psicólogo logueado:', usuario.idUsuario);
+          } else {
+            console.warn('No se encontró un psicólogo asociado al correo:', user.email);
           }
+        },
+        (error) => {
+          console.error('Error al obtener el psicólogo logueado:', error);
+        }
+      );
+    } else {
+      console.warn('No hay un usuario autenticado.');
+    }
+  });
+}
+
+
+
+async obtenerPsychologistId(): Promise<number | null> {
+  return new Promise<number | null>((resolve, reject) => {
+    this.afAuth.authState.subscribe(
+      (user) => {
+        if (user?.email) {
+          this.usersService.obtenerUsuarioPorCorreo(user.email).subscribe(
+            (usuario) => {
+              if (usuario?.idUsuario) {
+                console.log(`ID del psicólogo obtenido: ${usuario.idUsuario}`);
+                this.psychologistName = usuario.nombre || 'Desconocido';
+                resolve(usuario.idUsuario);
+              } else {
+                console.warn(`No se encontró un psicólogo asociado al correo: ${user.email}`);
+                resolve(null);
+              }
+            },
+            (error) => {
+              console.error('Error al obtener el ID del psicólogo logueado:', error);
+              reject(error);
+            }
+          );
+        } else {
+          console.warn('No hay un usuario autenticado.');
+          resolve(null);
         }
       },
-      (error: any) => {
-        console.error('Error al obtener detalles del paciente:', error);
+      (error) => {
+        console.error('Error al obtener el estado de autenticación:', error);
+        reject(error);
       }
     );
+  });
+}
+
+
+
+async obtenerDetallesPaciente(id: string): Promise<void> {
+  try {
+    const response: any = await this.usersService.obtenerUsuarioPorId(id).toPromise();
+    const data = response?.data || {};
+    this.patientDetails = {
+      id: id,
+      name: data.nombre || 'Nombre desconocido',
+      age: data.fechaNacimiento ? this.calculateAge(data.fechaNacimiento) : null,
+      diagnosis: data.diagnosis || 'Sin diagnóstico',
+      notes: data.notes || 'Sin notas',
+      email: data.email || '',
+      photo: this.getFirebaseImageUrl(data.email || '', 'profile'),
+    };
+
+    console.log('Detalles del paciente obtenidos:', this.patientDetails);
+
+    if (this.patientDetails.email) {
+      await this.initializePatientData(this.patientDetails.email);
+    }
+  } catch (error) {
+    console.error('Error al obtener detalles del paciente:', error);
   }
+}
+
   
   getPatientDetails(): any {
     return this.patientDetails;
@@ -293,13 +327,41 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
     this.router.navigate(['/patients']);
   }
 
-  openFichaPacienteModal() {
+
+
+
+  openFichaPacienteModal(patientId?: string | number): void {
+    // Validar si el ID del paciente está definido y es válido
+    if (patientId) {
+      this.patientId = +patientId; // Convertir a número
+    }
+  
+    if (!this.patientId || this.patientId <= 0) {
+      console.warn('El ID del paciente es inválido o no está definido.');
+      return;
+    }
+  
+    // Validar si el ID del psicólogo está definido y es válido
+    if (!this.psychologistId || this.psychologistId <= 0) {
+      console.warn('El ID del psicólogo es inválido o no está definido.');
+      return;
+    }
+  
+    // Log para verificar ambos IDs
+    console.log('Abriendo ficha con los siguientes datos:');
+    console.log('ID del paciente:', this.patientId);
+    console.log('ID del psicólogo:', this.psychologistId);
+  
+    // Abrir el modal
     this.isFichaPacienteModalOpen = true;
   }
 
-  closeFichaPacienteModal() {
+
+
+  closeFichaPacienteModal(): void {
     this.isFichaPacienteModalOpen = false;
   }
+
 
   async toggleDataView(): Promise<void> {
     this.isRealTime = !this.isRealTime;

@@ -23,12 +23,11 @@
         </div>
 
         <div class="input-group">
-
           <div class="input-item">
             <label for="fechaNacimiento">Fecha de Nacimiento</label>
             <input type="text" id="fechaNacimiento" [value]="formattedFechaNacimiento" readonly />
           </div>
-          
+
           <div class="input-item">
             <label for="genero">Género</label>
             <select id="genero" [(ngModel)]="paciente.genero" name="genero" disabled>
@@ -40,6 +39,20 @@
         </div>
       </div>
 
+      <div class="input-group">
+        <div class="input-item">
+          <label for="estadoCivil">Estado Civil</label>
+          <select id="estadoCivil" [(ngModel)]="paciente.estadoCivil" name="estadoCivil" required>
+            <option value="" disabled>Seleccione</option>
+            <option value="soltero">Soltero</option>
+            <option value="casado">Casado</option>
+            <option value="divorciado">Divorciado</option>
+            <option value="viudo">Viudo</option>
+          </select>
+        </div>
+      </div>
+
+      
       <!-- Contacto -->
       <div class="section">
         <h3>Contacto</h3>
@@ -50,22 +63,21 @@
           </div>
         </div>
 
-        <div class="input-group">
-          <div class="input-item">
-            <label for="telefono">Teléfono</label>
-            <div class="phone-input">
-              <span class="flag-icon">🇨🇱 +56</span>
-              <input
-                type="tel"
-                id="telefono"
-                [(ngModel)]="paciente.telefono"
-                name="telefono"
-                placeholder="Ingrese teléfono"
-                required
-                [disabled]="!!paciente.telefono"
-              />
-            </div>
+        <div class="input-item">
+          <label for="telefono">Teléfono</label>
+          <div class="phone-input">
+            <span class="flag-icon">🇨🇱 +56</span>
+            <input
+              type="tel"
+              id="telefono"
+              [(ngModel)]="paciente.telefono"
+              name="telefono"
+              placeholder="Ingrese teléfono"
+              maxlength="15"
+              (blur)="validarTelefonoEnBlur()"
+            />
           </div>
+        
 
           <div class="input-item">
             <label for="telefonoEmercia">Teléfono de Emergencia</label>
@@ -74,7 +86,10 @@
               id="telefonoEmercia"
               [(ngModel)]="paciente.telefonoEmercia"
               name="telefonoEmercia"
+              placeholder="Ingrese teléfono de emergencia"
               required
+              pattern="^[0-9+()\- ]*$"
+              maxlength="15"
             />
           </div>
         </div>
@@ -87,6 +102,7 @@
               id="direccion"
               [(ngModel)]="paciente.direccion"
               name="direccion"
+              placeholder="Ingrese dirección"
               required
             />
           </div>
@@ -98,11 +114,12 @@
         <h3>Historia Clínica</h3>
         <div class="input-group">
           <div class="input-item">
-            <label for="notasSesionAnterior">Notas de la Sesión Anterior</label>
+            <label for="notasSesionAnterior">Notas de la Sesión </label>
             <textarea
               id="notasSesionAnterior"
               [(ngModel)]="paciente.notasSesionAnterior"
               name="notasSesionAnterior"
+              placeholder="Ingrese las notas de la sesión anterior"
             ></textarea>
           </div>
 
@@ -112,6 +129,23 @@
               id="medicamentos"
               [(ngModel)]="paciente.medicamentos"
               name="medicamentos"
+              placeholder="Ingrese medicamentos"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Diagnóstico -->
+      <div class="section">
+        <h3>Diagnóstico</h3>
+        <div class="input-group">
+          <div class="input-item">
+            <textarea
+              id="diagnostico"
+              [(ngModel)]="paciente.diagnostico"
+              name="diagnostico"
+              placeholder="Ingrese el diagnóstico"
+              required
             ></textarea>
           </div>
         </div>

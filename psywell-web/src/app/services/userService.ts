@@ -30,6 +30,35 @@ export class UsersService {
     return this.http.get<any>(`${this.obtenerUsuarioPorIdUrl}/${id}`);
   }
   
+  obtenerUsuarioPorCorreo(email: string): Observable<any> {
+    const url = 'http://localhost:8081/ListarUsuarios'; // Endpoint que devuelve todos los usuarios
+    return new Observable((observer) => {
+      this.http.get<any>(url).subscribe(
+        (response) => {
+          const usuarios = response?.data || [];
+          const usuario = usuarios.find((user: any) => user.email === email);
+  
+          if (usuario) {
+            observer.next(usuario); // Retorna el usuario encontrado
+          } else {
+            console.error(`No se encontró un psicólogo asociado al correo: ${email}`);
+            observer.error(`No se encontró un usuario con el correo proporcionado.`);
+          }
+  
+          observer.complete();
+        },
+        (error) => {
+          console.error('Error al listar usuarios:', error);
+          observer.error('Error al listar usuarios: ' + error.message);
+        }
+      );
+    });
+  }
+  
+  
+  
+  
+  
   
 
   // Método para verificar si el usuario ya existe
