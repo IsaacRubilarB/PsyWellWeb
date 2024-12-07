@@ -23,12 +23,17 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
   patientId: number = 0; // ID del paciente
   psychologistId: number | null = null; // ID del psicólogo logueado
   patientDetails: any = {};
-  bpm: number = 75;
-  saturationLevel: number = 95;
-  steps: number = 0;
-  calories: number = 0;
+  bpm: number = 0; // Latidos por minuto
+saturationLevel: number = 0; // Saturación de oxígeno
+steps: number = 0; // Pasos
+sleep: number = 0; // Horas de sueño
   isFichaPacienteModalOpen = false;
-
+  bpmWeekly: number = 0; // Latidos semanales
+  saturationLevelWeekly: number = 0; // Saturación de oxígeno semanal
+  stepsWeekly: number = 0; // Pasos semanales
+  sleepWeekly: number = 0; // Horas de sueño semanales
+  showWeekly: boolean = false; // Alternar entre vista semanal y en vivo
+  
   medications: any[] = [];
   appointments: any[] = [];
   psychologistName: string = 'Desconocido'; // NUEVA PROPIEDAD
@@ -38,7 +43,7 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
   @ViewChild('heartAnimation') heartAnimationDiv!: ElementRef;
   @ViewChild('saturationAnimation') saturationAnimationDiv!: ElementRef;
   @ViewChild('stepsAnimation') stepsAnimationDiv!: ElementRef;
-  @ViewChild('caloriesAnimation') caloriesAnimationDiv!: ElementRef;
+  @ViewChild('sleepAnimation') sleepAnimationDiv!: ElementRef;
 
   @ViewChildren('pillBackground') pillBackgroundDivs!: QueryList<ElementRef>;
   @ViewChildren('calendarBackground') calendarBackgroundDivs!: QueryList<ElementRef>;
@@ -53,7 +58,7 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
   ) {}
 
 
-  
+
   async ngOnInit(): Promise<void> {
     try {
       // Obtener el ID del psicólogo logueado
@@ -69,21 +74,21 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
         console.warn(`[PatientDetailsComponent] No se pudo obtener el ID del paciente desde la ruta.`);
       }
   
-      // Confirmar que ambos IDs se van a pasar a ReportsComponent
-      console.log(`[PatientDetailsComponent] Enviando IDs al componente Reports:`, {
-        patientId: this.patientId,
-        psychologistId: this.psychologistId,
-      });
-  
       // Obtener detalles del paciente
       await this.obtenerDetallesPaciente(this.patientId.toString());
       
-      // Forzar actualización de la vista para pasar los IDs al componente hijo
+      // Cargar datos fisiológicos del paciente si se tiene el correo
+      if (this.patientDetails.email) {
+        await this.loadPhysiologicalData(this.patientDetails.email);
+      }
+  
+      // Forzar actualización de la vista
       this.cdr.detectChanges();
     } catch (error) {
       console.error('[PatientDetailsComponent] Error en ngOnInit:', error);
     }
   }
+  
   
 
   
@@ -169,12 +174,13 @@ async obtenerDetallesPaciente(id: string): Promise<void> {
     console.log('Detalles del paciente obtenidos:', this.patientDetails);
 
     if (this.patientDetails.email) {
-      await this.initializePatientData(this.patientDetails.email);
+      await this.loadPhysiologicalData(this.patientDetails.email); // Llama al nuevo método aquí
     }
   } catch (error) {
     console.error('Error al obtener detalles del paciente:', error);
   }
 }
+
 
   
   getPatientDetails(): any {
@@ -226,53 +232,39 @@ async obtenerDetallesPaciente(id: string): Promise<void> {
   }
   
 
-  async initializePatientData(email: string) {
-    if (this.isRealTime) {
-      await this.loadRealTimePatientData(email);
-    } else {
-      await this.loadWeeklyPatientData(email);
-    }
-  }
-
-  async loadRealTimePatientData(email: string) {
+ 
+  async loadPhysiologicalData(email: string): Promise<void> {
     try {
-      console.log('Email usado para obtener datos en tiempo real:', email);
-      const realTimeData = await this.patientDataService.getRealTimeData(email);
-      if (realTimeData) {
-        this.bpm = Math.round(realTimeData.heartRate || this.bpm);
-        this.saturationLevel = Math.round(realTimeData.oxygenSaturation || this.saturationLevel);
-        this.steps = Math.round(realTimeData.steps || this.steps);
-        this.calories = Math.round(realTimeData.calories || this.calories);
-
-        console.log('Datos en tiempo real cargados:', realTimeData);
-        this.cdr.detectChanges();
+      console.log('Cargando datos fisiológicos para:', email);
+  
+      const physiologicalData = await this.patientDataService.getPhysiologicalData(email);
+  
+      if (physiologicalData) {
+        this.bpm = parseInt(physiologicalData.bpm, 10) || this.bpm;
+        this.saturationLevel = parseInt(physiologicalData.oxygen, 10) || this.saturationLevel;
+        this.steps = parseInt(physiologicalData.steps, 10) || this.steps;
+        this.sleep = parseInt(physiologicalData.sleep, 10) || this.sleep;
+  
+        // Datos semanales
+        this.bpmWeekly = parseInt(physiologicalData.bpmSemanal, 10) || this.bpmWeekly;
+        this.saturationLevelWeekly = parseInt(physiologicalData.oxygenSemanal, 10) || this.saturationLevelWeekly;
+        this.stepsWeekly = parseInt(physiologicalData.stepsSemanal, 10) || this.stepsWeekly;
+        this.sleepWeekly = parseInt(physiologicalData.sleepSemanal, 10) || this.sleepWeekly;
+  
+        console.log('Datos fisiológicos cargados:', physiologicalData);
       } else {
-        console.warn('No se encontraron datos en tiempo real.');
+        console.warn('No se encontraron datos fisiológicos para este paciente.');
       }
     } catch (error) {
-      console.error('Error al cargar datos en tiempo real desde Firebase:', error);
+      console.error('Error al cargar datos fisiológicos:', error);
     }
   }
+  
+  
 
-  async loadWeeklyPatientData(email: string) {
-    try {
-      const weeklyData = await this.patientDataService.getWeeklyData(email);
-      if (weeklyData && weeklyData.length > 0) {
-        const lastWeekData = weeklyData[weeklyData.length - 1];
-        this.bpm = Math.round(lastWeekData.heartRate || this.bpm);
-        this.saturationLevel = Math.round(lastWeekData.oxygenSaturation || this.saturationLevel);
-        this.steps = Math.round(lastWeekData.steps || this.steps);
-        this.calories = Math.round(lastWeekData.calories || this.calories);
 
-        console.log('Datos semanales cargados:', lastWeekData);
-        this.cdr.detectChanges();
-      } else {
-        console.warn('No se encontraron datos semanales.');
-      }
-    } catch (error) {
-      console.error('Error al cargar datos semanales desde Firebase:', error);
-    }
-  }
+ 
+  
 
   ngAfterViewInit(): void {
     this.cdr.detectChanges();
@@ -307,11 +299,11 @@ async obtenerDetallesPaciente(id: string): Promise<void> {
     });
 
     lottie.loadAnimation({
-      container: this.caloriesAnimationDiv.nativeElement,
+      container: this.sleepAnimationDiv.nativeElement,
       renderer: 'svg',
       loop: true,
       autoplay: true,
-      path: '/assets/lottie/calories.json',
+      path: '/assets/lottie/sleep.json',
     });
   }
 
@@ -384,15 +376,17 @@ async obtenerDetallesPaciente(id: string): Promise<void> {
 
 
   async toggleDataView(): Promise<void> {
-    this.isRealTime = !this.isRealTime;
+    this.showWeekly = !this.showWeekly; // Alternar entre semanal y en vivo
     this.animateFlip = true;
-
+  
     setTimeout(() => {
       this.animateFlip = false;
     }, 600);
-
+  
     if (this.patientDetails.email) {
-      await this.initializePatientData(this.patientDetails.email);
+      await this.loadPhysiologicalData(this.patientDetails.email);
     }
   }
+  
+  
 }

@@ -66,14 +66,16 @@ export class ReportsComponent implements OnInit {
       });
       this.cargarRegistrosEmocionales();
       this.fetchPatientDetails(this.patientId);
-      this.fetchPsychologistName(this.psychologistId); // Llamada para obtener el nombre del psicólogo
+      this.fetchPsychologistName(this.psychologistId);
+      this.fetchPatientFicha(this.patientId); // Llamar al método para obtener la ficha
     } else {
       console.warn('[ReportsComponent] Faltan IDs de entrada:', {
         patientId: this.patientId,
         psychologistId: this.psychologistId,
       });
     }
-  }
+}
+
   fetchPsychologistName(psychologistId: string | number): void {
     console.log('[ReportsComponent] Iniciando fetchPsychologistName con ID:', psychologistId);
     this.usersService.obtenerUsuarioPorId(psychologistId.toString()).subscribe(
@@ -91,7 +93,7 @@ export class ReportsComponent implements OnInit {
       }
     );
   }
-  
+
   logPsychologistDetails(): void {
     console.log('Detalles del psicólogo en ReportsComponent:', {
       psychologistId: this.psychologistId,
@@ -155,6 +157,26 @@ fetchLoggedPsychologist(): void {
   });
 }
 
+fetchPatientFicha(patientId: string | number): void {
+  console.log('[ReportsComponent] Iniciando fetchPatientFicha con ID:', patientId);
+  const idAsString = patientId.toString();
+
+  this.usersService.obtenerFichaPorIdPaciente(idAsString).subscribe(
+    (response: any) => {
+      console.log('[ReportsComponent] Ficha del paciente recibida:', response);
+      if (response?.data) {
+        // Actualizamos el diagnóstico en los detalles del paciente
+        this.patientDetails.diagnosis = response.data.diagnostico || 'Sin diagnóstico';
+        console.log('[ReportsComponent] Diagnóstico actualizado:', this.patientDetails.diagnosis);
+      } else {
+        console.warn('[ReportsComponent] No se encontró ficha para el paciente con ID:', patientId);
+      }
+    },
+    (error) => {
+      console.error('[ReportsComponent] Error al obtener la ficha del paciente:', error);
+    }
+  );
+}
 
   
   getFirebaseImageUrl(email: string, tipo: 'profile' | 'banner'): string {
@@ -166,30 +188,31 @@ fetchLoggedPsychologist(): void {
   }
   
   fetchPatientDetails(patientId: string | number): void {
-    console.log('[ReportsComponent] Iniciando fetchPatientDetails con ID:', patientId);
-    const idAsString = patientId.toString();
-  
-    this.usersService.obtenerUsuarioPorId(idAsString).subscribe(
-      (response: any) => {
-        console.log('[ReportsComponent] Detalles del paciente recibidos:', response);
-        if (response?.data) {
-          this.patientDetails = {
-            name: response.data.nombre || 'Nombre desconocido',
-            age: response.data.fechaNacimiento
-              ? this.calculateAge(response.data.fechaNacimiento)
-              : 'Edad desconocida',
-            diagnosis: response.data.diagnostico || 'Sin diagnóstico',
-          };
-        } else {
-          console.warn('[ReportsComponent] No se encontraron detalles para el paciente.');
-        }
-      },
-      (error) => {
-        console.error('[ReportsComponent] Error al obtener detalles del paciente:', error);
+  console.log('[ReportsComponent] Iniciando fetchPatientDetails con ID:', patientId);
+  const idAsString = patientId.toString();
+
+  this.usersService.obtenerUsuarioPorId(idAsString).subscribe(
+    (response: any) => {
+      console.log('[ReportsComponent] Detalles del paciente recibidos:', response);
+      if (response?.data) {
+        this.patientDetails = {
+          name: response.data.nombre || 'Nombre desconocido',
+          age: response.data.fechaNacimiento
+            ? this.calculateAge(response.data.fechaNacimiento)
+            : 'Edad desconocida',
+          diagnosis: response.data.diagnostico || 'Sin diagnóstico', // Incluimos el diagnóstico
+        };
+        console.log('[ReportsComponent] Diagnóstico cargado:', this.patientDetails.diagnosis);
+      } else {
+        console.warn('[ReportsComponent] No se encontraron detalles para el paciente.');
       }
-    );
-  }
-  
+    },
+    (error) => {
+      console.error('[ReportsComponent] Error al obtener detalles del paciente:', error);
+    }
+  );
+}
+
   
 
   fetchEmotions(): void {
@@ -239,105 +262,138 @@ fetchLoggedPsychologist(): void {
 
  
 
-  exportPDF(): void {
-    if (!this.patientDetails.name) {
-      console.error('No se puede generar el reporte. Faltan datos del paciente.');
-      return;
-    }
-  
-    const doc = new jsPDF('p', 'mm', 'a4');
-    const currentDate = new Date().toLocaleDateString('es-ES');
-  
-    // Fondo claro
-    doc.setFillColor(240, 248, 255);
-    doc.rect(0, 0, 210, 297, 'F');
-  
-    // Logo
-    const logoPath = 'assets/logo.png';
-    doc.addImage(logoPath, 'PNG', 10, 10, 30, 30);
-  
-    // Título principal
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(22);
-    doc.setTextColor(33, 37, 41);
-    doc.text('Reporte del Paciente - PsyWell', 50, 25);
-  
-    // Línea decorativa
-    doc.setDrawColor(33, 37, 41);
-    doc.setLineWidth(0.5);
-    doc.line(10, 40, 200, 40);
-  
-    // Detalles del psicólogo
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Detalles del Psicólogo:', 10, 55);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Nombre: ${this.psychologistName}`, 10, 65);
-    doc.text(`Fecha del Reporte: ${currentDate}`, 10, 75);
-  
-    // Línea de separación
-    doc.setDrawColor(33, 37, 41);
-    doc.line(10, 80, 200, 80);
-  
-    // Detalles del paciente
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Detalles del Paciente:', 10, 90);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Nombre: ${this.patientDetails.name}`, 10, 100);
-    doc.text(`Edad: ${this.patientDetails.age} años`, 10, 110);
-  
-    // Diagnóstico
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Diagnóstico:`, 10, 120);
-    const diagnosisText =
-      this.patientDetails.diagnosis === 'Sin diagnóstico'
-        ? 'Sin diagnóstico. Aún no se ha llevado a cabo la primera sesión con el profesional a cargo para determinar un diagnóstico inicial.'
-        : this.patientDetails.diagnosis;
-  
-    const diagnosisLines = doc.splitTextToSize(diagnosisText, 190);
-    doc.setFont('helvetica', 'normal');
-    doc.text(diagnosisLines, 10, 130);
-  
-    // Línea de separación
-    doc.setDrawColor(33, 37, 41);
-    doc.line(10, 140, 200, 140);
-  
-    // Rango de tiempo
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Rango de Tiempo:`, 10, 150);
-    doc.setFont('helvetica', 'normal');
-    doc.text(this.translateTimeFrame(this.timeFrame), 10, 160);
-  
-    // Línea de separación
-    doc.setDrawColor(33, 37, 41);
-    doc.line(10, 165, 200, 165);
-  
-    // Registros emocionales
-    let currentY = 170;
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Registros Emocionales:', 10, currentY);
-  
-    if (this.emocionesPaciente && this.emocionesPaciente.length > 0) {
+    exportPDF(): void {
+      if (!this.patientDetails.name) {
+        console.error('No se puede generar el reporte. Faltan datos del paciente.');
+        return;
+      }
+    
+      const doc = new jsPDF('p', 'mm', 'a4');
+      const currentDate = new Date().toLocaleDateString('es-ES');
+    
+      // Fondo claro
+      doc.setFillColor(240, 248, 255);
+      doc.rect(0, 0, 210, 297, 'F');
+    
+      // Logo
+      const logoPath = 'assets/logo.png';
+      doc.addImage(logoPath, 'PNG', 10, 10, 30, 30);
+    
+      // Título principal
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(22);
+      doc.setTextColor(33, 37, 41);
+      doc.text('Reporte del Paciente - PsyWell', 50, 25);
+    
+      // Línea decorativa
+      doc.setDrawColor(33, 37, 41);
+      doc.setLineWidth(0.5);
+      doc.line(10, 40, 200, 40);
+    
+      // Detalles del psicólogo
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Detalles del Psicólogo:', 10, 55);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Nombre: ${this.psychologistName}`, 10, 65);
+      doc.text(`Fecha del Reporte: ${currentDate}`, 10, 75);
+    
+      // Línea de separación
+      doc.setDrawColor(33, 37, 41);
+      doc.line(10, 80, 200, 80);
+    
+      // Detalles del paciente
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Detalles del Paciente:', 10, 90);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Nombre: ${this.patientDetails.name}`, 10, 100);
+      doc.text(`Edad: ${this.patientDetails.age} años`, 10, 110);
+    
+      // Diagnóstico
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Diagnóstico:`, 10, 120);
+      const diagnosisText =
+        this.patientDetails.diagnosis || 
+        'Sin diagnóstico. Aún no se ha llevado a cabo la primera sesión con el profesional a cargo para determinar un diagnóstico inicial.';
+    
+      const diagnosisLines = doc.splitTextToSize(diagnosisText, 190);
+      doc.setFont('helvetica', 'normal');
+      doc.text(diagnosisLines, 10, 130);
+    
+      // Línea de separación
+      doc.setDrawColor(33, 37, 41);
+      doc.line(10, 140, 200, 140);
+    
+      // Rango de tiempo
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Rango de Tiempo:`, 10, 150);
+      doc.setFont('helvetica', 'normal');
+      doc.text(this.translateTimeFrame(this.timeFrame), 10, 160);
+    
+      // Línea de separación
+      doc.setDrawColor(33, 37, 41);
+      doc.line(10, 165, 200, 165);
+    
+      // Registros emocionales
+      let currentY = 170;
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Registros Emocionales:', 10, currentY);
+    
+      if (this.emocionesPaciente && this.emocionesPaciente.length > 0) {
+        autoTable(doc, {
+          startY: currentY + 5,
+          head: [['Estado Emocional', 'Notas', 'Fecha']],
+          body: this.emocionesPaciente.map((emotion) => [
+            {
+              content: emotion.estadoEmocional,
+              styles: {
+                halign: 'center',
+                fillColor: this.getEmotionColor(emotion.estadoEmocional),
+                textColor: [0, 0, 0], // Texto negro para contraste
+                fontStyle: 'bold',
+              },
+            },
+            emotion.notas,
+            emotion.fecha,
+          ]),
+          theme: 'grid',
+          styles: {
+            fontSize: 10,
+            cellPadding: 5,
+          },
+          headStyles: {
+            fillColor: [76, 175, 80], // Verde estándar para encabezado
+            textColor: 255, // Blanco
+            fontStyle: 'bold',
+          },
+        });
+    
+        // Actualizar la posición Y al final de la tabla
+        currentY = (doc as any).lastAutoTable.finalY + 10;
+      } else {
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(54, 69, 79);
+        doc.text('No se registraron emociones para este paciente.', 10, currentY + 15);
+        currentY += 20;
+      }
+    
+      // Nueva sección: Registros fisiológicos
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Registros Fisiológicos:', 10, currentY);
+    
       autoTable(doc, {
         startY: currentY + 5,
-        head: [['Estado Emocional', 'Notas', 'Fecha']],
-        body: this.emocionesPaciente.map((emotion) => [
-          {
-            content: emotion.estadoEmocional,
-            styles: {
-              halign: 'center',
-              fillColor: this.getEmotionColor(emotion.estadoEmocional),
-              textColor: [0, 0, 0], // Texto negro para contraste
-              fontStyle: 'bold',
-            },
-          },
-          emotion.notas,
-          emotion.fecha,
+        head: [['Parámetro', 'Valor']],
+        body: this.registrosFisiologicos.map((registro) => [
+          registro.parametro,
+          registro.valor,
         ]),
         theme: 'grid',
         styles: {
@@ -350,55 +406,21 @@ fetchLoggedPsychologist(): void {
           fontStyle: 'bold',
         },
       });
-  
-      // Actualizar la posición Y al final de la tabla
-      currentY = (doc as any).lastAutoTable.finalY + 10;
-    } else {
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'italic');
-      doc.setTextColor(54, 69, 79);
-      doc.text('No se registraron emociones para este paciente.', 10, currentY + 15);
-      currentY += 20;
+    
+      // Footer
+      const footerY = doc.internal.pageSize.height - 15;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(33, 37, 41);
+      doc.text(
+        'PsyWell - Monitoreo continuo de la salud mental | Contacto: psywellsolutions@gmail.com',
+        10,
+        footerY
+      );
+    
+      // Guardar PDF
+      doc.save(`Reporte_Paciente_${this.patientDetails.name}.pdf`);
     }
-  
-    // Nueva sección: Registros fisiológicos
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Registros Fisiológicos:', 10, currentY);
-  
-    autoTable(doc, {
-      startY: currentY + 5,
-      head: [['Parámetro', 'Valor']],
-      body: this.registrosFisiologicos.map((registro) => [
-        registro.parametro,
-        registro.valor,
-      ]),
-      theme: 'grid',
-      styles: {
-        fontSize: 10,
-        cellPadding: 5,
-      },
-      headStyles: {
-        fillColor: [76, 175, 80], // Verde estándar para encabezado
-        textColor: 255, // Blanco
-        fontStyle: 'bold',
-      },
-    });
-  
-    // Footer
-    const footerY = doc.internal.pageSize.height - 15;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(33, 37, 41);
-    doc.text(
-      'PsyWell - Monitoreo continuo de la salud mental | Contacto: psywellsolutions@gmail.com',
-      10,
-      footerY
-    );
-  
-    // Guardar PDF
-    doc.save(`Reporte_Paciente_${this.patientDetails.name}.pdf`);
-  }
   
 
   

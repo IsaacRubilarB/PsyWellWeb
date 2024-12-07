@@ -156,10 +156,36 @@ p {
   text-shadow: 0 0 8px #ffa726; 
 }
 
-.calories-display { 
+.sleep-display { 
   color: #fb8c00 !important; 
   text-shadow: 0 0 8px #fb8c00; 
 }
+
+.bpm-display, 
+.saturation-display, 
+.steps-display, 
+.calories-display, 
+.sleep-display { // Añadido sleep-display
+  font-size: 50px;
+  font-weight: bold;
+  margin-bottom: 10px;
+
+  @media (max-width: 768px) {
+    font-size: 40px;
+  }
+}
+.lottie-animation, .lottie-animation-sleep, .lottie-animation-stress {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+}
+
+
+.sleep-display { 
+  color: #7e57c2 !important; // Cambia este color según tu diseño
+  text-shadow: 0 0 8px #7e57c2; // Un efecto similar al de las otras métricas
+}
+
 
 .info-cards-container {
   display: flex;
@@ -276,7 +302,7 @@ button {
     height: 120px;
   }
 
-  .bpm-display, .saturation-display, .steps-display, .calories-display {
+  .bpm-display, .saturation-display, .steps-display, .sleep-display {
     font-size: 35px;
   }
 

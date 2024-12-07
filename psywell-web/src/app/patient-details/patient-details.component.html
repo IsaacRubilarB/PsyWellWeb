@@ -17,63 +17,62 @@
 
   <!-- Filtro para alternar entre datos -->
   <div class="data-filter">
-    <h2>{{ isRealTime ? 'Data en vivo' : 'Data Semanal' }}</h2>
-    <button (click)="toggleDataView()" class="btn-toggle">{{ isRealTime ? 'Ver Data Semanal' : 'Ver Data en Vivo' }}</button>
+    <h2>{{ showWeekly ? 'Data Semanal' : 'Data en Vivo' }}</h2>
+    <button (click)="toggleDataView()" class="btn-toggle">
+      {{ showWeekly ? 'Ver Data en Vivo' : 'Ver Data Semanal' }}
+    </button>
   </div>
   
   <div class="charts-container">
     <div class="chart-wrapper">
       <div #heartAnimation class="lottie-animation"></div>
-      <p class="bpm-display flip" [class.animate]="animateFlip">{{ bpm }} BPM</p>
+      <p class="bpm-display flip" [class.animate]="animateFlip">
+        {{ showWeekly ? bpmWeekly : bpm }} BPM
+      </p>
       <p>Frecuencia Cardíaca</p>
     </div>
   
     <div class="chart-wrapper">
       <div #saturationAnimation class="lottie-animation"></div>
-      <p class="saturation-display flip" [class.animate]="animateFlip">{{ saturationLevel }} %</p>
+      <p class="saturation-display flip" [class.animate]="animateFlip">
+        {{ showWeekly ? saturationLevelWeekly : saturationLevel }} %
+      </p>
       <p>Saturación de Oxígeno</p>
     </div>
   
     <div class="chart-wrapper">
       <div #stepsAnimation class="lottie-animation"></div>
-      <p class="steps-display flip" [class.animate]="animateFlip">{{ steps }}</p>
+      <p class="steps-display flip" [class.animate]="animateFlip">
+        {{ showWeekly ? stepsWeekly : steps }}
+      </p>
       <p>Pasos</p>
     </div>
   
     <div class="chart-wrapper">
-      <div #caloriesAnimation class="lottie-animation"></div>
-      <p class="calories-display flip" [class.animate]="animateFlip">{{ calories }} kcal</p>
-      <p>Gasto Calórico</p>
+      <div #sleepAnimation class="lottie-animation"></div>
+      <p class="sleep-display flip" [class.animate]="animateFlip">
+        {{ showWeekly ? sleepWeekly : sleep }} hrs
+      </p>
+      <p>Horas de Sueño</p>
     </div>
   </div>
   
   <app-reports
-  [patientId]="patientId"
-  [psychologistId]="psychologistId"
-  [patientDetails]="patientDetails"
-  [psychologistName]="psychologistName">
-</app-reports>
-
-
-
-
-
-
-
-
-
- <!-- Modal de Ficha del Paciente -->
-<div *ngIf="isFichaPacienteModalOpen" class="modal-container">
-  <div class="modal-content">
-    <app-ficha-paciente
-    *ngIf="isFichaPacienteModalOpen"
     [patientId]="patientId"
     [psychologistId]="psychologistId"
-    (closeModalEvent)="closeFichaPacienteModal()"
-  ></app-ficha-paciente>
-  
+    [patientDetails]="patientDetails"
+    [psychologistName]="psychologistName">
+  </app-reports>
+
+  <!-- Modal de Ficha del Paciente -->
+  <div *ngIf="isFichaPacienteModalOpen" class="modal-container">
+    <div class="modal-content">
+      <app-ficha-paciente
+        *ngIf="isFichaPacienteModalOpen"
+        [patientId]="patientId"
+        [psychologistId]="psychologistId"
+        (closeModalEvent)="closeFichaPacienteModal()">
+      </app-ficha-paciente>
+    </div>
   </div>
-</div>
-
-
 </div>
