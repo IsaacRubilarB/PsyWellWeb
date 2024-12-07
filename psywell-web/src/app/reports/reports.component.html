@@ -1,0 +1,23 @@
+<div class="reports-container">
+    <h1 class="reports-title">Gestor de Informes</h1>
+  
+    <div class="report-filters">
+      <label for="time-frame" class="filter-label">Rango de Tiempo:</label>
+      <select id="time-frame" class="time-frame-select" [(ngModel)]="timeFrame" (change)="onTimeFrameChange($event)">
+        <option value="weekly">Semanal</option>
+        <option value="monthly">Mensual</option>
+        <option value="quarterly">Trimestral</option>
+        <option value="yearly">Anual</option>
+      </select>
+    </div>
+  
+    <div class="report-actions">
+      <button class="btn-report pdf-button" (click)="exportPDF()">Descargar PDF</button>
+      <button class="btn-report excel-button" (click)="exportExcel()">Descargar Excel</button>
+    </div>
+  
+    <div class="clearfix">
+      <button class="btn-back" (click)="goBack()">Volver a Detalles del Paciente</button>
+    </div>
+  </div>
+  

@@ -1,4 +1,4 @@
-<app-navbar></app-navbar> 
+<app-navbar></app-navbar>
 
 <div class="patient-details">
   <h1>Detalles del Paciente</h1>
@@ -47,12 +47,15 @@
     </div>
   </div>
   
-  
-  <div class="clearfix">
-    <button class="btn-back" (click)="goBack()">Volver a Lista de Pacientes</button>
-    <button class="btn-report" (click)="generateReport()">📃 Informe emocional</button>
-  </div>
+  <!-- Incrustar el componente Reports -->
+  <app-reports 
+  [patientId]="patientId" 
+  [patientDetails]="patientDetails" 
+  [psychologistName]="psychologistName">
+</app-reports>
 
+
+  <!-- Modal de Ficha del Paciente -->
   <div *ngIf="isFichaPacienteModalOpen" class="modal-container">
     <div class="modal-content">
       <app-ficha-paciente

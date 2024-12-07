@@ -5,22 +5,22 @@ import lottie from 'lottie-web';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FichaPacienteComponent } from '../ficha-paciente/ficha-paciente.component';
-import { RegistroService } from 'app/services/registroService';
 import { PatientDataService } from 'app/services/patient-data.service';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { ReportsComponent } from 'app/reports/reports.component';
+import { AngularFireAuth } from '@angular/fire/compat/auth'; // Asegúrate de importar AngularFireAuth
 
 @Component({
   selector: 'app-patient-details',
   templateUrl: './patient-details.component.html',
   styleUrls: ['./patient-details.component.scss'],
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FichaPacienteComponent],
+  imports: [CommonModule, NavbarComponent, FichaPacienteComponent, ReportsComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class PatientDetailsComponent implements AfterViewInit, OnInit {
   patientId: string | null = null;
   animateFlip: boolean = false;
+  selectedPatientId: number | null = null;
 
   patientDetails: any = {};
   bpm: number = 75;
@@ -31,8 +31,9 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
 
   medications: any[] = [];
   appointments: any[] = [];
+  psychologistName: string = 'Desconocido'; // NUEVA PROPIEDAD
 
-  isRealTime: boolean = true; // Estado para alternar entre data en vivo y semanal
+  isRealTime: boolean = true;
 
   @ViewChild('heartAnimation') heartAnimationDiv!: ElementRef;
   @ViewChild('saturationAnimation') saturationAnimationDiv!: ElementRef;
@@ -47,26 +48,59 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
     private router: Router,
     private usersService: UsersService,
     private cdr: ChangeDetectorRef,
-    private registroService: RegistroService,
-    private patientDataService: PatientDataService
+    private patientDataService: PatientDataService,
+    private afAuth: AngularFireAuth // INYECCIÓN DEL SERVICIO
   ) {}
 
   async ngOnInit(): Promise<void> {
-    this.patientId = this.route.snapshot.paramMap.get('id');
-    if (this.patientId) {
-      this.obtenerDetallesPaciente(this.patientId);
+    // Obtener ID del paciente
+    const idFromRoute = this.route.snapshot.paramMap.get('id');
+    if (idFromRoute) {
+      this.patientId = idFromRoute;
+      this.selectedPatientId = +idFromRoute;
+      this.obtenerDetallesPaciente(idFromRoute);
+    } else {
+      console.warn('No se pudo obtener el ID del paciente de la ruta.');
+    }
+
+    // Obtener el nombre del psicólogo autenticado
+    this.fetchLoggedPsychologistName();
+  }
+  fetchLoggedPsychologistName(): void {
+    this.afAuth.authState.subscribe((user) => {
+      if (user?.email) {
+        this.usersService.listarUsuarios().subscribe((response: any) => {
+          const users = response?.data || [];
+          const psychologist = users.find((u: any) => u.email === user.email);
+          this.psychologistName = psychologist?.nombre || 'Desconocido';
+        });
+      } else {
+        console.warn('No hay un usuario autenticado.');
+        this.psychologistName = 'No se ha asignado un psicólogo.';
+      }
+    });
+  }
+  async obtenerPsychologistId(): Promise<string | null> {
+    try {
+      const user = await this.afAuth.currentUser; // Obtener el usuario autenticado
+      return user?.uid || null; // Retorna el UID del usuario o null si no está autenticado
+    } catch (error) {
+      console.error('Error al obtener el ID del psicólogo autenticado:', error);
+      return null;
     }
   }
 
-  obtenerDetallesPaciente(id: string) {
+  async obtenerDetallesPaciente(id: string): Promise<void> {
     this.usersService.obtenerUsuarioPorId(id).subscribe(
       async (response: any) => {
         const data = response.data;
         if (data) {
           const email = data.correo || data.email || '';
           const photoUrl = email ? this.getFirebaseImageUrl(email, 'profile') : 'assets/patient.png';
-
+  
+          // Asignar detalles del paciente
           this.patientDetails = {
+            id: id,
             name: data.nombre || 'Nombre desconocido',
             age: data.fechaNacimiento ? this.calculateAge(data.fechaNacimiento) : 'Edad desconocida',
             diagnosis: data.diagnosis || 'Sin diagnóstico',
@@ -74,10 +108,14 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
             email: email,
             photo: photoUrl,
           };
-
+  
+          // Asignar el ID del paciente para el componente de reportes
+          this.selectedPatientId = id ? parseInt(id, 10) : null; // Asegurarse de convertirlo a número si es necesario.
+  
+          // Datos adicionales
           this.medications = data.medications || [];
           this.appointments = data.appointments || [];
-
+  
           if (email) {
             await this.initializePatientData(email);
           }
@@ -88,6 +126,11 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
       }
     );
   }
+  
+  getPatientDetails(): any {
+    return this.patientDetails;
+  }
+  
 
   private getFirebaseImageUrl(email: string, tipo: 'profile' | 'banner'): string {
     const sanitizedEmail = email.replace(/@/g, '_').replace(/\./g, '_');
@@ -97,19 +140,41 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
     )}?alt=media`;
   }
 
-  calculateAge(fechaNacimiento: string): number {
-    const [day, month, year] = fechaNacimiento.split('/');
-    const birthDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  calculateAge(fechaNacimiento: string | null): number | string {
+    if (!fechaNacimiento) return 'Edad desconocida';
+  
+    // Intenta crear la fecha directamente
+    const birthDate = new Date(fechaNacimiento);
+  
+    // Si la fecha no es válida, intenta dividir manualmente
+    if (isNaN(birthDate.getTime())) {
+      const dateParts = fechaNacimiento.split(/[-/]/); // Acepta "-" o "/"
+      if (dateParts.length !== 3) return 'Edad desconocida';
+  
+      const [day, month, year] = dateParts.map(part => parseInt(part, 10));
+      if (isNaN(day) || isNaN(month) || isNaN(year)) return 'Edad desconocida';
+  
+      // Reconstruye la fecha
+      const manualDate = new Date(year, month - 1, day);
+      if (isNaN(manualDate.getTime())) return 'Edad desconocida';
+      birthDate.setTime(manualDate.getTime());
+    }
+  
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+  
+    // Ajusta la edad si el cumpleaños no ha ocurrido este año
     if (
-      today.getMonth() < birthDate.getMonth() ||
-      (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())
+      monthDifference < 0 ||
+      (monthDifference === 0 && today.getDate() < birthDate.getDate())
     ) {
       age--;
     }
-    return age;
+  
+    return isNaN(age) || age < 0 ? 'Edad desconocida' : age;
   }
+  
 
   async initializePatientData(email: string) {
     if (this.isRealTime) {
@@ -118,7 +183,6 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
       await this.loadWeeklyPatientData(email);
     }
   }
-
 
   async loadRealTimePatientData(email: string) {
     try {
@@ -229,45 +293,6 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
     this.router.navigate(['/patients']);
   }
 
-  generateReport() {
-    this.registroService.listarRegistroByUser(this.patientId).subscribe((res) => {
-      const data = res.data;
-      if (data.length === 0) {
-        alert('No se encontraron datos para exportar');
-        return;
-      }
-      const columns = this.getColumns(data);
-      const rows = this.getRows(data, columns);
-      const doc = new jsPDF();
-      autoTable(doc, { head: [columns], body: rows });
-      doc.save('data.pdf');
-    });
-  }
-
-  getColumns(data: any[]): string[] {
-    const columns: string[] = [];
-    data.forEach((row) => {
-      Object.keys(row).forEach((col) => {
-        if (!columns.includes(col)) {
-          columns.push(col);
-        }
-      });
-    });
-    return columns;
-  }
-
-  getRows(data: any[], columns: string[]): any[] {
-    const rows: any[] = [];
-    data.forEach((row) => {
-      const values: any[] = [];
-      columns.forEach((col) => {
-        values.push(row[col] || '');
-      });
-      rows.push(values);
-    });
-    return rows;
-  }
-
   openFichaPacienteModal() {
     this.isFichaPacienteModalOpen = true;
   }
@@ -276,22 +301,16 @@ export class PatientDetailsComponent implements AfterViewInit, OnInit {
     this.isFichaPacienteModalOpen = false;
   }
 
-
-
-   // Función para alternar entre datos y activar la animación
-   async toggleDataView(): Promise<void> {
+  async toggleDataView(): Promise<void> {
     this.isRealTime = !this.isRealTime;
     this.animateFlip = true;
 
-    // Desactiva la animación después de que termine
     setTimeout(() => {
       this.animateFlip = false;
-    }, 600); // Tiempo en milisegundos que coincide con la transición en CSS
+    }, 600);
 
-    if (this.isRealTime) {
-      await this.loadRealTimePatientData(this.patientDetails.email);
-    } else {
-      await this.loadWeeklyPatientData(this.patientDetails.email);
+    if (this.patientDetails.email) {
+      await this.initializePatientData(this.patientDetails.email);
     }
   }
 }

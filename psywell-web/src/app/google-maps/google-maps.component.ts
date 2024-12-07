@@ -19,6 +19,8 @@ export class GoogleMapsComponent implements OnInit {
   longitude = -70.673676;
   zoom = 14;
 
+  private marker: any;
+
   ngOnInit(): void {
     this.initMap();
   }
@@ -35,9 +37,8 @@ export class GoogleMapsComponent implements OnInit {
     // Inicializar la barra de búsqueda
     const input = document.getElementById('searchBox') as HTMLInputElement;
     this.searchBox = new google.maps.places.SearchBox(input);
-    this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
-    // Evento para seleccionar ubicación desde la barra de búsqueda
+    // Mover el mapa al cambiar la búsqueda
     this.searchBox.addListener('places_changed', () => {
       const places = this.searchBox.getPlaces();
       if (places.length === 0) {
@@ -45,46 +46,41 @@ export class GoogleMapsComponent implements OnInit {
       }
 
       const place = places[0];
-      this.selectedAddress = place.formatted_address;
+      if (!place.geometry || !place.geometry.location) {
+        console.error('Place contains no geometry');
+        return;
+      }
 
-      // Centrar el mapa
+      this.setMarker({
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng(),
+      });
+
       this.map.setCenter(place.geometry.location);
+    });
 
-      // Agregar marcador
-      this.setMarker(place.geometry.location);
+    // Asociar el mapa con el SearchBox para mostrar sugerencias basadas en la vista actual
+    this.map.addListener('bounds_changed', () => {
+      this.searchBox.setBounds(this.map.getBounds());
     });
 
     // Evento para hacer clic en el mapa
     this.map.addListener('click', (event: any) => {
       if (event.latLng) {
-        this.latitude = event.latLng.lat();
-        this.longitude = event.latLng.lng();
-
-        // Obtener dirección con Reverse Geocoding
-        this.getAddressFromCoordinates(this.latitude, this.longitude);
-
-        // Agregar marcador
-        this.setMarker(event.latLng);
-      }
-    });
-
-    // Prevenir que el formulario de búsqueda envíe o recargue la página al presionar Enter
-    input.addEventListener('keydown', (event: KeyboardEvent) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();  // Prevenir el comportamiento predeterminado (salir del modal)
-        this.searchLocation();    // Realizar la búsqueda manualmente
+        const position = { lat: event.latLng.lat(), lng: event.latLng.lng() };
+        this.setMarker(position);
       }
     });
   }
 
-  setMarker(position: { lat: number; lng: number } | any): void {
+  setMarker(position: { lat: number; lng: number }): void {
     // Eliminar marcador previo
-    if (this.map.marker) {
-      this.map.marker.setMap(null);
+    if (this.marker) {
+      this.marker.setMap(null);
     }
 
     // Agregar nuevo marcador
-    this.map.marker = new google.maps.Marker({
+    this.marker = new google.maps.Marker({
       position,
       map: this.map,
       animation: google.maps.Animation.DROP,
@@ -92,6 +88,9 @@ export class GoogleMapsComponent implements OnInit {
 
     // Centrar el mapa en el marcador
     this.map.setCenter(position);
+
+    // Obtener dirección actualizada
+    this.getAddressFromCoordinates(position.lat, position.lng);
   }
 
   getAddressFromCoordinates(lat: number, lng: number): void {
@@ -101,6 +100,9 @@ export class GoogleMapsComponent implements OnInit {
       (results: any, status: any) => {
         if (status === 'OK' && results && results.length > 0) {
           this.selectedAddress = results[0].formatted_address;
+
+          // Emitir la dirección seleccionada
+          this.locationSelected.emit(this.selectedAddress);
           console.log('Dirección seleccionada:', this.selectedAddress);
         } else {
           this.selectedAddress = 'No se pudo obtener la dirección.';
@@ -125,11 +127,7 @@ export class GoogleMapsComponent implements OnInit {
     geocoder.geocode({ address: query }, (results: any, status: any) => {
       if (status === 'OK' && results.length > 0) {
         const location = results[0].geometry.location;
-        this.selectedAddress = results[0].formatted_address;
-
-        // Centrar mapa y agregar marcador
-        this.map.setCenter(location);
-        this.setMarker(location);
+        this.setMarker({ lat: location.lat(), lng: location.lng() });
       } else {
         Swal.fire({
           icon: 'error',
@@ -144,19 +142,13 @@ export class GoogleMapsComponent implements OnInit {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          this.latitude = position.coords.latitude;
-          this.longitude = position.coords.longitude;
-  
-          const location = { lat: this.latitude, lng: this.longitude };
-  
-          // Centrar el mapa en la ubicación del usuario
-          this.map.setCenter(location);
-  
-          // Agregar marcador en la ubicación
+          const location = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+
+          // Centrar el mapa y actualizar el marcador
           this.setMarker(location);
-  
-          // Obtener la dirección con Reverse Geocoding
-          this.getAddressFromCoordinates(this.latitude, this.longitude);
         },
         (error) => {
           Swal.fire({
@@ -174,35 +166,4 @@ export class GoogleMapsComponent implements OnInit {
       });
     }
   }
-  
-
-  saveLocation(): void {
-    if (this.selectedAddress) {
-      Swal.fire({
-        title: '¿Estás seguro?',
-        text: `¿Guardar esta dirección?: \n${this.selectedAddress}`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, guardar',
-        cancelButtonText: 'Cancelar',
-      }).then((result) => {
-        if (result.isConfirmed) {
-          console.log('Dirección guardada:', this.selectedAddress);
-          this.locationSelected.emit(this.selectedAddress); // Emitir la dirección seleccionada
-          Swal.fire({
-            icon: 'success',
-            title: '¡Guardado!',
-            text: 'La dirección ha sido guardada con éxito.',
-          });
-        }
-      });
-    } else {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Error',
-        text: 'Por favor, seleccione una ubicación primero.',
-      });
-    }
-  }
-  
 }
