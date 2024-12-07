@@ -3,22 +3,21 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface FichaInput {
-    idFichaPaciente?: number;
-    idPaciente?: number;
-    idPsicologo?: number;
-    nombres: string;
-    fechaNacimiento: string | null;
-    genero: string;
-    correo: string;
-    telefono: string;
-    telefonoEmercia: string;
-    direccion: string;
-    estadoCivil?: string; // Nuevo campo
-    notasSesionAnterior: string;
-    medicamentos: string;
-    diagnostico: string;
-  }
-  
+  idFichaPaciente?: number; // Identificador único de la ficha (opcional para nuevas fichas)
+  idPaciente?: number;
+  idPsicologo?: number;
+  nombres: string;
+  fechaNacimiento: string | null;
+  genero: string;
+  correo: string;
+  telefono: string;
+  telefonoEmercia: string;
+  direccion: string;
+  estadoCivil?: string; // Nuevo campo
+  notasSesionAnterior: string;
+  medicamentos: string;
+  diagnostico: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -28,18 +27,30 @@ export class FichaService {
 
   constructor(private http: HttpClient) {}
 
-  // Método para registrar una ficha
+  // Registrar una nueva ficha
   registrarFicha(ficha: FichaInput): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post(`${this.apiUrl}/registrarFicha`, ficha, { headers });
   }
 
-  // Método para obtener todas las fichas
+  // Listar todas las fichas (para propósitos administrativos)
   listarFichas(): Observable<any> {
     return this.http.get(`${this.apiUrl}/listarFichas`);
   }
 
-  // Método para obtener datos del paciente por su ID
+  obtenerFichaPorIdPaciente(idPaciente: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/obtenerFichaPorIdPaciente/${idPaciente}`);
+  }
+  
+  
+
+  // Actualizar una ficha existente
+  actualizarFicha(idFichaPaciente: number, ficha: FichaInput): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.put(`${this.apiUrl}/actualizarFicha/${idFichaPaciente}`, ficha, { headers });
+  }
+
+  // Obtener datos del paciente por ID
   obtenerDatosPaciente(idPaciente: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/api/ListarUsuariosById/${idPaciente}`);
   }

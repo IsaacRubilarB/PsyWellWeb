@@ -49,9 +49,10 @@ export class FichaPacienteComponent implements OnInit {
 
   ngOnInit() {
     if (this.patientId) {
-      this.cargarDatosPaciente(this.patientId); // Cargar datos iniciales del paciente
+      this.cargarFichaPaciente(this.patientId);
     }
   }
+  
 
   obtenerIDs(): void {
     const emailPsicologo = localStorage.getItem('emailPsicologo'); // Correo del psicólogo logueado
@@ -102,33 +103,36 @@ export class FichaPacienteComponent implements OnInit {
     );
   }
 
-  cargarDatosPaciente(id: number) {
-    this.usersService.obtenerUsuarioPorId(id.toString()).subscribe(
-      (response: any) => {
-        const data = response.data;
-        if (data) {
+  cargarDatosPaciente(id: number): void {
+    this.fichaService.obtenerFichaPorIdPaciente(id).subscribe(
+      (response) => {
+        if (response && response.data) {
           this.paciente = {
-            nombres: data.nombre || '',
-            fechaNacimiento: data.fechaNacimiento || null,
-            genero: data.genero || '',
-            correo: data.email || '',
-            telefono: data.telefono || '',
-            telefonoEmercia: data.telefonoEmercia || '',
-            direccion: data.direccion || '',
-            estadoCivil: data.estadoCivil || '', // Asignación del nuevo campo
-            notasSesionAnterior: data.notasSesionAnterior || '',
-            medicamentos: data.medicamentos || '',
-            diagnostico: data.diagnostico || 'Sin diagnóstico',
+            idFichaPaciente: response.data.idFichaPaciente || undefined,
+            nombres: response.data.nombres || '',
+            fechaNacimiento: response.data.fechaNacimiento || null,
+            genero: response.data.genero || '',
+            correo: response.data.correo || '',
+            telefono: response.data.telefono || '',
+            telefonoEmercia: response.data.telefonoEmercia || '',
+            direccion: response.data.direccion || '',
+            estadoCivil: response.data.estadoCivil || '',
+            notasSesionAnterior: response.data.notasSesionAnterior || '',
+            medicamentos: response.data.medicamentos || '',
+            diagnostico: response.data.diagnostico || ''
           };
           this.formattedFechaNacimiento = this.formatearFechaNacimiento(this.paciente.fechaNacimiento);
           this.updateProgress();
         }
       },
       (error) => {
-        console.error('Error al obtener datos del paciente:', error);
+        console.error('Error al cargar la ficha del paciente:', error);
+        alert('No se pudo cargar la ficha del paciente. Por favor, intenta nuevamente.');
       }
     );
   }
+  
+  
   
 
   validarTelefono(telefono: string): boolean {
@@ -177,10 +181,39 @@ export class FichaPacienteComponent implements OnInit {
     );
   }
 
+  cargarFichaPaciente(idPaciente: number): void {
+    this.fichaService.obtenerFichaPorIdPaciente(idPaciente).subscribe(
+      (response) => {
+        if (response && response.data) {
+          this.paciente = {
+            ...this.paciente,
+            nombres: response.data.nombres || '',
+            fechaNacimiento: response.data.fechaNacimiento || null,
+            genero: response.data.genero || '',
+            correo: response.data.correo || '',
+            telefono: response.data.telefono || '',
+            telefonoEmercia: response.data.telefonoEmercia || '',
+            direccion: response.data.direccion || '',
+            estadoCivil: response.data.estadoCivil || '',
+            notasSesionAnterior: response.data.notasSesionAnterior || '',
+            medicamentos: response.data.medicamentos || '',
+            diagnostico: response.data.diagnostico || '',
+          };
+          this.formattedFechaNacimiento = this.formatearFechaNacimiento(this.paciente.fechaNacimiento);
+          this.updateProgress();
+        }
+      },
+      (error) => {
+        console.error('Error al cargar la ficha del paciente:', error);
+      }
+    );
+  }
+  
+
   onSubmit(): void {
     if (!this.psychologistId || !this.patientId) {
-      console.error('No se puede registrar la ficha. Faltan IDs obligatorios.');
-      alert('Error: No se puede registrar la ficha sin los IDs del psicólogo y del paciente.');
+      console.error('No se puede registrar o actualizar la ficha. Faltan IDs obligatorios.');
+      alert('Error: No se puede registrar o actualizar la ficha sin los IDs del psicólogo y del paciente.');
       return;
     }
   
@@ -188,24 +221,41 @@ export class FichaPacienteComponent implements OnInit {
       ...this.paciente,
       idPsicologo: this.psychologistId,
       idPaciente: this.patientId,
-      estadoCivil: this.paciente.estadoCivil, // Enviar el nuevo campo
     };
   
-    this.fichaService.registrarFicha(fichaPayload).subscribe(
-      (response) => {
-        console.log('Ficha registrada con éxito:', response);
-        this.showSuccessMessage = true;
-        setTimeout(() => {
-          this.showSuccessMessage = false;
-          this.closeModal();
-        }, 2000);
-      },
-      (error) => {
-        console.error('Error al registrar la ficha:', error);
-        alert('Error al registrar la ficha. Por favor, intente nuevamente.');
-      }
-    );
+    if (this.paciente.idFichaPaciente) {
+      this.fichaService.actualizarFicha(this.paciente.idFichaPaciente, fichaPayload).subscribe(
+        (response) => {
+          console.log('Ficha actualizada con éxito:', response);
+          this.showSuccessMessage = true;
+          setTimeout(() => {
+            this.showSuccessMessage = false;
+            this.closeModal();
+          }, 2000);
+        },
+        (error) => {
+          console.error('Error al actualizar la ficha:', error);
+          alert('Error al actualizar la ficha. Por favor, intente nuevamente.');
+        }
+      );
+    } else {
+      this.fichaService.registrarFicha(fichaPayload).subscribe(
+        (response) => {
+          console.log('Ficha registrada con éxito:', response);
+          this.showSuccessMessage = true;
+          setTimeout(() => {
+            this.showSuccessMessage = false;
+            this.closeModal();
+          }, 2000);
+        },
+        (error) => {
+          console.error('Error al registrar la ficha:', error);
+          alert('Error al registrar la ficha. Por favor, intente nuevamente.');
+        }
+      );
+    }
   }
+  
   
   
 
