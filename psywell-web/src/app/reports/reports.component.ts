@@ -399,27 +399,82 @@ fetchLoggedPsychologist(): void {
  
 
 
-
   exportExcel(): void {
+    // Crear el workbook y agregar las hojas
     const workbook = XLSX.utils.book_new();
+
+    // Hoja 1: Detalles del Paciente
     const patientSheet = XLSX.utils.json_to_sheet([
-      { Campo: 'Nombre', Valor: this.patientDetails.name },
-      { Campo: 'Edad', Valor: `${this.patientDetails.age} años` },
-      { Campo: 'Diagnóstico', Valor: this.patientDetails.diagnosis },
+        { Campo: 'Nombre', Valor: this.patientDetails.name },
+        { Campo: 'Edad', Valor: `${this.patientDetails.age} años` },
+        { Campo: 'Diagnóstico', Valor: this.patientDetails.diagnosis },
+        { Campo: 'Rango de Tiempo', Valor: this.translateTimeFrame(this.timeFrame) },
     ]);
-
-    const physiologicalSheet = XLSX.utils.json_to_sheet(
-      this.registrosFisiologicos.map((record) => ({
-        Parámetro: record.parametro,
-        Valor: record.valor,
-      }))
-    );
-
     XLSX.utils.book_append_sheet(workbook, patientSheet, 'Detalles del Paciente');
+
+    // Hoja 2: Registros Emocionales
+    const emotionsSheet = XLSX.utils.json_to_sheet(
+        this.emocionesPaciente.map((emotion) => ({
+            'Estado Emocional': emotion.estadoEmocional,
+            Notas: emotion.notas,
+        }))
+    );
+    XLSX.utils.book_append_sheet(workbook, emotionsSheet, 'Registros Emocionales');
+
+    // Hoja 3: Registros Fisiológicos
+    const physiologicalSheet = XLSX.utils.json_to_sheet(
+        this.registrosFisiologicos.map((record) => ({
+            Parámetro: record.parametro,
+            Valor: record.valor,
+            Estado: 'Normal',
+        }))
+    );
     XLSX.utils.book_append_sheet(workbook, physiologicalSheet, 'Registros Fisiológicos');
 
+    // Estilizar encabezados de las tablas
+    const styleHeader = {
+        font: { bold: true, color: { rgb: "FFFFFF" } },
+        fill: { fgColor: { rgb: "4CAF50" } },
+        alignment: { horizontal: "center", vertical: "center" },
+    };
+
+    // Ajustar ancho de columnas
+    const sheets = [patientSheet, emotionsSheet, physiologicalSheet];
+    const columnWidths = [
+        [{ wpx: 150 }, { wpx: 300 }], // Para Hoja 1
+        [{ wpx: 200 }, { wpx: 500 }], // Para Hoja 2
+        [{ wpx: 200 }, { wpx: 150 }, { wpx: 150 }], // Para Hoja 3
+    ];
+
+    sheets.forEach((sheet, index) => {
+        sheet['!cols'] = columnWidths[index];
+        const range = XLSX.utils.decode_range(sheet['!ref']!);
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+            const address = XLSX.utils.encode_cell({ r: range.s.r, c: C });
+            if (!sheet[address]) continue;
+            sheet[address].s = styleHeader; // Aplica el estilo solo al encabezado
+        }
+    });
+
+    // Guardar el archivo Excel
     XLSX.writeFile(workbook, `Reporte_Paciente_${this.patientDetails.name}.xlsx`);
+}
+  
+
+
+
+  getPhysiologicalStatus(param: string, value: string): string {
+    const numericValue = parseFloat(value.replace(/[^\d.-]/g, '')); // Extraer números
+    if (param === 'Frecuencia Cardíaca') {
+      if (numericValue < 60) return 'Bajo';
+      if (numericValue <= 100) return 'Normal';
+      return 'Alto';
+    }
+    // Agregar más lógica para otros parámetros
+    return 'Normal';
   }
+  
+
 
   translateTimeFrame(timeFrame: string): string {
     const translations: Record<string, string> = {
