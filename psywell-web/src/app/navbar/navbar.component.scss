@@ -207,7 +207,7 @@
 }
 
 .nota-desplegable {
-  width: 150px;
+  width: 200px; /* Ajusta el ancho completo del post-it */
   padding: 10px;
   border-radius: 5px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
@@ -215,11 +215,41 @@
   cursor: pointer;
   position: relative;
   transition: all 0.3s ease;
-  transform: translateX(-120px); /* Posición inicial fuera de la pantalla */
+  transform: translateX(-135px); /* Mueve más hacia afuera en estado contraído */
+  overflow: hidden; /* Evita que el texto se desborde */
+  white-space: nowrap; /* Mantiene el texto en una sola línea */
+  text-overflow: ellipsis; /* Agrega puntos suspensivos si el texto es muy largo */
 }
 
 .nota-desplegable.expand {
-  transform: translateX(0); /* Se despliega dentro de la pantalla */
+  transform: translateX(0); /* Se despliega completamente dentro de la pantalla */
+  white-space: normal; /* Permite múltiples líneas en el estado expandido */
+  overflow: visible; /* Muestra todo el contenido */
+}
+
+.nota-header {
+  display: flex;
+  justify-content: space-between; /* Ajusta los elementos dentro del header */
+  align-items: center;
+  font-size: 14px;
+  font-weight: bold;
+  white-space: nowrap; /* Evita salto de línea */
+  overflow: hidden; /* Controla el desbordamiento */
+  text-overflow: ellipsis; /* Agrega puntos suspensivos si es necesario */
+}
+
+.nota-header .clave {
+  margin-left: auto; /* Empuja la palabra clave a la derecha en estado contraído */
+  text-align: right;
+  color: #555; /* Color más tenue para diferenciarlo */
+  transition: all 0.3s ease; /* Transición suave al expandir */
+}
+
+/* Cambia la alineación de la palabra clave en estado expandido */
+.nota-desplegable.expand .nota-header .clave {
+  margin-left: 0; /* Mueve la palabra clave a la izquierda */
+  text-align: left;
+  color: #000; /* Cambia el color si es necesario */
 }
 
 .nota-contenido {
@@ -229,6 +259,7 @@
   max-height: calc(100vh - 50px); /* Limita la altura para que no se salga */
   overflow-y: auto; /* Permite scroll si el contenido es muy largo */
   animation: fadeIn 0.3s ease;
+  text-align: left; /* Asegura que el contenido expandido esté alineado a la izquierda */
 }
 
 @keyframes fadeIn {
@@ -243,7 +274,7 @@
 }
 
 .nota-delgada {
-  width: 150px;
+  width: 200px; /* Ajusta el ancho */
   padding: 5px 10px;
   cursor: pointer;
   border-radius: 5px;
@@ -256,12 +287,6 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-}
-
-.nota-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .flecha {
@@ -284,15 +309,4 @@
   font-size: 12px;
   color: #333;
   animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }

@@ -5,8 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
 import { getAuth } from 'firebase/auth';
-import { NotasService } from '../services/NotasService'; // Servicio para manejar notas importantes
-import { UsersService } from '../services/userService'; // Servicio para obtener datos del usuario
+import { NotasService } from '../services/NotasService';
+import { UsersService } from '../services/userService';
 
 @Component({
   selector: 'app-notas',
@@ -18,17 +18,32 @@ import { UsersService } from '../services/userService'; // Servicio para obtener
 export class NotasComponent implements OnInit {
   notas: any[] = [];
   nuevaNota = {
-    titulo: '',
-    contenido: '',
-    esImportante: false,
-    fechaCreacion: new Date(),
+    palabraClave: '', // Palabra clave seleccionada del combobox
+    titulo: '', // Título de la nota
+    contenido: '', // Contenido de la nota
+    esImportante: false, // Si es una nota importante
+    fechaCreacion: new Date(), // Fecha de creación
   };
   psicologoId: string | null = null;
+
+  // Lista de palabras clave para el combobox
+  palabrasClave: string[] = [
+    'Atención',
+    'Seguimiento',
+    'Urgente',
+    'Cuidado',
+    'Evaluación',
+    'Prioridad',
+    'Consulta',
+    'Revisión',
+    'Diagnóstico',
+    'Terapia',
+  ];
 
   constructor(
     private firestore: AngularFirestore,
     private usersService: UsersService,
-    private notasService: NotasService // Servicio para notas importantes
+    private notasService: NotasService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -88,12 +103,24 @@ export class NotasComponent implements OnInit {
       });
   }
 
+  verificarLimiteImportantes(): void {
+    const notasImportantes = this.notas.filter((nota) => nota.esImportante);
+    if (notasImportantes.length >= 3 && this.nuevaNota.esImportante) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Límite alcanzado',
+        text: 'Solo puedes tener 3 notas marcadas como importantes.',
+      });
+      this.nuevaNota.esImportante = false;
+    }
+  }
+
   agregarNota(): void {
-    if (!this.nuevaNota.titulo.trim() || !this.nuevaNota.contenido.trim()) {
+    if (!this.nuevaNota.palabraClave.trim() || !this.nuevaNota.titulo.trim() || !this.nuevaNota.contenido.trim()) {
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'El título y el contenido no pueden estar vacíos.',
+        text: 'La palabra clave, el título y el contenido no pueden estar vacíos.',
       });
       return;
     }
@@ -113,6 +140,17 @@ export class NotasComponent implements OnInit {
       psicologoId: this.psicologoId,
     };
 
+    // Verificar límite de notas importantes
+    const notasImportantes = this.notas.filter((nota) => nota.esImportante);
+    if (notasImportantes.length >= 3 && nuevaNota.esImportante) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Límite alcanzado',
+        text: 'Solo puedes tener 3 notas marcadas como importantes.',
+      });
+      return;
+    }
+
     this.firestore
       .collection('notas')
       .add(nuevaNota)
@@ -123,13 +161,14 @@ export class NotasComponent implements OnInit {
           text: 'La nota ha sido guardada exitosamente.',
         });
         this.nuevaNota = {
+          palabraClave: '',
           titulo: '',
           contenido: '',
           esImportante: false,
           fechaCreacion: new Date(),
         };
-        this.obtenerNotas(); // Actualiza todas las notas
-        this.notasService.obtenerNotasImportantes(this.psicologoId!); // Actualiza las notas importantes
+        this.obtenerNotas();
+        this.notasService.obtenerNotasImportantes(this.psicologoId!);
       })
       .catch((error) => {
         Swal.fire({
@@ -163,8 +202,8 @@ export class NotasComponent implements OnInit {
               text: 'La nota se ha eliminado correctamente.',
               confirmButtonColor: '#3085d6',
             });
-            this.obtenerNotas(); // Actualiza todas las notas
-            this.notasService.obtenerNotasImportantes(this.psicologoId!); // Actualiza las notas importantes
+            this.obtenerNotas();
+            this.notasService.obtenerNotasImportantes(this.psicologoId!);
           })
           .catch((error) => {
             Swal.fire({

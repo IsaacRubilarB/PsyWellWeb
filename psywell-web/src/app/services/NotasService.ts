@@ -22,13 +22,14 @@ export class NotasService {
         const importantes = notas
           .map((nota: any) => ({
             ...nota,
+            palabraClave: nota.palabraClave || 'Sin Palabra Clave', // Validar palabraClave
             fechaCreacion: nota.fechaCreacion?.toDate
               ? nota.fechaCreacion.toDate()
               : new Date(),
+            isOpen: false, // Agrega el estado inicial para las notas
           }))
           .slice(0, 3); // Limitar a un máximo de 3 notas
         this.notasImportantesSubject.next(importantes);
       });
   }
 }
-

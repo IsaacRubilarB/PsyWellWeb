@@ -13,7 +13,7 @@ import { NotasService } from '../services/NotasService';
 })
 export class NavbarComponent implements OnInit {
   isMenuOpen = false;
-  notasImportantes: any[] = []; // Almacena las notas importantes para mostrarlas
+  notasImportantes: any[] = [];
 
   constructor(
     private authService: AuthService,
@@ -22,10 +22,12 @@ export class NavbarComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Suscribirse al servicio para recibir notas importantes
     this.notasService.notasImportantes$.subscribe((notas) => {
       this.notasImportantes = notas.map((nota) => ({
         ...nota,
-        isOpen: false, // Inicialmente las notas están cerradas
+        isOpen: false,
+        palabraClave: nota.palabraClave,
       }));
     });
   }
@@ -59,9 +61,10 @@ export class NavbarComponent implements OnInit {
   }
 
   toggleNota(index: number): void {
-    this.notasImportantes[index].isOpen = !this.notasImportantes[index].isOpen;
+    const nota = this.notasImportantes[index];
+    nota.isOpen = !nota.isOpen;
 
-    if (this.notasImportantes[index].isOpen) {
+    if (nota.isOpen) {
       setTimeout(() => {
         const notaElement = document.querySelectorAll('.nota-desplegable')[index] as HTMLElement;
         if (notaElement) {
@@ -80,6 +83,4 @@ export class NavbarComponent implements OnInit {
       }, 300); // Esperar a que la transición inicial se complete
     }
   }
-
 }
-

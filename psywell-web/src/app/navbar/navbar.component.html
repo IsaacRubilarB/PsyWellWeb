@@ -36,7 +36,7 @@
     </button>
   </div>
 
-  <!-- Notas con flechas -->
+  <!-- Notas importantes -->
   <div class="notas-postit-wrapper">
     <div
       *ngFor="let nota of notasImportantes; let i = index"
@@ -45,10 +45,14 @@
       (click)="toggleNota(i)"
       [style.background-color]="getPostitColor(i)"
     >
+      <!-- Palabra clave como texto visible en estado contraído -->
       <div class="nota-header">
-        {{ nota.titulo }}
+        <span class="clave">{{ nota.palabraClave || 'Sin Palabra Clave' }}</span>
       </div>
+
+      <!-- Contenido detallado cuando la nota está expandida -->
       <div class="nota-contenido" *ngIf="nota.isOpen">
+        <p>{{ nota.titulo }}</p>
         <p>{{ nota.contenido }}</p>
       </div>
     </div>
