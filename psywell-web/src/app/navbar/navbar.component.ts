@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { NotasService } from '../services/NotasService';
+import { NotificacionesService } from '../services/NotificacionesService'; // Servicio para notificaciones
 
 @Component({
   selector: 'app-navbar',
@@ -14,11 +15,14 @@ import { NotasService } from '../services/NotasService';
 export class NavbarComponent implements OnInit {
   isMenuOpen = false;
   notasImportantes: any[] = [];
+  nuevasCitas: any[] = []; // Nuevas citas
+  nuevasCitasCount: number = 0; // Contador de nuevas citas
 
   constructor(
     private authService: AuthService,
     private router: Router,
-    private notasService: NotasService
+    private notasService: NotasService,
+    private notificacionesService: NotificacionesService // Servicio para notificaciones
   ) {}
 
   ngOnInit(): void {
@@ -29,6 +33,15 @@ export class NavbarComponent implements OnInit {
         isOpen: false,
         palabraClave: nota.palabraClave,
       }));
+    });
+
+    // Suscribirse al servicio de notificaciones para recibir las nuevas citas
+    this.notificacionesService.nuevasCitas$.subscribe((citas) => {
+      this.nuevasCitas = citas.map((cita) => ({
+        ...cita,
+        isOpen: false, // Agrega un estado para manejar la visualización de cada cita
+      }));
+      this.nuevasCitasCount = citas.length; // Actualiza el contador
     });
   }
 
@@ -82,5 +95,17 @@ export class NavbarComponent implements OnInit {
         }
       }, 300); // Esperar a que la transición inicial se complete
     }
+  }
+
+  // Método para navegar a la página de citas y resetear el contador de nuevas citas
+  irACitas(): void {
+    this.router.navigate(['/citas']);
+    this.notificacionesService.resetearNuevasCitas(); // Resetea las nuevas citas al entrar
+  }
+
+  // Mostrar detalles de una cita como post-it
+  toggleCita(index: number): void {
+    const cita = this.nuevasCitas[index];
+    cita.isOpen = !cita.isOpen;
   }
 }

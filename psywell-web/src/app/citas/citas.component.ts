@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CitasService } from '../services/citasService';
+import { NotificacionesService } from '../services/NotificacionesService';
 import { NavbarComponent } from 'app/navbar/navbar.component';
 import { CommonModule } from '@angular/common';
 import { UsersService } from '../services/userService';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import Swal from 'sweetalert2';
 import { GoogleMapsComponent } from 'app/google-maps/google-maps.component';
 
 export interface Cita {
@@ -18,7 +18,7 @@ export interface Cita {
   horaInicio: string;
   horaFin: string;
   comentarios: string;
-  nombrePaciente: string;
+  nombrePaciente?: string;
   fotoPaciente?: string;
 }
 
@@ -29,12 +29,12 @@ export interface Cita {
   styleUrls: ['./citas.component.scss'],
   imports: [NavbarComponent, CommonModule, ReactiveFormsModule, GoogleMapsComponent],
 })
-export class CitasComponent implements OnInit {
+export class CitasComponent implements OnInit, OnDestroy {
   citas: Cita[] = [];
   filteredCitas: Cita[] = [];
   pacientes: any[] = [];
   mostrarModal = false;
-  mostrarMapaModal: boolean = false;
+  mostrarMapaModal = false;
   citaForm: FormGroup;
   errorMessage: string | null = null;
   userId: number | null = null;
@@ -45,7 +45,8 @@ export class CitasComponent implements OnInit {
     private citasService: CitasService,
     private fb: FormBuilder,
     private usersService: UsersService,
-    private afAuth: AngularFireAuth
+    private afAuth: AngularFireAuth,
+    private notificacionesService: NotificacionesService // Servicio de notificaciones
   ) {
     this.citaForm = this.fb.group({
       idPaciente: ['', Validators.required],
@@ -65,6 +66,10 @@ export class CitasComponent implements OnInit {
         this.cargarPsicologo(user.email || '');
       }
     });
+  }
+
+  ngOnDestroy() {
+    // No se requieren intervalos adicionales en este componente
   }
 
   cargarPsicologo(email: string) {
@@ -101,43 +106,12 @@ export class CitasComponent implements OnInit {
     this.citaEnEdicion = null;
   }
 
-  obtenerCitas() {
-    this.citasService.listarCitas().subscribe({
-      next: (response) => {
-        if (response && response.status === 'success' && Array.isArray(response.data)) {
-          this.citas = response.data
-            .filter((cita: any) => cita.idPsicologo === this.userId)
-            .map((cita: any) => ({
-              ...cita,
-              nombrePaciente: this.getNombreUsuario(cita.idPaciente),
-              fotoPaciente: this.getFotoPaciente(cita.idPaciente),
-            }));
-          this.filteredCitas = [...this.citas];
-        } else {
-          console.error('La respuesta no es válida:', response);
-        }
-      },
-      error: (error) => {
-        console.error('Error al listar citas', error);
-        this.errorMessage = 'No se pudo cargar las citas. Intenta de nuevo más tarde.';
-      },
-    });
+  abrirMapaModal() {
+    this.mostrarMapaModal = true;
   }
 
-  getFotoPaciente(idPaciente: number): string {
-    const paciente = this.pacientes.find((p) => p.idUsuario === idPaciente);
-    if (paciente && paciente.email) {
-      const sanitizedEmail = paciente.email.replace(/@/g, '_').replace(/\./g, '_');
-      return `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/fotoPerfil%2F${encodeURIComponent(
-        sanitizedEmail
-      )}?alt=media`;
-    }
-    return './assets/profiles/default.png';
-  }
-
-  getNombreUsuario(id: number): string {
-    const usuario = this.pacientes.find((p) => p.idUsuario === id);
-    return usuario ? usuario.nombre : 'Desconocido';
+  cerrarMapaModal() {
+    this.mostrarMapaModal = false;
   }
 
   obtenerUsuarios() {
@@ -157,6 +131,37 @@ export class CitasComponent implements OnInit {
     );
   }
 
+  obtenerCitas() {
+    this.citasService.listarCitas().subscribe({
+      next: (response) => {
+        if (response && response.status === 'success' && Array.isArray(response.data)) {
+          this.citas = response.data
+            .filter((cita: any) => cita.idPsicologo === this.userId)
+            .map((cita: any) => ({
+              ...cita,
+              nombrePaciente: this.getNombreUsuario(cita.idPaciente),
+              fotoPaciente: this.getFotoPaciente(cita.idPaciente),
+            }));
+          this.filteredCitas = [...this.citas];
+
+          // Marcar citas nuevas como vistas
+          const nuevasCitas = this.citas
+            .map((c) => c.idCita)
+            .filter((idCita) => !this.notificacionesService['citasVistas'].has(idCita));
+          if (nuevasCitas.length > 0) {
+            this.notificacionesService.marcarCitasComoVistas(nuevasCitas);
+          }
+        } else {
+          console.error('La respuesta no es válida:', response);
+        }
+      },
+      error: (error) => {
+        console.error('Error al listar citas', error);
+        this.errorMessage = 'No se pudo cargar las citas. Intenta de nuevo más tarde.';
+      },
+    });
+  }
+
   guardarCita() {
     if (this.citaForm.valid && this.userId) {
       const nuevaCita: Cita = {
@@ -169,25 +174,21 @@ export class CitasComponent implements OnInit {
       if (this.modoEdicion && this.citaEnEdicion) {
         this.citasService.actualizarCita(nuevaCita).subscribe({
           next: () => {
-            Swal.fire('Actualizado', 'La cita ha sido actualizada exitosamente', 'success');
             this.cerrarModal();
             this.obtenerCitas();
           },
           error: (error: any) => {
             console.error('Error al actualizar la cita', error);
-            this.errorMessage = 'Ocurrió un error al intentar actualizar la cita. Por favor, inténtalo de nuevo.';
           },
         });
       } else {
         this.citasService.registrarCita(nuevaCita).subscribe({
           next: () => {
-            Swal.fire('Agregado', 'La cita ha sido registrada exitosamente', 'success');
             this.cerrarModal();
             this.obtenerCitas();
           },
           error: (error: any) => {
             console.error('Error al registrar la cita', error);
-            this.errorMessage = 'Ocurrió un error al intentar registrar la cita. Por favor, inténtalo de nuevo.';
           },
         });
       }
@@ -210,26 +211,13 @@ export class CitasComponent implements OnInit {
   }
 
   eliminarCita(idCita: number) {
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: 'No podrás deshacer esta acción.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.citasService.eliminarCita(idCita).subscribe({
-          next: () => {
-            Swal.fire('Eliminado', 'La cita ha sido eliminada exitosamente', 'success');
-            this.obtenerCitas();
-          },
-          error: (error: any) => {
-            console.error('Error al eliminar la cita', error);
-            this.errorMessage = 'Ocurrió un error al intentar eliminar la cita. Por favor, inténtalo de nuevo.';
-          },
-        });
-      }
+    this.citasService.eliminarCita(idCita).subscribe({
+      next: () => {
+        this.obtenerCitas();
+      },
+      error: (error: any) => {
+        console.error('Error al eliminar la cita', error);
+      },
     });
   }
 
@@ -237,23 +225,30 @@ export class CitasComponent implements OnInit {
     const query = event.target.value.toLowerCase();
     this.filteredCitas = this.citas.filter(
       (cita) =>
-        cita.nombrePaciente.toLowerCase().includes(query) ||
+        (cita.nombrePaciente?.toLowerCase().includes(query) || '') ||
         cita.fecha.toLowerCase().includes(query)
     );
   }
 
-  abrirMapaModal() {
-    this.mostrarMapaModal = true;
-  }
-
-  cerrarMapaModal() {
-    this.mostrarMapaModal = false;
-  }
-
   ubicacionSeleccionada(direccion: string) {
-    console.log('Ubicación seleccionada desde el mapa:', direccion);
     this.citaForm.patchValue({
       ubicacion: direccion,
     });
+  }
+
+  getFotoPaciente(idPaciente: number): string {
+    const paciente = this.pacientes.find((p) => p.idUsuario === idPaciente);
+    if (paciente && paciente.email) {
+      const sanitizedEmail = paciente.email.replace(/@/g, '_').replace(/\./g, '_');
+      return `https://firebasestorage.googleapis.com/v0/b/psywell-ab0ee.firebasestorage.app/o/fotoPerfil%2F${encodeURIComponent(
+        sanitizedEmail
+      )}?alt=media`;
+    }
+    return './assets/profiles/default.png';
+  }
+
+  getNombreUsuario(id: number): string {
+    const usuario = this.pacientes.find((p) => p.idUsuario === id);
+    return usuario ? usuario.nombre : 'Desconocido';
   }
 }

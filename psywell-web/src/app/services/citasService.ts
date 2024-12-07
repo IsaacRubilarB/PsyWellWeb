@@ -1,12 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { Cita, ListaCitasResponse } from '../models/cita.model';
-import { map } from 'rxjs/operators';
-import { catchError, of } from 'rxjs';
-import { environment } from 'environments/environments';
-
-
+import { map, catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +12,9 @@ export class CitasService {
   private listarCitaUrl = 'http://localhost:8084/listarCitas';
   private actualizarCitaUrl = 'http://localhost:8084/actualizarCita';
   private eliminarCitaUrl = 'http://localhost:8084/eliminarCita';
-  private baseUrl = 'http://localhost:8082/listarRegistro'; 
+  private baseUrl = 'http://localhost:8082/listarRegistro';
+
+  private fechaUltimaConsulta: Date = new Date(); // Fecha de la última consulta para notificaciones
 
   constructor(private http: HttpClient) {}
 
@@ -29,7 +27,6 @@ export class CitasService {
     return this.http.get<ListaCitasResponse>(this.listarCitaUrl);
   }
 
-  // Nuevo método para listar citas por psicólogo
   listarCitasPorPsicologo(idPsicologo: number): Observable<ListaCitasResponse> {
     const url = `${this.listarCitaUrl}?idPsicologo=${idPsicologo}`;
     return this.http.get<ListaCitasResponse>(url);
@@ -45,25 +42,33 @@ export class CitasService {
   }
 
   obtenerRegistrosPorPaciente(idUsuario: number): Observable<any> {
-    // Calcula la fecha de hace 7 días
     const fechaLimite = new Date();
     fechaLimite.setDate(fechaLimite.getDate() - 7);
-    const fechaDesde = fechaLimite.toISOString(); // Convierte la fecha a ISO 8601
-  
+    const fechaDesde = fechaLimite.toISOString();
     const url = `http://localhost:8082/listarRegistroPorUsuario/${idUsuario}?fechaDesde=${fechaDesde}`;
-        return this.http.get<any>(url).pipe(
-      map((response: any) => {
-        if (response?.data) {
-          return response.data; // Retorna solo los registros filtrados
-        }
-        return [];
-      }),
+    return this.http.get<any>(url).pipe(
+      map((response: any) => (response?.data ? response.data : [])),
       catchError((error) => {
         console.error('Error al obtener registros:', error);
-        return of([]); // Devuelve un array vacío en caso de error
+        return of([]);
       })
     );
   }
 
-  
+  obtenerNuevasCitas(): Observable<Cita[]> {
+    return this.listarCitas().pipe(
+      map((response: ListaCitasResponse) => {
+        const nuevasCitas = response.data.filter((cita) => {
+          const citaFechaHora = new Date(`${cita.fecha}T${cita.horaInicio}`);
+          return citaFechaHora > this.fechaUltimaConsulta;
+        });
+        this.fechaUltimaConsulta = new Date(); // Actualiza la fecha/hora de la última consulta
+        return nuevasCitas;
+      }),
+      catchError((error) => {
+        console.error('Error al obtener nuevas citas:', error);
+        return of([]);
+      })
+    );
+  }
 }

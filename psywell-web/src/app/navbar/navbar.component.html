@@ -15,7 +15,12 @@
         <a routerLink="/patients" routerLinkActive="active">Pacientes</a>
       </li>
       <li class="navbar-item">
-        <a routerLink="/citas" routerLinkActive="active">Citas</a>
+        <a routerLink="/citas" routerLinkActive="active" (click)="irACitas()">
+          Citas
+          <span *ngIf="nuevasCitasCount > 0" class="notification-badge">
+            {{ nuevasCitasCount }}
+          </span>
+        </a>
       </li>
       <li class="navbar-item">
         <a routerLink="/recursos-materiales" routerLinkActive="active">Recursos</a>
