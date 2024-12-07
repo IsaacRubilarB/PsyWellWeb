@@ -109,31 +109,39 @@
         </div>
       </div>
 
-      <!-- Historia Clínica -->
-      <div class="section">
-        <h3>Historia Clínica</h3>
-        <div class="input-group">
-          <div class="input-item">
-            <label for="notasSesionAnterior">Notas de la Sesión </label>
-            <textarea
-              id="notasSesionAnterior"
-              [(ngModel)]="paciente.notasSesionAnterior"
-              name="notasSesionAnterior"
-              placeholder="Ingrese las notas de la sesión anterior"
-            ></textarea>
-          </div>
+     <!-- Notas de la Sesión -->
+<div class="section">
+  <h3>Notas de la Sesión</h3>
+  <div class="input-group">
+    <div class="input-item">
+      <textarea
+        id="notas"
+        [(ngModel)]="paciente.notas"
+        name="notas"
+        placeholder="Ingrese las notas"
+        rows="5"
+      ></textarea>
+    </div>
+    
+  </div>
+</div>
 
-          <div class="input-item">
-            <label for="medicamentos">Medicamentos</label>
-            <textarea
-              id="medicamentos"
-              [(ngModel)]="paciente.medicamentos"
-              name="medicamentos"
-              placeholder="Ingrese medicamentos"
-            ></textarea>
-          </div>
-        </div>
-      </div>
+<!-- Medicamentos -->
+<div class="section">
+  <h3>Medicamentos</h3>
+  <div class="input-group">
+    <div class="input-item">
+      <textarea
+        id="medicamentos"
+        [(ngModel)]="paciente.medicamentos"
+        name="medicamentos"
+        placeholder="Ingrese medicamentos"
+        rows="3"
+      ></textarea>
+    </div>
+  </div>
+</div>
+
 
       <!-- Diagnóstico -->
       <div class="section">

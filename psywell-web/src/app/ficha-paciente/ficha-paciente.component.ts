@@ -25,11 +25,13 @@ export class FichaPacienteComponent implements OnInit {
     telefono: '',
     telefonoEmercia: '',
     direccion: '',
-    estadoCivil: '', // Inicialización del nuevo campo
+    estadoCivil: '',
     notasSesionAnterior: '',
     medicamentos: '',
     diagnostico: '',
+    notas: '', // Inicialización del nuevo campo
   };
+  
   
 
   formattedFechaNacimiento: string | null = null;
@@ -74,40 +76,68 @@ export class FichaPacienteComponent implements OnInit {
   }
 
   registrarFicha(idPsicologo: number, idPaciente: number): void {
-    const ficha: FichaInput = {
-      idPsicologo,
-      idPaciente,
-      nombres: this.paciente.nombres,
-      fechaNacimiento: this.paciente.fechaNacimiento,
-      genero: this.paciente.genero,
-      correo: this.paciente.correo,
-      telefono: this.paciente.telefono,
-      telefonoEmercia: this.paciente.telefonoEmercia,
-      direccion: this.paciente.direccion,
-      notasSesionAnterior: this.paciente.notasSesionAnterior,
-      medicamentos: this.paciente.medicamentos,
-      diagnostico: this.paciente.diagnostico,
-    };
-
-    this.fichaService.registrarFicha(ficha).subscribe(
+    this.fichaService.obtenerFichaPorIdPaciente(idPaciente).subscribe(
       (response) => {
-        this.showSuccessMessage = true;
-        setTimeout(() => {
-          this.showSuccessMessage = false;
-          this.performCloseModal();
-        }, 2000);
+        if (response && response.data) {
+          // Si ya existe una ficha, actualízala
+          const fichaExistente: FichaInput = {
+            ...this.paciente,
+            idFichaPaciente: response.data.idFichaPaciente,
+            idPsicologo,
+            idPaciente,
+          };
+  
+          this.fichaService.actualizarFicha(response.data.idFichaPaciente, fichaExistente).subscribe(
+            () => {
+              this.showSuccessMessage = true;
+              setTimeout(() => {
+                this.showSuccessMessage = false;
+                this.performCloseModal();
+              }, 2000);
+            },
+            (error) => {
+              console.error('Error al actualizar la ficha:', error);
+              alert('Error al actualizar la ficha. Por favor, intente nuevamente.');
+            }
+          );
+        } else {
+          // Si no existe, crea una nueva ficha
+          const nuevaFicha: FichaInput = {
+            ...this.paciente,
+            idPsicologo,
+            idPaciente,
+          };
+  
+          this.fichaService.registrarFicha(nuevaFicha).subscribe(
+            () => {
+              this.showSuccessMessage = true;
+              setTimeout(() => {
+                this.showSuccessMessage = false;
+                this.performCloseModal();
+              }, 2000);
+            },
+            (error) => {
+              console.error('Error al registrar la ficha:', error);
+              alert('Error al registrar la ficha. Por favor, intente nuevamente.');
+            }
+          );
+        }
       },
       (error) => {
-        console.error('Error al registrar la ficha:', error);
+        console.error('Error al verificar la existencia de la ficha:', error);
+        alert('Error al procesar la ficha. Por favor, intente nuevamente.');
       }
     );
   }
+  
+  
 
   cargarDatosPaciente(id: number): void {
     this.fichaService.obtenerFichaPorIdPaciente(id).subscribe(
       (response) => {
         if (response && response.data) {
           this.paciente = {
+            ...this.paciente,
             idFichaPaciente: response.data.idFichaPaciente || undefined,
             nombres: response.data.nombres || '',
             fechaNacimiento: response.data.fechaNacimiento || null,
@@ -117,9 +147,9 @@ export class FichaPacienteComponent implements OnInit {
             telefonoEmercia: response.data.telefonoEmercia || '',
             direccion: response.data.direccion || '',
             estadoCivil: response.data.estadoCivil || '',
-            notasSesionAnterior: response.data.notasSesionAnterior || '',
             medicamentos: response.data.medicamentos || '',
-            diagnostico: response.data.diagnostico || ''
+            diagnostico: response.data.diagnostico || '',
+            notas: response.data.notas || '', // Campo notas sincronizado
           };
           this.formattedFechaNacimiento = this.formatearFechaNacimiento(this.paciente.fechaNacimiento);
           this.updateProgress();
@@ -127,7 +157,6 @@ export class FichaPacienteComponent implements OnInit {
       },
       (error) => {
         console.error('Error al cargar la ficha del paciente:', error);
-        alert('No se pudo cargar la ficha del paciente. Por favor, intenta nuevamente.');
       }
     );
   }
@@ -177,9 +206,11 @@ export class FichaPacienteComponent implements OnInit {
       !!this.paciente.telefono &&
       !!this.paciente.telefonoEmercia &&
       !!this.paciente.direccion &&
-      !!this.paciente.diagnostico
+      !!this.paciente.diagnostico // Verifica si este campo debe ser opcional o requerido
     );
   }
+  
+  
 
   cargarFichaPaciente(idPaciente: number): void {
     this.fichaService.obtenerFichaPorIdPaciente(idPaciente).subscribe(
@@ -198,6 +229,7 @@ export class FichaPacienteComponent implements OnInit {
             notasSesionAnterior: response.data.notasSesionAnterior || '',
             medicamentos: response.data.medicamentos || '',
             diagnostico: response.data.diagnostico || '',
+            notas: response.data.notas || '', // Campo corregido
           };
           this.formattedFechaNacimiento = this.formatearFechaNacimiento(this.paciente.fechaNacimiento);
           this.updateProgress();
@@ -209,8 +241,10 @@ export class FichaPacienteComponent implements OnInit {
     );
   }
   
+  
 
   onSubmit(): void {
+    console.log
     if (!this.psychologistId || !this.patientId) {
       console.error('No se puede registrar o actualizar la ficha. Faltan IDs obligatorios.');
       alert('Error: No se puede registrar o actualizar la ficha sin los IDs del psicólogo y del paciente.');

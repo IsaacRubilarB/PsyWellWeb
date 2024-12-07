@@ -2,22 +2,25 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-export interface FichaInput {
-  idFichaPaciente?: number; // Identificador único de la ficha (opcional para nuevas fichas)
-  idPaciente?: number;
-  idPsicologo?: number;
-  nombres: string;
-  fechaNacimiento: string | null;
-  genero: string;
-  correo: string;
-  telefono: string;
-  telefonoEmercia: string;
-  direccion: string;
-  estadoCivil?: string; // Nuevo campo
-  notasSesionAnterior: string;
-  medicamentos: string;
-  diagnostico: string;
-}
+    export interface FichaInput {
+        idFichaPaciente?: number; // Identificador único de la ficha (opcional para nuevas fichas)
+        idPaciente?: number;
+        idPsicologo?: number;
+        nombres: string;
+        fechaNacimiento: string | null;
+        genero: string;
+        correo: string;
+        telefono: string;
+        telefonoEmercia: string;
+        direccion: string;
+        estadoCivil?: string;
+        notasSesionAnterior: string;
+        medicamentos: string;
+        diagnostico: string;
+        notas?: string; // Nuevo campo agregado
+      }
+      
+  
 
 @Injectable({
   providedIn: 'root',
@@ -27,11 +30,11 @@ export class FichaService {
 
   constructor(private http: HttpClient) {}
 
-  // Registrar una nueva ficha
   registrarFicha(ficha: FichaInput): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post(`${this.apiUrl}/registrarFicha`, ficha, { headers });
   }
+  
 
   // Listar todas las fichas (para propósitos administrativos)
   listarFichas(): Observable<any> {
