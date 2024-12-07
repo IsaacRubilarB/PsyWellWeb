@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { UsersService } from 'app/services/userService';
 import { FichaService, FichaInput } from '../services/ficha.service'; // Ruta ajustada
+import Swal from 'sweetalert2'; // Asegúrate de tener instalado sweetalert2
 
 @Component({
   selector: 'app-ficha-paciente',
@@ -242,12 +243,14 @@ export class FichaPacienteComponent implements OnInit {
   }
   
   
-
   onSubmit(): void {
-    console.log
     if (!this.psychologistId || !this.patientId) {
       console.error('No se puede registrar o actualizar la ficha. Faltan IDs obligatorios.');
-      alert('Error: No se puede registrar o actualizar la ficha sin los IDs del psicólogo y del paciente.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se puede registrar o actualizar la ficha sin los IDs del psicólogo y del paciente.',
+      });
       return;
     }
   
@@ -258,33 +261,49 @@ export class FichaPacienteComponent implements OnInit {
     };
   
     if (this.paciente.idFichaPaciente) {
+      // Actualizar ficha existente
       this.fichaService.actualizarFicha(this.paciente.idFichaPaciente, fichaPayload).subscribe(
         (response) => {
           console.log('Ficha actualizada con éxito:', response);
-          this.showSuccessMessage = true;
-          setTimeout(() => {
-            this.showSuccessMessage = false;
-            this.closeModal();
-          }, 2000);
+          Swal.fire({
+            icon: 'success',
+            title: 'Éxito',
+            text: 'La ficha ha sido actualizada exitosamente.',
+          }).then(() => {
+            this.isConfirmingClose = false; // Deshabilitar la lógica de confirmación
+            this.closeModal(); // Cerrar el modal después de guardar
+          });
         },
         (error) => {
           console.error('Error al actualizar la ficha:', error);
-          alert('Error al actualizar la ficha. Por favor, intente nuevamente.');
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error al actualizar la ficha. Por favor, intente nuevamente.',
+          });
         }
       );
     } else {
+      // Registrar nueva ficha
       this.fichaService.registrarFicha(fichaPayload).subscribe(
         (response) => {
           console.log('Ficha registrada con éxito:', response);
-          this.showSuccessMessage = true;
-          setTimeout(() => {
-            this.showSuccessMessage = false;
-            this.closeModal();
-          }, 2000);
+          Swal.fire({
+            icon: 'success',
+            title: 'Éxito',
+            text: 'La ficha ha sido registrada exitosamente.',
+          }).then(() => {
+            this.isConfirmingClose = false; // Deshabilitar la lógica de confirmación
+            this.closeModal(); // Cerrar el modal después de guardar
+          });
         },
         (error) => {
           console.error('Error al registrar la ficha:', error);
-          alert('Error al registrar la ficha. Por favor, intente nuevamente.');
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error al registrar la ficha. Por favor, intente nuevamente.',
+          });
         }
       );
     }
@@ -294,12 +313,14 @@ export class FichaPacienteComponent implements OnInit {
   
 
   closeModal() {
-    if (this.hasUnsavedData()) {
-      this.isConfirmingClose = true;
+    if (this.isConfirmingClose) {
+      this.isConfirmingClose = false;
+      this.performCloseModal();
     } else {
       this.performCloseModal();
     }
   }
+  
 
   confirmClose() {
     this.isConfirmingClose = false;
