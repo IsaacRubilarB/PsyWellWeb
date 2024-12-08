@@ -500,7 +500,7 @@ calculateAge(fechaNacimiento: string): number | string {
     );
     XLSX.utils.book_append_sheet(workbook, emotionsSheet, 'Registros Emocionales');
 
-    // Hoja 3: Registros Fisiológicos
+    // Hoja 3: Registros Fisiológicos (En Vivo)
     const physiologicalSheet = XLSX.utils.json_to_sheet(
         this.registrosFisiologicos.map((record) => ({
             Parámetro: record.parametro,
@@ -510,6 +510,18 @@ calculateAge(fechaNacimiento: string): number | string {
     );
     XLSX.utils.book_append_sheet(workbook, physiologicalSheet, 'Registros Fisiológicos');
 
+    // Hoja 4: Registros Semanales
+    const weeklySheet = XLSX.utils.json_to_sheet([
+        { Día: 'Lunes', BPM: this.bpmWeekly[0] || '-', Saturación: this.saturationLevelWeekly[0] || '-', Sueño: this.sleepWeekly[0] || '-', Pasos: this.stepsWeekly[0] || '-' },
+        { Día: 'Martes', BPM: this.bpmWeekly[1] || '-', Saturación: this.saturationLevelWeekly[1] || '-', Sueño: this.sleepWeekly[1] || '-', Pasos: this.stepsWeekly[1] || '-' },
+        { Día: 'Miércoles', BPM: this.bpmWeekly[2] || '-', Saturación: this.saturationLevelWeekly[2] || '-', Sueño: this.sleepWeekly[2] || '-', Pasos: this.stepsWeekly[2] || '-' },
+        { Día: 'Jueves', BPM: this.bpmWeekly[3] || '-', Saturación: this.saturationLevelWeekly[3] || '-', Sueño: this.sleepWeekly[3] || '-', Pasos: this.stepsWeekly[3] || '-' },
+        { Día: 'Viernes', BPM: this.bpmWeekly[4] || '-', Saturación: this.saturationLevelWeekly[4] || '-', Sueño: this.sleepWeekly[4] || '-', Pasos: this.stepsWeekly[4] || '-' },
+        { Día: 'Sábado', BPM: this.bpmWeekly[5] || '-', Saturación: this.saturationLevelWeekly[5] || '-', Sueño: this.sleepWeekly[5] || '-', Pasos: this.stepsWeekly[5] || '-' },
+        { Día: 'Domingo', BPM: this.bpmWeekly[6] || '-', Saturación: this.saturationLevelWeekly[6] || '-', Sueño: this.sleepWeekly[6] || '-', Pasos: this.stepsWeekly[6] || '-' },
+    ]);
+    XLSX.utils.book_append_sheet(workbook, weeklySheet, 'Registros Semanales');
+
     // Estilizar encabezados de las tablas
     const styleHeader = {
         font: { bold: true, color: { rgb: "FFFFFF" } },
@@ -518,11 +530,12 @@ calculateAge(fechaNacimiento: string): number | string {
     };
 
     // Ajustar ancho de columnas
-    const sheets = [patientSheet, emotionsSheet, physiologicalSheet];
+    const sheets = [patientSheet, emotionsSheet, physiologicalSheet, weeklySheet];
     const columnWidths = [
         [{ wpx: 150 }, { wpx: 300 }], // Para Hoja 1
         [{ wpx: 200 }, { wpx: 500 }], // Para Hoja 2
         [{ wpx: 200 }, { wpx: 150 }, { wpx: 150 }], // Para Hoja 3
+        [{ wpx: 100 }, { wpx: 150 }, { wpx: 150 }, { wpx: 150 }, { wpx: 150 }], // Para Hoja 4
     ];
 
     sheets.forEach((sheet, index) => {
@@ -535,10 +548,21 @@ calculateAge(fechaNacimiento: string): number | string {
         }
     });
 
+    // **Simulación de gráficos**: Añadir los datos para que Excel pueda generar gráficos automáticamente
+    const chartDataSheet = XLSX.utils.json_to_sheet([
+        ['Día', 'BPM', 'Saturación (%)', 'Horas de Sueño', 'Pasos'],
+        ...[
+            ['Lunes', ...this.bpmWeekly.slice(0, 1), ...this.saturationLevelWeekly.slice(0, 1), ...this.sleepWeekly.slice(0, 1), ...this.stepsWeekly.slice(0, 1)],
+            ['Martes', ...this.bpmWeekly.slice(1, 2), ...this.saturationLevelWeekly.slice(1, 2), ...this.sleepWeekly.slice(1, 2), ...this.stepsWeekly.slice(1, 2)],
+            // Añade el resto de días aquí
+        ],
+    ]);
+    XLSX.utils.book_append_sheet(workbook, chartDataSheet, 'Datos para Gráficos');
+
     // Guardar el archivo Excel
     XLSX.writeFile(workbook, `Reporte_Paciente_${this.patientDetails.name}.xlsx`);
 }
-  
+
 
 
 
