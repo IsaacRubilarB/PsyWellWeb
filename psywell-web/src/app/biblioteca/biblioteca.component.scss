@@ -122,3 +122,80 @@
     }
   }
 }
+
+@media (max-width: 1200px) {
+  .resources-container {
+    margin: 80px auto 60px;
+    padding: 15px;
+  }
+
+  .files-section .file-grid {
+    grid-template-columns: repeat(4, 1fr); /* Reduce las columnas */
+    gap: 10px;
+  }
+}
+
+@media (max-width: 992px) {
+  .resources-container {
+    margin: 60px auto 40px;
+    padding: 10px;
+  }
+
+  .files-section .file-grid {
+    grid-template-columns: repeat(3, 1fr); /* Aún menos columnas */
+    gap: 10px;
+  }
+
+  .files-section .controls input {
+    max-width: 250px; /* Ajusta el ancho del campo de búsqueda */
+  }
+}
+
+@media (max-width: 768px) {
+  .resources-container {
+    margin: 40px auto 30px;
+    padding: 10px;
+  }
+
+  .files-section .file-grid {
+    grid-template-columns: repeat(2, 1fr); /* Sólo dos columnas en tablets */
+    gap: 10px;
+  }
+
+  .files-section .file-card {
+    padding: 10px;
+  }
+
+  .files-section .controls label {
+    font-size: 14px; /* Reduce el tamaño de la etiqueta */
+  }
+
+  .files-section .controls input {
+    max-width: 200px; /* Ajusta más el ancho */
+  }
+}
+
+@media (max-width: 576px) {
+  .resources-container {
+    margin: 20px auto 20px;
+    padding: 10px;
+  }
+
+  .files-section .file-grid {
+    grid-template-columns: 1fr; /* Una sola columna en dispositivos pequeños */
+    gap: 8px;
+  }
+
+  .files-section .file-card {
+    padding: 8px;
+  }
+
+  .files-section .controls input {
+    max-width: 100%; /* Ocupa todo el ancho disponible */
+  }
+
+  .files-section .controls {
+    flex-direction: column; /* Cambia a diseño vertical */
+    gap: 5px;
+  }
+}
