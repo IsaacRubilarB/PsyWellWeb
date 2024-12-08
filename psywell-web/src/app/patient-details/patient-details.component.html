@@ -57,11 +57,21 @@
   
 
   <app-reports
-    [patientId]="patientId"
-    [psychologistId]="psychologistId"
-    [patientDetails]="patientDetails"
-    [psychologistName]="psychologistName">
-  </app-reports>
+  [patientId]="patientId"
+  [psychologistId]="psychologistId"
+  [patientDetails]="patientDetails"
+  [psychologistName]="psychologistName"
+  [bpm]="bpm"
+  [saturationLevel]="saturationLevel"
+  [steps]="steps"
+  [sleep]="sleep"
+  [bpmWeekly]="bpmWeekly"
+  [saturationLevelWeekly]="saturationLevelWeekly"
+  [stepsWeekly]="stepsWeekly"
+  [sleepWeekly]="sleepWeekly">
+</app-reports>
+
+
 
  <!-- Modal de Ficha del Paciente -->
 <div *ngIf="isFichaPacienteModalOpen" class="modal-container">

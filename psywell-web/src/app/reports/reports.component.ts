@@ -20,12 +20,24 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
   standalone: true,
   imports: [FormsModule, CommonModule],
 })
+
+
 export class ReportsComponent implements OnInit {
   @Input() patientId: string | number | null = null;
   @Input() patientDetails: any = {}; 
 
   timeFrame: 'weekly' | 'monthly' | 'quarterly' | 'yearly' = 'weekly';
   @Input() psychologistId: string | number | null = null; // Añadido para recibir psychologistId
+
+  @Input() bpm!: number;
+@Input() saturationLevel!: number;
+@Input() steps!: number;
+@Input() sleep!: number;
+
+@Input() bpmWeekly!: number[];
+@Input() saturationLevelWeekly!: number[];
+@Input() stepsWeekly!: number[];
+@Input() sleepWeekly!: number[];
 
   psychologistName = 'Desconocido'; 
   emociones: any[] = [];
@@ -35,7 +47,8 @@ export class ReportsComponent implements OnInit {
     { parametro: 'Pasos', valor: '1000' },
     { parametro: 'Calorías', valor: '200 kcal' },
   ];
-
+ 
+  
   constructor(
     private router: Router,
     private afAuth: AngularFireAuth,
@@ -326,7 +339,7 @@ calculateAge(fechaNacimiento: string): number | string {
           fontSize: 10,
           cellPadding: 5,
         },
-        margin: { left: marginX, right: marginX }, // Añadimos márgenes laterales a las tablas
+        margin: { left: marginX, right: marginX },
       });
       currentY = (doc as any).lastAutoTable.finalY + 10;
     } else {
@@ -341,36 +354,63 @@ calculateAge(fechaNacimiento: string): number | string {
     doc.line(marginX, currentY, 210 - marginX, currentY);
     currentY += 5;
 
-    // Registros fisiológicos
+    // Registros fisiológicos en vivo
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('Registros Fisiológicos:', marginX, currentY);
+    doc.text('Registros Fisiológicos (En Vivo):', marginX, currentY);
 
-    if (this.registrosFisiologicos.length > 0) {
-      autoTable(doc, {
-        startY: currentY + 10,
-        head: [['Parámetro', 'Valor']],
-        body: this.registrosFisiologicos.map((registro) => [
-          registro.parametro,
-          registro.valor,
-        ]),
-        theme: 'striped',
-        headStyles: {
-          fillColor: [76, 175, 80],
-          textColor: 255,
-          fontStyle: 'bold',
-        },
-        styles: {
-          fontSize: 10,
-          cellPadding: 5,
-        },
-        margin: { left: marginX, right: marginX }, // Márgenes laterales en la tabla
-      });
-    } else {
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'italic');
-      doc.text('No se registraron datos fisiológicos.', marginX, currentY + 10);
-    }
+    autoTable(doc, {
+      startY: currentY + 10,
+      head: [['Parámetro', 'Valor']],
+      body: [
+        ['Frecuencia Cardíaca (BPM)', this.bpm.toString()],
+        ['Saturación de Oxígeno (%)', this.saturationLevel.toString()],
+        ['Horas de Sueño', this.sleep.toString()],
+        ['Pasos', this.steps.toString()],
+      ],
+      theme: 'striped',
+      headStyles: {
+        fillColor: [66, 134, 244],
+        textColor: 255,
+        fontStyle: 'bold',
+      },
+      styles: {
+        fontSize: 10,
+        cellPadding: 5,
+      },
+      margin: { left: marginX, right: marginX },
+    });
+    currentY = (doc as any).lastAutoTable.finalY + 10;
+
+    // Registros fisiológicos semanales
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Registros Fisiológicos (Semanales):', marginX, currentY);
+
+    autoTable(doc, {
+      startY: currentY + 10,
+      head: [['Día', 'BPM', 'Saturación (%)', 'Horas de Sueño', 'Pasos']],
+      body: [
+        ['Lunes', this.bpmWeekly[0] || '-', this.saturationLevelWeekly[0] || '-', this.sleepWeekly[0] || '-', this.stepsWeekly[0] || '-'],
+        ['Martes', this.bpmWeekly[1] || '-', this.saturationLevelWeekly[1] || '-', this.sleepWeekly[1] || '-', this.stepsWeekly[1] || '-'],
+        ['Miércoles', this.bpmWeekly[2] || '-', this.saturationLevelWeekly[2] || '-', this.sleepWeekly[2] || '-', this.stepsWeekly[2] || '-'],
+        ['Jueves', this.bpmWeekly[3] || '-', this.saturationLevelWeekly[3] || '-', this.sleepWeekly[3] || '-', this.stepsWeekly[3] || '-'],
+        ['Viernes', this.bpmWeekly[4] || '-', this.saturationLevelWeekly[4] || '-', this.sleepWeekly[4] || '-', this.stepsWeekly[4] || '-'],
+        ['Sábado', this.bpmWeekly[5] || '-', this.saturationLevelWeekly[5] || '-', this.sleepWeekly[5] || '-', this.stepsWeekly[5] || '-'],
+        ['Domingo', this.bpmWeekly[6] || '-', this.saturationLevelWeekly[6] || '-', this.sleepWeekly[6] || '-', this.stepsWeekly[6] || '-'],
+      ],
+      theme: 'striped',
+      headStyles: {
+        fillColor: [66, 244, 128],
+        textColor: 255,
+        fontStyle: 'bold',
+      },
+      styles: {
+        fontSize: 10,
+        cellPadding: 5,
+      },
+      margin: { left: marginX, right: marginX },
+    });
 
     // Footer decorativo
     const footerY = doc.internal.pageSize.height - marginY + 5;
@@ -534,7 +574,6 @@ getPhysiologicalData(email: string): Promise<any> {
     console.log('Rango de tiempo cambiado a:', this.timeFrame);
   }
 
-  goBack(): void {
-    this.router.navigate(['/patient-details']);
-  }
+  
+
 }
