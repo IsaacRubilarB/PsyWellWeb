@@ -18,7 +18,6 @@ export class GoogleMapsComponent implements OnInit {
   latitude = -33.447487; // Coordenadas iniciales (Santiago de Chile)
   longitude = -70.673676;
   zoom = 14;
-
   private marker: any;
 
   ngOnInit(): void {
@@ -31,23 +30,25 @@ export class GoogleMapsComponent implements OnInit {
       zoom: this.zoom,
     };
 
-    // Inicializar el mapa
     this.map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
-    // Inicializar la barra de búsqueda
     const input = document.getElementById('searchBox') as HTMLInputElement;
     this.searchBox = new google.maps.places.SearchBox(input);
 
-    // Mover el mapa al cambiar la búsqueda
     this.searchBox.addListener('places_changed', () => {
       const places = this.searchBox.getPlaces();
-      if (places.length === 0) {
+      if (!places || places.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sin resultados',
+          text: 'No se encontró ningún lugar. Intenta con otra dirección.',
+        });
         return;
       }
 
       const place = places[0];
       if (!place.geometry || !place.geometry.location) {
-        console.error('Place contains no geometry');
+        console.error('El lugar seleccionado no tiene información geográfica.');
         return;
       }
 
@@ -57,14 +58,13 @@ export class GoogleMapsComponent implements OnInit {
       });
 
       this.map.setCenter(place.geometry.location);
+      this.map.setZoom(this.zoom);
     });
 
-    // Asociar el mapa con el SearchBox para mostrar sugerencias basadas en la vista actual
     this.map.addListener('bounds_changed', () => {
       this.searchBox.setBounds(this.map.getBounds());
     });
 
-    // Evento para hacer clic en el mapa
     this.map.addListener('click', (event: any) => {
       if (event.latLng) {
         const position = { lat: event.latLng.lat(), lng: event.latLng.lng() };
@@ -74,22 +74,18 @@ export class GoogleMapsComponent implements OnInit {
   }
 
   setMarker(position: { lat: number; lng: number }): void {
-    // Eliminar marcador previo
     if (this.marker) {
       this.marker.setMap(null);
     }
 
-    // Agregar nuevo marcador
     this.marker = new google.maps.Marker({
       position,
       map: this.map,
       animation: google.maps.Animation.DROP,
     });
 
-    // Centrar el mapa en el marcador
     this.map.setCenter(position);
 
-    // Obtener dirección actualizada
     this.getAddressFromCoordinates(position.lat, position.lng);
   }
 
@@ -100,13 +96,9 @@ export class GoogleMapsComponent implements OnInit {
       (results: any, status: any) => {
         if (status === 'OK' && results && results.length > 0) {
           this.selectedAddress = results[0].formatted_address;
-
-          // Emitir la dirección seleccionada
           this.locationSelected.emit(this.selectedAddress);
-          console.log('Dirección seleccionada:', this.selectedAddress);
         } else {
           this.selectedAddress = 'No se pudo obtener la dirección.';
-          console.error('Geocoder falló:', status);
         }
       }
     );
@@ -128,6 +120,7 @@ export class GoogleMapsComponent implements OnInit {
       if (status === 'OK' && results.length > 0) {
         const location = results[0].geometry.location;
         this.setMarker({ lat: location.lat(), lng: location.lng() });
+        this.map.setZoom(this.zoom);
       } else {
         Swal.fire({
           icon: 'error',
@@ -147,7 +140,6 @@ export class GoogleMapsComponent implements OnInit {
             lng: position.coords.longitude,
           };
 
-          // Centrar el mapa y actualizar el marcador
           this.setMarker(location);
         },
         (error) => {

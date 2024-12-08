@@ -321,7 +321,12 @@ export class FichaPacienteComponent implements OnInit {
     }
   }
   
-
+  expandTextarea(event: Event): void {
+    const textarea = event.target as HTMLTextAreaElement;
+    textarea.style.height = 'auto'; // Reinicia la altura
+    textarea.style.height = textarea.scrollHeight + 'px'; // Ajusta al contenido
+  }
+  
   confirmClose() {
     this.isConfirmingClose = false;
     this.performCloseModal();

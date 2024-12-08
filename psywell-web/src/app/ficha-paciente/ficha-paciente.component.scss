@@ -1,4 +1,4 @@
-/* Configuración general para permitir scroll en dispositivos pequeños */
+/* Centrado completo del modal y evitar desbordamientos */
 .modal-container {
   position: fixed;
   top: 0;
@@ -10,17 +10,20 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  overflow-y: auto;
-  padding: 10px;
+  overflow-y: auto; /* Permitir scroll si hay desbordamiento */
+  padding: 20px;
+  box-sizing: border-box; /* Ajustar márgenes y padding al contenedor */
 }
 
-/* Contenido del modal */
+/* Ajustes para el contenido del modal */
 .modal-content {
   background-color: #1e3a5f;
   padding: 2rem;
   border-radius: 15px;
   width: 90%;
-  max-width: 700px;
+  max-width: 1200px; /* Ampliar el ancho máximo */
+  max-height: 90vh; /* Limitar altura máxima para pantallas pequeñas */
+  overflow-y: auto; /* Habilitar scroll interno si es necesario */
   box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   position: relative;
   border: 2px solid #ffffff;
@@ -32,17 +35,119 @@
   animation: slideIn 0.5s ease-out;
 }
 
-/* Animación de entrada del modal */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
+/* Ajustes para distribución interna */
+.section {
+  width: 100%;
+  margin-bottom: 1.5rem;
+
+  h3 {
+    font-size: 1.4rem;
+    color: #ffc107;
+    margin-bottom: 0.5rem;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .input-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+
+    .input-item {
+      flex: 1;
+      min-width: 48%; /* Más espacio horizontal */
+    }
+
+    &.contact-phones {
+      .input-item {
+        flex: 1;
+        min-width: 45%; /* Acomodar teléfonos en filas */
+      }
+    }
   }
 }
+
+/* Inputs y Textareas */
+textarea,
+input,
+select {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 0.25rem;
+  border: 1px solid #b0c4de;
+  border-radius: 5px;
+  background-color: #2e4964;
+  color: #fff;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+}
+
+textarea {
+  resize: none; /* Deshabilitar redimensionado manual */
+  min-height: 50px;
+  transition: height 0.2s ease;
+  overflow-y: auto; /* Habilitar scroll si es necesario */
+}
+
+/* Botón de guardar */
+.save-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #ffc107;
+  color: #212121;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #f5b700;
+  }
+}
+
+/* Responsividad para pantallas pequeñas */
+@media (max-width: 768px) {
+  .modal-container {
+    padding: 10px; /* Más espacio en móviles */
+  }
+
+  .modal-content {
+    width: 95%;
+    max-width: none; /* Sin límite de ancho */
+    padding: 1.5rem;
+  }
+
+  .input-group {
+    flex-direction: column; /* Acomodar en una sola columna */
+    gap: 15px;
+  }
+
+  .input-item {
+    min-width: 100%; /* Expandir inputs */
+  }
+
+  textarea {
+    font-size: 0.9rem; /* Reducir fuente */
+  }
+}
+
+/* Responsividad para pantallas grandes */
+@media (min-width: 1200px) {
+  .modal-content {
+    max-width: 1000px; /* Más ancho en pantallas grandes */
+    padding: 2.5rem;
+  }
+
+  .input-group {
+    gap: 25px; /* Más espacio horizontal */
+  }
+
+  .save-button {
+    font-size: 1.2rem;
+    padding: 1rem;
+  }
+}
+
 
 /* Botón de cierre del modal */
 .close-modal {
@@ -140,7 +245,17 @@
     margin-bottom: 1rem;
     box-sizing: border-box;
   }
-}
+  
+  textarea#notas,
+  textarea#diagnostico {
+    min-height: 150px; /* Aumentar altura mínima */
+    max-height: 300px; /* Limitar altura máxima */
+    overflow-y: auto; /* Habilitar scroll vertical */
+    resize: vertical; /* Permitir redimensionar verticalmente */
+    font-size: 1rem; /* Ajustar tamaño de fuente */
+    padding: 1rem; /* Espaciado interno */
+  }
+  
 
 /* Estilos específicos para la entrada de teléfono */
 .phone-input {
@@ -344,4 +459,7 @@
   color: #b0c4de;
   display: block;
   margin-bottom: 5px;
+}
+
+
 }

@@ -63,9 +63,11 @@
     [psychologistName]="psychologistName">
   </app-reports>
 
-  <!-- Modal de Ficha del Paciente -->
-  <div *ngIf="isFichaPacienteModalOpen" class="modal-container">
-    <div class="modal-content">
+ <!-- Modal de Ficha del Paciente -->
+<div *ngIf="isFichaPacienteModalOpen" class="modal-container">
+  <div class="modal-content">
+    <div class="modal-scrollable">
+      <!-- Contenido del modal desplazable -->
       <app-ficha-paciente
         *ngIf="isFichaPacienteModalOpen"
         [patientId]="patientId"
@@ -73,5 +75,9 @@
         (closeModalEvent)="closeFichaPacienteModal()">
       </app-ficha-paciente>
     </div>
+    <!-- Botón de cierre -->
+    <button class="close-modal" (click)="closeFichaPacienteModal()">✖</button>
   </div>
+</div>
+
 </div>

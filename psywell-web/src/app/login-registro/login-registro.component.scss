@@ -9,9 +9,9 @@
     perspective: 1000px;
     padding: 15px;
     overflow: hidden;
-}
-
-.background-overlay {
+  }
+  
+  .background-overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -20,9 +20,9 @@
     background-color: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(5px);
     z-index: 1;
-}
-
-.login-container {
+  }
+  
+  .login-container {
     position: relative;
     width: 90%;
     max-width: 400px;
@@ -39,47 +39,47 @@
     transition: transform 0.6s ease-in-out;
     animation: glow 2s infinite alternate ease-in-out;
     z-index: 2;
-}
-
-@keyframes glow {
+  }
+  
+  @keyframes glow {
     0% {
-        box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
     }
     100% {
-        box-shadow: 0 0 20px rgba(255, 215, 0, 1);
+      box-shadow: 0 0 20px rgba(255, 215, 0, 1);
     }
-}
-
-.login-container img {
+  }
+  
+  .login-container img {
     width: 100px;
     height: auto;
     margin: 0 auto 20px;
-}
-
-.login-container h2 {
+  }
+  
+  .login-container h2 {
     font-size: 24px;
     color: #fff;
     font-weight: 600;
     margin-bottom: 20px;
     text-transform: uppercase;
     letter-spacing: 1px;
-}
-
-.form-group {
+  }
+  
+  .form-group {
     margin-bottom: 15px;
     text-align: left;
     padding: 5px 15px;
-}
-
-.form-group label {
+  }
+  
+  .form-group label {
     font-size: 14px;
     color: #f5f5f5;
     margin-bottom: 5px;
     display: block;
-}
-
-.login-container input,
-.login-container select {
+  }
+  
+  .login-container input,
+  .login-container select {
     width: 100%;
     padding: 12px;
     border: 1px solid #444;
@@ -89,18 +89,18 @@
     color: #fff;
     outline: none;
     transition: all 0.3s ease;
-}
-
-.login-container input:focus,
-.login-container select:focus {
+  }
+  
+  .login-container input:focus,
+  .login-container select:focus {
     border-color: #cdaa00;
     background-color: rgba(255, 255, 255, 0.15);
-}
-
-button {
+  }
+  
+  button {
     width: 100%;
     padding: 12px;
-    background-color: #FFD700;
+    background-color: #ffd700;
     color: #333;
     border: none;
     border-radius: 8px;
@@ -109,73 +109,135 @@ button {
     transition: background-color 0.3s ease, color 0.3s ease;
     margin-top: 20px;
     font-weight: 600;
-}
-
-button:hover {
+  }
+  
+  button:hover {
     background-color: #e6be00;
     color: #fff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.toggle-text,
-.social-text {
+  }
+  
+  .toggle-text,
+  .social-text {
     color: #ddd;
     margin-top: 15px;
     font-size: 14px;
-}
-
-.toggle-text span,
-.social-text span {
-    color: #FFD700;
+  }
+  
+  .toggle-text span,
+  .social-text span {
+    color: #ffd700;
     cursor: pointer;
     text-decoration: underline;
-}
-
-.social-icons {
+  }
+  
+  .social-icons {
     display: flex;
     justify-content: center;
     gap: 15px;
     margin-top: 15px;
-}
-
-.social-icons img {
+  }
+  
+  .social-icons img {
     width: 36px;
     height: 36px;
     cursor: pointer;
     transition: transform 0.3s, filter 0.3s;
     filter: brightness(0.8);
-}
-
-.social-icons img:hover {
+  }
+  
+  .social-icons img:hover {
     transform: scale(1.15);
     filter: brightness(1);
-}
-
-.error-message {
+  }
+  
+  .error-message {
     color: #ff4c4c;
     font-size: 14px;
     margin-top: 5px;
-}
-
-@media (max-width: 500px) {
+    text-align: center;
+  }
+  
+  /* Responsividad */
+  
+  /* Para tablets */
+  @media (max-width: 768px) {
     .login-container {
-        width: 100%;
-        padding: 20px 10px;
+      max-width: 350px;
+      padding: 25px 15px;
     }
-
+  
     .login-container img {
-        width: 80px;
+      width: 90px;
     }
-
+  
     .login-container h2 {
-        font-size: 20px;
+      font-size: 20px;
     }
-
+  
+    button {
+      padding: 10px;
+      font-size: 14px;
+    }
+  }
+  
+  /* Para smartphones grandes */
+  @media (max-width: 576px) {
+    .login-container {
+      max-width: 300px;
+      padding: 20px 10px;
+    }
+  
+    .login-container img {
+      width: 80px;
+    }
+  
+    .login-container h2 {
+      font-size: 18px;
+    }
+  
+    .form-group label {
+      font-size: 12px;
+    }
+  
+    .login-container input,
+    .login-container select {
+      font-size: 14px;
+      padding: 10px;
+    }
+  
+    button {
+      font-size: 14px;
+      padding: 8px;
+    }
+  
+    .social-icons img {
+      width: 30px;
+      height: 30px;
+    }
+  
     .error-message {
-        color: red;
-        font-size: 14px;
-        margin-top: 10px;
-        text-align: center;
-      }
-      
-}
+      font-size: 12px;
+    }
+  }
+  
+  /* Para smartphones pequeños */
+  @media (max-width: 400px) {
+    .login-container {
+      max-width: 280px;
+    }
+  
+    .login-container img {
+      width: 70px;
+    }
+  
+    .login-container h2 {
+      font-size: 16px;
+    }
+  
+    .toggle-text,
+    .social-text {
+      font-size: 12px;
+    }
+  }
+  

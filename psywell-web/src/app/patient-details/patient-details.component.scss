@@ -326,18 +326,25 @@ button {
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.6);
   z-index: 1000;
+  overflow-y: auto; /* Habilita scroll si el contenido supera la altura de la ventana */
+  padding: 20px; /* Añade padding para evitar bordes ajustados */
 }
 
 .modal-content {
   background-color: #1c1c1e;
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   width: 100%;
-  max-width: 500px;
+  max-width: 600px; /* Incrementa ligeramente el ancho máximo */
+  max-height: 90vh; /* Limita la altura para evitar desbordes */
+  overflow-y: auto; /* Habilita scroll interno si el contenido es demasiado largo */
   position: relative;
   text-align: center;
   color: #ffffff;
+
+  /* Transición suave para mostrar el modal */
+  animation: fadeIn 0.3s ease-out;
 }
 
 .close-modal {
@@ -364,7 +371,7 @@ button {
   border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
-    font-weight: bold;
+  font-weight: bold;
   margin-left: auto;
   transition: background-color 0.3s ease;
 
@@ -372,6 +379,44 @@ button {
     background-color: #0fdaf5;
   }
 }
+
+/* Añade animación para el modal */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Responsividad para pantallas más pequeñas */
+@media (max-width: 768px) {
+  .modal-content {
+    padding: 1rem;
+    max-width: 90%; /* Reduce el ancho máximo */
+    max-height: 80vh; /* Ajusta la altura máxima */
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    padding: 0.8rem;
+    font-size: 14px; /* Reduce el tamaño del texto */
+  }
+
+  .close-modal {
+    font-size: 16px; /* Ajusta el tamaño del botón de cierre */
+  }
+
+  .btn-open-modal {
+    font-size: 14px; /* Ajusta el tamaño del botón */
+    padding: 8px 16px;
+  }
+}
+
 
 
 .data-filter {

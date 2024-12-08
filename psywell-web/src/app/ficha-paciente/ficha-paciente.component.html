@@ -52,7 +52,6 @@
         </div>
       </div>
 
-      
       <!-- Contacto -->
       <div class="section">
         <h3>Contacto</h3>
@@ -63,22 +62,22 @@
           </div>
         </div>
 
-        <div class="input-item">
-          <label for="telefono">Teléfono</label>
-          <div class="phone-input">
-            <span class="flag-icon">🇨🇱 +56</span>
-            <input
-              type="tel"
-              id="telefono"
-              [(ngModel)]="paciente.telefono"
-              name="telefono"
-              placeholder="Ingrese teléfono"
-              maxlength="15"
-              (blur)="validarTelefonoEnBlur()"
-            />
+        <div class="input-group contact-phones">
+          <div class="input-item">
+            <label for="telefono">Teléfono</label>
+            <div class="phone-input">
+              <span class="flag-icon">🇨🇱 +56</span>
+              <input
+                type="tel"
+                id="telefono"
+                [(ngModel)]="paciente.telefono"
+                name="telefono"
+                placeholder="Ingrese teléfono"
+                maxlength="15"
+              />
+            </div>
           </div>
         
-
           <div class="input-item">
             <label for="telefonoEmercia">Teléfono de Emergencia</label>
             <input
@@ -93,7 +92,8 @@
             />
           </div>
         </div>
-
+        
+        
         <div class="input-group">
           <div class="input-item">
             <label for="direccion">Dirección</label>
@@ -109,20 +109,18 @@
         </div>
       </div>
 
-     <!-- Notas de la Sesión -->
+      <!-- Notas de la Sesión -->
 <div class="section">
   <h3>Notas de la Sesión</h3>
   <div class="input-group">
-    <div class="input-item">
-      <textarea
-        id="notas"
-        [(ngModel)]="paciente.notas"
-        name="notas"
-        placeholder="Ingrese las notas"
-        rows="5"
-      ></textarea>
-    </div>
-    
+    <textarea
+      id="notas"
+      [(ngModel)]="paciente.notas"
+      name="notas"
+      placeholder="Ingrese las notas"
+      rows="1"
+      (input)="expandTextarea($event)"
+    ></textarea>
   </div>
 </div>
 
@@ -130,34 +128,33 @@
 <div class="section">
   <h3>Medicamentos</h3>
   <div class="input-group">
-    <div class="input-item">
-      <textarea
-        id="medicamentos"
-        [(ngModel)]="paciente.medicamentos"
-        name="medicamentos"
-        placeholder="Ingrese medicamentos"
-        rows="3"
-      ></textarea>
-    </div>
+    <textarea
+      id="medicamentos"
+      [(ngModel)]="paciente.medicamentos"
+      name="medicamentos"
+      placeholder="Ingrese medicamentos"
+      rows="1"
+      (input)="expandTextarea($event)"
+    ></textarea>
   </div>
 </div>
 
+<!-- Diagnóstico -->
+<div class="section">
+  <h3>Diagnóstico</h3>
+  <div class="input-group">
+    <textarea
+      id="diagnostico"
+      [(ngModel)]="paciente.diagnostico"
+      name="diagnostico"
+      placeholder="Ingrese el diagnóstico"
+      required
+      rows="1"
+      (input)="expandTextarea($event)"
+    ></textarea>
+  </div>
+</div>
 
-      <!-- Diagnóstico -->
-      <div class="section">
-        <h3>Diagnóstico</h3>
-        <div class="input-group">
-          <div class="input-item">
-            <textarea
-              id="diagnostico"
-              [(ngModel)]="paciente.diagnostico"
-              name="diagnostico"
-              placeholder="Ingrese el diagnóstico"
-              required
-            ></textarea>
-          </div>
-        </div>
-      </div>
 
       <button type="submit" class="save-button" [disabled]="!isFormComplete()">Guardar Ficha</button>
     </form>
@@ -165,15 +162,6 @@
     <!-- Mensaje de éxito al guardar -->
     <div *ngIf="showSuccessMessage" class="success-alert animate-success">
       <p>Ficha guardada correctamente ✔️</p>
-    </div>
-
-    <!-- Confirmación de cierre -->
-    <div *ngIf="isConfirmingClose" class="confirmation-overlay">
-      <div class="confirmation-dialog">
-        <p>¿Está seguro de que desea cerrar el formulario? Se perderán los datos no guardados.</p>
-        <button class="confirm-button" (click)="confirmClose()">Sí</button>
-        <button class="cancel-button" (click)="cancelClose()">No</button>
-      </div>
     </div>
   </div>
 </div>

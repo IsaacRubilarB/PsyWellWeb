@@ -162,6 +162,17 @@ export class CitasComponent implements OnInit, OnDestroy {
     });
   }
 
+  guardarUbicacionSeleccionada() {
+    if (this.citaForm.value.ubicacion) {
+      // Cerramos el modal solo al guardar.
+      this.cerrarMapaModal();
+      console.log('Ubicación guardada:', this.citaForm.value.ubicacion);
+    } else {
+      console.warn('No se seleccionó ninguna ubicación.');
+    }
+  }
+
+  
   guardarCita() {
     if (this.citaForm.valid && this.userId) {
       const nuevaCita: Cita = {
@@ -231,10 +242,13 @@ export class CitasComponent implements OnInit, OnDestroy {
   }
 
   ubicacionSeleccionada(direccion: string) {
+    // Solo actualizamos el campo de ubicación, no cerramos el modal aquí.
     this.citaForm.patchValue({
       ubicacion: direccion,
     });
+    console.log('Ubicación seleccionada:', direccion);
   }
+
 
   getFotoPaciente(idPaciente: number): string {
     const paciente = this.pacientes.find((p) => p.idUsuario === idPaciente);
