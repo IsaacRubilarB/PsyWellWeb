@@ -10,6 +10,8 @@ import { ReportsComponent } from 'app/reports/reports.component';
 import { AngularFireAuth } from '@angular/fire/compat/auth'; 
 import { FichaService } from 'app/services/ficha.service'; 
 import Chart from 'chart.js/auto';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+Chart.register(ChartDataLabels);
 
 @Component({
   selector: 'app-patient-details',
@@ -121,6 +123,9 @@ totalWeeklySteps: number = 0;
             backgroundColor: 'rgba(255, 23, 68, 0.2)',
             borderWidth: 2,
             tension: 0.3,
+            pointBackgroundColor: '#ff1744',
+            pointBorderColor: '#fff',
+            pointRadius: 5,
           },
           {
             label: 'Saturación de Oxígeno (%)',
@@ -129,6 +134,9 @@ totalWeeklySteps: number = 0;
             backgroundColor: 'rgba(66, 165, 245, 0.2)',
             borderWidth: 2,
             tension: 0.3,
+            pointBackgroundColor: '#42a5f5',
+            pointBorderColor: '#fff',
+            pointRadius: 5,
           },
           {
             label: 'Horas de Sueño',
@@ -137,6 +145,9 @@ totalWeeklySteps: number = 0;
             backgroundColor: 'rgba(102, 187, 106, 0.2)',
             borderWidth: 2,
             tension: 0.3,
+            pointBackgroundColor: '#66bb6a',
+            pointBorderColor: '#fff',
+            pointRadius: 5,
           },
         ],
       },
@@ -156,6 +167,18 @@ totalWeeklySteps: number = 0;
             backgroundColor: 'rgba(255, 255, 255, 0.9)',
             titleColor: '#000000',
             bodyColor: '#000000',
+          },
+          datalabels: {
+            display: true,
+            color: '#ffffff',
+            font: {
+              size: 12,
+            },
+            anchor: 'end', // Posición en relación al punto (end = arriba)
+            align: 'top', // Alineación de la etiqueta (top = encima del punto)
+            formatter: function (value: number) {
+              return value > 0 ? value : ''; // Mostrar solo si el valor es mayor a 0
+            },
           },
         },
         scales: {
@@ -183,8 +206,11 @@ totalWeeklySteps: number = 0;
           },
         },
       },
+      plugins: [ChartDataLabels], // Activa el plugin de etiquetas de datos
     });
+    
   }
+  
   
   
 
@@ -345,50 +371,63 @@ async obtenerDetallesPaciente(id: string): Promise<void> {
 
   async loadPhysiologicalData(email: string): Promise<void> {
     try {
-      console.log('Cargando datos fisiológicos para:', email);
+        console.log('Cargando datos fisiológicos para:', email);
   
-      const physiologicalData = await this.patientDataService.getPhysiologicalData(email);
+        const physiologicalData = await this.patientDataService.getPhysiologicalData(email);
   
-      if (physiologicalData) {
-        console.log('Datos fisiológicos obtenidos:', physiologicalData);
+        if (physiologicalData) {
+            console.log('Datos fisiológicos obtenidos:', physiologicalData);
   
-        // Validar y asignar los datos en vivo
-        this.bpm = parseInt(physiologicalData.bpm, 10) || 0;
-        this.saturationLevel = parseInt(physiologicalData.oxygen, 10) || 0;
-        this.steps = parseInt(physiologicalData.steps, 10) || 0;
-        this.sleep = parseInt(physiologicalData.sleep, 10) || 0;
+            // Validar y asignar los datos en vivo
+            this.bpm = parseInt(physiologicalData.bpm, 10) || 0;
+            this.saturationLevel = parseInt(physiologicalData.oxygen, 10) || 0;
+            this.steps = parseInt(physiologicalData.steps, 10) || 0;
+            this.sleep = parseInt(physiologicalData.sleep, 10) || 0;
   
-        // Validar y asignar los datos semanales como arrays
-        this.bpmWeekly = Array.isArray(physiologicalData.bpmSemanal)
-          ? physiologicalData.bpmSemanal.map((value: string) => parseInt(value, 10) || 0)
-          : [parseInt(physiologicalData.bpmSemanal, 10) || 0];
+            // Inicializar arrays para los datos semanales
+            const weeklyBpm: number[] = Array(7).fill(0);
+            const weeklySaturation: number[] = Array(7).fill(0);
+            const weeklySleep: number[] = Array(7).fill(0);
+            const weeklySteps: number[] = Array(7).fill(0); // NUEVO: Agregar los pasos semanales
   
-        this.saturationLevelWeekly = Array.isArray(physiologicalData.oxygenSemanal)
-          ? physiologicalData.oxygenSemanal.map((value: string) => parseInt(value, 10) || 0)
-          : [parseInt(physiologicalData.oxygenSemanal, 10) || 0];
+            // Verificar si hay datos semanales
+            if (physiologicalData.fecha) {
+                const date = new Date(physiologicalData.fecha);
+                const dayOfWeek = (date.getDay() + 6) % 7; // Ajustar para que Lunes = 0, Domingo = 6
   
-        this.stepsWeekly = Array.isArray(physiologicalData.stepsSemanal)
-          ? physiologicalData.stepsSemanal.map((value: string) => parseInt(value, 10) || 0)
-          : [parseInt(physiologicalData.stepsSemanal, 10) || 0];
+                // Asignar los datos al día correspondiente
+                weeklyBpm[dayOfWeek] = parseInt(physiologicalData.bpmSemanal, 10) || 0;
+                weeklySaturation[dayOfWeek] = parseInt(physiologicalData.oxygenSemanal, 10) || 0;
+                weeklySleep[dayOfWeek] = parseInt(physiologicalData.sleepSemanal, 10) || 0;
+                weeklySteps[dayOfWeek] = parseInt(physiologicalData.stepsSemanal, 10) || 0; // NUEVO: Asignar pasos
+            }
   
-        this.sleepWeekly = Array.isArray(physiologicalData.sleepSemanal)
-          ? physiologicalData.sleepSemanal.map((value: string) => parseInt(value, 10) || 0)
-          : [parseInt(physiologicalData.sleepSemanal, 10) || 0];
+            // Asignar los datos procesados a las variables semanales
+            this.bpmWeekly = weeklyBpm;
+            this.saturationLevelWeekly = weeklySaturation;
+            this.sleepWeekly = weeklySleep;
+            this.stepsWeekly = weeklySteps; // NUEVO: Asignar pasos a la variable
   
-        // Calcular el total de pasos semanales
-        this.calculateTotalWeeklySteps();
+            // Calcular el total de pasos semanales
+            this.calculateTotalWeeklySteps();
   
-        // Crear gráficos separados si hay datos disponibles
-        if (this.bpmWeekly.length > 0 || this.saturationLevelWeekly.length > 0 || this.sleepWeekly.length > 0) {
-          this.createMainWeeklyDataChart(); // Gráfico principal
+            // Crear el gráfico si hay datos disponibles
+            if (
+                this.bpmWeekly.length > 0 ||
+                this.saturationLevelWeekly.length > 0 ||
+                this.sleepWeekly.length > 0 ||
+                this.stepsWeekly.length > 0 // NUEVO: Incluir pasos en la validación
+            ) {
+                this.createMainWeeklyDataChart(); // Gráfico principal
+            }
+        } else {
+            console.warn('No se encontraron datos fisiológicos para el correo proporcionado.');
         }
-      } else {
-        console.warn('No se encontraron datos fisiológicos para el correo proporcionado.');
-      }
     } catch (error) {
-      console.error('Error al cargar datos fisiológicos:', error);
+        console.error('Error al cargar datos fisiológicos:', error);
     }
-  }
+}
+
   
   calculateTotalWeeklySteps(): void {
     this.totalWeeklySteps = this.stepsWeekly.reduce((total, steps) => total + steps, 0);
